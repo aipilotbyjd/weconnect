@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: weconnect-postgres
+    environment:
+      POSTGRES_DB: weconnect
+      POSTGRES_USER: weconnect
+      POSTGRES_PASSWORD: weconnect123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - weconnect-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: weconnect-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - weconnect-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  weconnect-network:
+    driver: bridge
