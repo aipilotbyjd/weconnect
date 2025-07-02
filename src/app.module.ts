@@ -3,10 +3,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { WorkflowsModule } from './workflows/workflows.module';
-import { NodesModule } from './nodes/nodes.module';
-import { ExecutionsModule } from './executions/executions.module';
-import { AuthModule } from './auth/auth.module';
+import { WorkflowsModule } from './modules/workflows/workflows.module';
+import { NodesModule } from './modules/nodes/nodes.module';
+import { ExecutionsModule } from './modules/executions/executions.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 
@@ -31,7 +32,7 @@ import jwtConfig from './config/jwt.config';
     WorkflowsModule, 
     NodesModule, 
     ExecutionsModule, 
-    AuthModule
+    AuthModule, WebhooksModule
   ],
   controllers: [AppController],
   providers: [AppService],
