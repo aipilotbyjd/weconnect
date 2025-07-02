@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Workflow } from './workflow.entity';
-import { User } from './user.entity';
+import { User } from '../../../../modules/auth/domain/entities/user.entity';
 import { ExecutionLog } from './execution-log.entity';
 
 export enum ExecutionStatus {

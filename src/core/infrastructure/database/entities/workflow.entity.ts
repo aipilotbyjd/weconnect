@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from './user.entity';
+import { User } from '../../../../modules/auth/domain/entities/user.entity';
 import { WorkflowNode } from './workflow-node.entity';
 
 export enum WorkflowStatus {
