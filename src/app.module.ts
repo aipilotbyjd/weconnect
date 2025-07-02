@@ -8,6 +8,7 @@ import { NodesModule } from './nodes/nodes.module';
 import { ExecutionsModule } from './executions/executions.module';
 import { AuthModule } from './auth/auth.module';
 import databaseConfig from './config/database.config';
+import jwtConfig from './config/jwt.config';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import databaseConfig from './config/database.config';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-      load: [databaseConfig],
+      load: [databaseConfig, jwtConfig],
     }),
     
     // Database
