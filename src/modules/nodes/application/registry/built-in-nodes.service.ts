@@ -11,6 +11,11 @@ import { FunctionNodeDefinition, FunctionNodeExecutor } from '../../infrastructu
 // Integration nodes
 import { GmailNodeDefinition, GmailNodeExecutor } from '../../infrastructure/built-in/integrations/gmail.node';
 import { SlackNodeDefinition, SlackNodeExecutor } from '../../infrastructure/built-in/integrations/slack.node';
+import { DiscordNodeDefinition, DiscordNodeExecutor } from '../../infrastructure/built-in/integrations/discord.node';
+import { TrelloNodeDefinition, TrelloNodeExecutor } from '../../infrastructure/built-in/integrations/trello.node';
+import { GitHubNodeDefinition, GitHubNodeExecutor } from '../../infrastructure/built-in/integrations/github.node';
+import { GoogleSheetsNodeDefinition, GoogleSheetsNodeExecutor } from '../../infrastructure/built-in/integrations/google-sheets.node';
+import { TelegramNodeDefinition, TelegramNodeExecutor } from '../../infrastructure/built-in/integrations/telegram.node';
 
 @Injectable()
 export class BuiltInNodesService implements OnModuleInit {
@@ -33,6 +38,11 @@ export class BuiltInNodesService implements OnModuleInit {
     // Register integration nodes
     this.nodeRegistry.registerNode(GmailNodeDefinition, new GmailNodeExecutor());
     this.nodeRegistry.registerNode(SlackNodeDefinition, new SlackNodeExecutor());
+    this.nodeRegistry.registerNode(DiscordNodeDefinition, new DiscordNodeExecutor());
+    this.nodeRegistry.registerNode(TrelloNodeDefinition, new TrelloNodeExecutor());
+    this.nodeRegistry.registerNode(GitHubNodeDefinition, new GitHubNodeExecutor());
+    this.nodeRegistry.registerNode(GoogleSheetsNodeDefinition, new GoogleSheetsNodeExecutor());
+    this.nodeRegistry.registerNode(TelegramNodeDefinition, new TelegramNodeExecutor());
 
     this.logger.log(`Registered ${this.nodeRegistry.getRegisteredNodeNames().length} built-in nodes`);
   }

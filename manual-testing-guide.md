@@ -101,7 +101,11 @@ $newWorkflow = Invoke-RestMethod -Uri "http://localhost:3000/workflows" -Method 
 | POST | `/webhooks/workflows/{id}` | Create webhook | ✅ |
 
 ## 🎯 **Current Status**
-- ✅ **Node Registry**: 7 nodes (Start, HTTP Request, Set, IF, Function, Gmail, Slack)
+- ✅ **Node Registry**: 12 nodes across 6 categories
+  - **Core Nodes**: Start, HTTP Request, Set, IF, Function
+  - **Communication**: Gmail, Slack, Discord, Telegram
+  - **Productivity**: Trello, Google Sheets
+  - **Development**: GitHub
 - ✅ **Authentication**: Registration and login working
 - ✅ **Database**: PostgreSQL connected
 - ✅ **API Documentation**: Available at `/api/docs`
