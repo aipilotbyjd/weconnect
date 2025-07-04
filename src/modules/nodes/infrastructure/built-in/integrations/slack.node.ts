@@ -69,18 +69,18 @@ export const SlackNodeDefinition = new NodeDefinition({
 export class SlackNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const { operation, channel, text, username, attachments } = context.parameters;
-      
+
       // Simulate Slack API integration
       // In a real implementation, you would use Slack Web API client
-      
+
       if (operation === 'sendMessage') {
         if (!channel || !text) {
           throw new Error('Channel and Text are required for sending message');
         }
-        
+
         // Simulate sending message
         const messageData = {
           ok: true,
@@ -95,7 +95,7 @@ export class SlackNodeExecutor implements INodeExecutor {
             attachments: attachments || [],
           },
         };
-        
+
         return {
           success: true,
           data: [messageData],
@@ -131,7 +131,7 @@ export class SlackNodeExecutor implements INodeExecutor {
             },
           },
         };
-        
+
         return {
           success: true,
           data: [channelInfo],
@@ -166,7 +166,7 @@ export class SlackNodeExecutor implements INodeExecutor {
             },
           ],
         };
-        
+
         return {
           success: true,
           data: [channelsList],
@@ -177,7 +177,7 @@ export class SlackNodeExecutor implements INodeExecutor {
           },
         };
       }
-      
+
       throw new Error(`Unknown operation: ${operation}`);
     } catch (error) {
       return {

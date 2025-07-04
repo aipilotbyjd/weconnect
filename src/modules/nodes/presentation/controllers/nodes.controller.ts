@@ -9,7 +9,7 @@ export class NodesController {
   constructor(
     private readonly nodeRegistry: NodeRegistryService,
     private readonly builtInNodesService: BuiltInNodesService,
-  ) {}
+  ) { }
 
   @Get()
   @ApiOperation({ summary: 'Get all available nodes' })
@@ -22,7 +22,7 @@ export class NodesController {
         total: this.nodeRegistry.getNodesByGroup(group).length,
       };
     }
-    
+
     return {
       nodes: this.nodeRegistry.getAllNodeDefinitions(),
       total: this.nodeRegistry.getAllNodeDefinitions().length,
@@ -35,11 +35,11 @@ export class NodesController {
   getNodeGroups() {
     const allNodes = this.nodeRegistry.getAllNodeDefinitions();
     const groups = new Set<string>();
-    
+
     allNodes.forEach(node => {
       node.group.forEach(g => groups.add(g));
     });
-    
+
     return {
       groups: Array.from(groups).sort(),
       total: groups.size,
@@ -53,14 +53,14 @@ export class NodesController {
   @ApiParam({ name: 'nodeName', description: 'Name of the node' })
   getNode(@Param('nodeName') nodeName: string) {
     const node = this.nodeRegistry.getNodeDefinition(nodeName);
-    
+
     if (!node) {
       return {
         error: 'Node not found',
         nodeName,
       };
     }
-    
+
     return {
       node,
       hasExecutor: this.nodeRegistry.getNodeExecutor(nodeName) !== undefined,

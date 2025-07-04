@@ -34,11 +34,11 @@ return $input.all();`,
 export class FunctionNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const { functionCode } = context.parameters;
       const items = context.inputData || [{}];
-      
+
       if (!functionCode || typeof functionCode !== 'string') {
         throw new Error('Function code is required');
       }
@@ -66,10 +66,10 @@ export class FunctionNodeExecutor implements INodeExecutor {
       // Execute the function code
       const func = new Function(...Object.keys(executionContext), functionCode);
       const result = await func(...Object.values(executionContext));
-      
+
       // Ensure result is an array
       const returnData = Array.isArray(result) ? result : [result];
-      
+
       return {
         success: true,
         data: returnData,
