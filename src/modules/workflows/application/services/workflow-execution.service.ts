@@ -7,7 +7,7 @@ import { Workflow } from '../../domain/entities/workflow.entity';
 import { WorkflowNode, NodeType } from '../../domain/entities/workflow-node.entity';
 import { WorkflowExecution, ExecutionStatus, ExecutionMode } from '../../domain/entities/workflow-execution.entity';
 import { WorkflowExecutionLog, LogLevel } from '../../domain/entities/workflow-execution-log.entity';
-import { WorkflowNodeConnection } from '../../domain/entities/workflow-node-connection.entity';
+import { WorkflowNodeConnection, ConnectionType } from '../../domain/entities/workflow-node-connection.entity';
 import { WORKFLOW_EXECUTION_QUEUE, WORKFLOW_NODE_QUEUE, WorkflowJobType, NodeJobType } from '../../infrastructure/queues/constants';
 import { NodeExecutorFactory } from '../node-executors/node-executor.factory';
 
@@ -160,14 +160,19 @@ export class WorkflowExecutionService {
     // Execute connected nodes
     for (const connection of connections) {
       if (connection.targetNode && connection.targetNode.isEnabled) {
-        await this.nodeQueue.add(
-          NodeJobType.EXECUTE,
-          {
-            nodeId: connection.targetNode.id,
-            executionId,
-            inputData: result,
-          },
-        );
+        // Check if this is a conditional branch
+        const shouldExecute = this.shouldExecuteConnection(connection, result);
+        
+        if (shouldExecute) {
+          await this.nodeQueue.add(
+            NodeJobType.EXECUTE,
+            {
+              nodeId: connection.targetNode.id,
+              executionId,
+              inputData: result,
+            },
+          );
+        }
       }
     }
 
@@ -207,5 +212,23 @@ export class WorkflowExecutionService {
       relations: ['node'],
       order: { createdAt: 'ASC' },
     });
+  }
+
+  private shouldExecuteConnection(
+    connection: WorkflowNodeConnection,
+    nodeOutput: Record<string, any>,
+  ): boolean {
+    // For condition nodes, check the branch
+    if (nodeOutput._conditionBranch) {
+      return connection.type === nodeOutput._conditionBranch;
+    }
+    
+    // For error connections, check if there was an error
+    if (connection.type === ConnectionType.ERROR) {
+      return nodeOutput.error || nodeOutput.webhookError || nodeOutput.emailStatus === 'failed';
+    }
+    
+    // For main connections, execute if no specific condition
+    return connection.type === ConnectionType.MAIN;
   }
 }
