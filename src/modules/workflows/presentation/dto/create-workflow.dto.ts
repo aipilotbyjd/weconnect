@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsArray, ValidateNested, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsArray, ValidateNested, IsEnum, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { WorkflowStatus } from '../../domain/entities/workflow.entity';
 import { NodeType } from '../../domain/entities/workflow-node.entity';
+import { ConnectionType } from '../../domain/entities/workflow-node-connection.entity';
 
 class CreateWorkflowNodeDto {
   @ApiProperty({ description: 'Node name', example: 'Send Welcome Email' })
@@ -25,6 +26,42 @@ class CreateWorkflowNodeDto {
   @ApiProperty({ description: 'Execution order', example: 1 })
   @IsOptional()
   executionOrder?: number;
+
+  @ApiProperty({ description: 'Whether node is enabled', example: true, required: false })
+  @IsOptional()
+  @IsBoolean()
+  isEnabled?: boolean;
+}
+
+class CreateConnectionDto {
+  @ApiProperty({ description: 'Source node ID or temporary ID' })
+  @IsString()
+  @IsNotEmpty()
+  sourceNodeId: string;
+
+  @ApiProperty({ description: 'Target node ID or temporary ID' })
+  @IsString()
+  @IsNotEmpty()
+  targetNodeId: string;
+
+  @ApiProperty({ 
+    description: 'Connection type', 
+    enum: ConnectionType,
+    default: ConnectionType.MAIN,
+  })
+  @IsOptional()
+  @IsEnum(ConnectionType)
+  type?: ConnectionType = ConnectionType.MAIN;
+
+  @ApiProperty({ description: 'Source output index', default: 0 })
+  @IsOptional()
+  @IsNumber()
+  sourceOutputIndex?: number = 0;
+
+  @ApiProperty({ description: 'Target input index', default: 0 })
+  @IsOptional()
+  @IsNumber()
+  targetInputIndex?: number = 0;
 }
 
 export class CreateWorkflowDto {
@@ -58,4 +95,11 @@ export class CreateWorkflowDto {
   @ValidateNested({ each: true })
   @Type(() => CreateWorkflowNodeDto)
   nodes?: CreateWorkflowNodeDto[];
+
+  @ApiProperty({ description: 'Node connections', type: [CreateConnectionDto], required: false })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateConnectionDto)
+  connections?: CreateConnectionDto[];
 }

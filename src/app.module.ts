@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
+import redisConfig from './config/redis.config';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import jwtConfig from './config/jwt.config';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-      load: [databaseConfig, jwtConfig],
+      load: [databaseConfig, jwtConfig, redisConfig],
     }),
     
     // Database

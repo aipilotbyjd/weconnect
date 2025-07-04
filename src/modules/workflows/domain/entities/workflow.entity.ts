@@ -3,6 +3,7 @@ import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../../../auth/domain/entities/user.entity';
 import { WorkflowNode } from './workflow-node.entity';
+import { WorkflowExecution } from './workflow-execution.entity';
 
 export enum WorkflowStatus {
   DRAFT = 'draft',
@@ -56,4 +57,7 @@ export class Workflow extends BaseEntity {
 
   @OneToMany(() => WorkflowNode, node => node.workflow, { cascade: true })
   nodes: WorkflowNode[];
+
+  @OneToMany(() => WorkflowExecution, execution => execution.workflow)
+  executions: WorkflowExecution[];
 }

@@ -1,0 +1,24 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsEnum, IsObject } from 'class-validator';
+import { ExecutionMode } from '../../domain/entities/workflow-execution.entity';
+
+export class ExecuteWorkflowDto {
+  @ApiProperty({ 
+    description: 'Execution mode', 
+    enum: ExecutionMode,
+    default: ExecutionMode.MANUAL,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(ExecutionMode)
+  mode?: ExecutionMode = ExecutionMode.MANUAL;
+
+  @ApiProperty({ 
+    description: 'Input data for the workflow execution',
+    example: { userId: '123', email: 'user@example.com' },
+    required: false,
+  })
+  @IsOptional()
+  @IsObject()
+  inputData?: Record<string, any>;
+}

@@ -1,7 +1,8 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Workflow } from './workflow.entity';
+import { WorkflowNodeConnection } from './workflow-node-connection.entity';
 
 export enum NodeType {
   TRIGGER = 'trigger',
@@ -49,4 +50,10 @@ export class WorkflowNode extends BaseEntity {
 
   @Column()
   workflowId: string;
+
+  @OneToMany(() => WorkflowNodeConnection, connection => connection.sourceNode)
+  outgoingConnections: WorkflowNodeConnection[];
+
+  @OneToMany(() => WorkflowNodeConnection, connection => connection.targetNode)
+  incomingConnections: WorkflowNodeConnection[];
 }
