@@ -8,10 +8,13 @@ import { SetNodeDefinition, SetNodeExecutor } from '../../infrastructure/built-i
 import { IfNodeDefinition, IfNodeExecutor } from '../../infrastructure/built-in/core/if.node';
 import { FunctionNodeDefinition, FunctionNodeExecutor } from '../../infrastructure/built-in/core/function.node';
 import { ScheduledTriggerNodeDefinition, ScheduledTriggerNodeExecutor } from '../../infrastructure/built-in/core/scheduled-trigger.node';
+import { WaitNodeDefinition, WaitNodeExecutor } from '../../infrastructure/built-in/core/wait.node';
+import { LoopNodeDefinition, LoopNodeExecutor } from '../../infrastructure/built-in/core/loop.node';
 
 // Integration nodes
 import { GmailNodeDefinition, GmailNodeExecutor } from '../../infrastructure/built-in/integrations/gmail.node';
 import { GmailAdvancedNodeDefinition, GmailAdvancedNodeExecutor } from '../../infrastructure/built-in/integrations/gmail-advanced.node';
+import { SMTPNodeDefinition, SMTPNodeExecutor } from '../../infrastructure/built-in/communication/smtp.node';
 import { GoogleCalendarNodeDefinition, GoogleCalendarNodeExecutor } from '../../infrastructure/built-in/integrations/google-calendar.node';
 import { GoogleDocsNodeDefinition, GoogleDocsNodeExecutor } from '../../infrastructure/built-in/integrations/google-docs.node';
 import { GoogleDriveNodeDefinition, GoogleDriveNodeExecutor } from '../../infrastructure/built-in/integrations/google-drive.node';
@@ -21,6 +24,9 @@ import { DiscordNodeDefinition, DiscordNodeExecutor } from '../../infrastructure
 import { TrelloNodeDefinition, TrelloNodeExecutor } from '../../infrastructure/built-in/integrations/trello.node';
 import { GitHubNodeDefinition, GitHubNodeExecutor } from '../../infrastructure/built-in/integrations/github.node';
 import { TelegramNodeDefinition, TelegramNodeExecutor } from '../../infrastructure/built-in/integrations/telegram.node';
+
+// Database nodes
+import { PostgreSQLNodeDefinition, PostgreSQLNodeExecutor } from '../../infrastructure/built-in/database/postgresql.node';
 
 @Injectable()
 export class BuiltInNodesService implements OnModuleInit {
@@ -40,6 +46,8 @@ export class BuiltInNodesService implements OnModuleInit {
     this.nodeRegistry.registerNode(IfNodeDefinition, new IfNodeExecutor());
     this.nodeRegistry.registerNode(FunctionNodeDefinition, new FunctionNodeExecutor());
     this.nodeRegistry.registerNode(ScheduledTriggerNodeDefinition, new ScheduledTriggerNodeExecutor());
+    this.nodeRegistry.registerNode(WaitNodeDefinition, new WaitNodeExecutor());
+    this.nodeRegistry.registerNode(LoopNodeDefinition, new LoopNodeExecutor());
 
     // Register integration nodes
     // Google services
@@ -56,6 +64,10 @@ export class BuiltInNodesService implements OnModuleInit {
     this.nodeRegistry.registerNode(TrelloNodeDefinition, new TrelloNodeExecutor());
     this.nodeRegistry.registerNode(GitHubNodeDefinition, new GitHubNodeExecutor());
     this.nodeRegistry.registerNode(TelegramNodeDefinition, new TelegramNodeExecutor());
+    this.nodeRegistry.registerNode(SMTPNodeDefinition, new SMTPNodeExecutor());
+    
+    // Database nodes
+    this.nodeRegistry.registerNode(PostgreSQLNodeDefinition, new PostgreSQLNodeExecutor());
 
     this.logger.log(`Registered ${this.nodeRegistry.getRegisteredNodeNames().length} built-in nodes`);
   }

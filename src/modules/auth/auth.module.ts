@@ -12,9 +12,12 @@ import { AuthService } from './application/services/auth.service';
 
 // Domain Layer
 import { User } from './domain/entities/user.entity';
+import { ApiKey } from './domain/entities/api-key.entity';
+import { ExecutionLimit } from './domain/entities/execution-limit.entity';
 
 // Infrastructure Layer
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
+import { ApiKeyStrategy } from './infrastructure/strategies/api-key.strategy';
 import { JwtAuthGuard } from './infrastructure/guards/jwt-auth.guard';
 
 import jwtConfig from '../../config/jwt.config';
@@ -22,7 +25,7 @@ import jwtConfig from '../../config/jwt.config';
 @Module({
   imports: [
     ConfigModule.forFeature(jwtConfig),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, ApiKey, ExecutionLimit]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -36,7 +39,7 @@ import jwtConfig from '../../config/jwt.config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard],
-  exports: [AuthService, JwtStrategy, JwtAuthGuard],
+  providers: [AuthService, JwtStrategy, ApiKeyStrategy, JwtAuthGuard],
+  exports: [AuthService, JwtStrategy, ApiKeyStrategy, JwtAuthGuard],
 })
 export class AuthModule {}

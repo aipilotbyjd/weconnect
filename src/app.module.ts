@@ -12,6 +12,8 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
 import { CredentialsModule } from './modules/credentials/credentials.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { MonitoringModule } from './modules/monitoring/monitoring.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import redisConfig from './config/redis.config';
@@ -23,6 +25,12 @@ import redisConfig from './config/redis.config';
       isGlobal: true,
       envFilePath: '.env',
       load: [databaseConfig, jwtConfig, redisConfig],
+    }),
+    
+    // Rate limiting
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 100,
     }),
     
     // Database
@@ -39,6 +47,7 @@ import redisConfig from './config/redis.config';
     CredentialsModule,
     TemplatesModule,
     SchedulerModule,
+    MonitoringModule,
     WorkflowsModule, 
     NodesModule, 
     ExecutionsModule, 

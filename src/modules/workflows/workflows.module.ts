@@ -13,6 +13,7 @@ import { WorkflowExecutionService } from './application/services/workflow-execut
 import { WorkflowVariablesService } from './application/services/workflow-variables.service';
 import { WorkflowVersioningService } from './application/services/workflow-versioning.service';
 import { WorkflowImportExportService } from './application/services/workflow-import-export.service';
+import { ErrorHandlingService } from './application/services/error-handling.service';
 import { NodeExecutorFactory } from './application/node-executors/node-executor.factory';
 import {
   TriggerNodeExecutor,
@@ -32,6 +33,7 @@ import { WorkflowExecution } from './domain/entities/workflow-execution.entity';
 import { WorkflowExecutionLog } from './domain/entities/workflow-execution-log.entity';
 import { WorkflowVariable } from './domain/entities/workflow-variable.entity';
 import { WorkflowVersion } from './domain/entities/workflow-version.entity';
+import { WorkflowShare } from './domain/entities/workflow-share.entity';
 
 // Infrastructure Layer
 import { WorkflowQueueModule } from './infrastructure/queues/workflow-queue.module';
@@ -46,6 +48,7 @@ import { WorkflowQueueModule } from './infrastructure/queues/workflow-queue.modu
       WorkflowExecutionLog,
       WorkflowVariable,
       WorkflowVersion,
+      WorkflowShare,
     ]),
     WorkflowQueueModule,
     HttpModule,
@@ -58,6 +61,7 @@ import { WorkflowQueueModule } from './infrastructure/queues/workflow-queue.modu
     WorkflowVariablesService,
     WorkflowVersioningService,
     WorkflowImportExportService,
+    ErrorHandlingService,
     NodeExecutorFactory,
     TriggerNodeExecutor,
     HttpRequestNodeExecutor,
