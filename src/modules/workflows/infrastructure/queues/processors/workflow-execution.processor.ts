@@ -13,6 +13,7 @@ interface WorkflowExecutionJobData {
   workflowId: string;
   userId: string;
   inputData?: Record<string, any>;
+  timeout?: number;
 }
 
 @Processor(WORKFLOW_EXECUTION_QUEUE)
@@ -29,7 +30,7 @@ export class WorkflowExecutionProcessor {
 
   @Process(WorkflowJobType.EXECUTE_WORKFLOW)
   async handleExecuteWorkflow(job: Job<WorkflowExecutionJobData>) {
-    const { executionId, workflowId, inputData } = job.data;
+    const { executionId, workflowId, inputData, timeout = 300000 } = job.data;
     this.logger.log(`Starting workflow execution ${executionId}`);
 
     try {
@@ -49,11 +50,12 @@ export class WorkflowExecutionProcessor {
         throw new Error(`Workflow ${workflowId} not found`);
       }
 
-      // Execute the workflow
+      // Execute the workflow with timeout
       const result = await this.workflowExecutionService.executeWorkflow(
         workflow,
         executionId,
         inputData,
+        timeout,
       );
 
       // Update execution status to success

@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Delete, Param, Body, UseGuards, Req, Headers, All } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, UseGuards, Req, Headers, All, UseFilters, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { WebhooksService } from '../../application/services/webhooks.service';
 import { Webhook } from '../../domain/entities/webhook.entity';
 import { CreateWebhookDto } from '../dto/create-webhook.dto';
@@ -42,16 +43,53 @@ export class WebhooksController {
   }
 
   @All(':path')
+  @UseGuards(ThrottlerGuard) // Rate limiting
   @ApiOperation({ summary: 'Trigger webhook by path' })
   @ApiResponse({ status: 200, description: 'Webhook triggered successfully' })
   @ApiResponse({ status: 404, description: 'Webhook not found' })
   @ApiResponse({ status: 400, description: 'Method not allowed or workflow inactive' })
-  triggerWebhook(
+  @ApiResponse({ status: 429, description: 'Too many requests' })
+  async triggerWebhook(
     @Param('path') path: string,
     @Headers() headers: any,
     @Body() body: any,
     @Req() req: any,
   ): Promise<any> {
-    return this.webhooksService.triggerWebhook(path, req.method, headers, body);
+    // Validate webhook path format
+    if (!this.isValidWebhookPath(path)) {
+      throw new Error('Invalid webhook path format');
+    }
+
+    // Validate request size
+    const contentLength = parseInt(headers['content-length'] || '0');
+    if (contentLength > 10 * 1024 * 1024) { // 10MB limit
+      throw new Error('Request payload too large');
+    }
+
+    return this.webhooksService.triggerWebhook(
+      path, 
+      req.method, 
+      this.sanitizeHeaders(headers), 
+      body,
+      req.ip || req.connection.remoteAddress
+    );
+  }
+
+  private isValidWebhookPath(path: string): boolean {
+    // Only allow alphanumeric, hyphens, and underscores
+    return /^[a-zA-Z0-9-_]+$/.test(path) && path.length >= 8 && path.length <= 64;
+  }
+
+  private sanitizeHeaders(headers: any): Record<string, string> {
+    const allowedHeaders = ['content-type', 'user-agent', 'x-webhook-signature', 'x-webhook-signature-256'];
+    const sanitized: Record<string, string> = {};
+    
+    for (const key of allowedHeaders) {
+      if (headers[key]) {
+        sanitized[key] = String(headers[key]).substring(0, 1000); // Limit header length
+      }
+    }
+    
+    return sanitized;
   }
 }

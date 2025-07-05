@@ -14,6 +14,7 @@ import { WorkflowVariablesService } from './application/services/workflow-variab
 import { WorkflowVersioningService } from './application/services/workflow-versioning.service';
 import { WorkflowImportExportService } from './application/services/workflow-import-export.service';
 import { ErrorHandlingService } from './application/services/error-handling.service';
+import { ExecutionCleanupService } from './application/services/execution-cleanup.service';
 import { NodeExecutorFactory } from './application/node-executors/node-executor.factory';
 import {
   TriggerNodeExecutor,
@@ -23,6 +24,13 @@ import {
   WebhookNodeExecutor,
   EmailNodeExecutor,
   DelayNodeExecutor,
+  SlackNodeExecutor,
+  DiscordNodeExecutor,
+  GmailNodeExecutor,
+  TelegramNodeExecutor,
+  GitHubNodeExecutor,
+  GoogleSheetsNodeExecutor,
+  TrelloNodeExecutor,
 } from './application/node-executors/executors';
 
 // Domain Layer
@@ -62,6 +70,7 @@ import { WorkflowQueueModule } from './infrastructure/queues/workflow-queue.modu
     WorkflowVersioningService,
     WorkflowImportExportService,
     ErrorHandlingService,
+    ExecutionCleanupService,
     NodeExecutorFactory,
     TriggerNodeExecutor,
     HttpRequestNodeExecutor,
@@ -70,6 +79,13 @@ import { WorkflowQueueModule } from './infrastructure/queues/workflow-queue.modu
     WebhookNodeExecutor,
     EmailNodeExecutor,
     DelayNodeExecutor,
+    SlackNodeExecutor,
+    DiscordNodeExecutor,
+    GmailNodeExecutor,
+    TelegramNodeExecutor,
+    GitHubNodeExecutor,
+    GoogleSheetsNodeExecutor,
+    TrelloNodeExecutor,
   ],
   exports: [WorkflowsService, WorkflowExecutionService],
 })

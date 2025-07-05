@@ -7,6 +7,7 @@ import { CredentialsService } from './application/services/credentials.service';
 import { OAuth2Service } from './application/services/oauth2.service';
 import { EncryptionService } from './application/services/encryption.service';
 import { GoogleCredentialsHelper } from './application/services/google-credentials.helper';
+import { CredentialIntegrationService } from './application/services/credential-integration.service';
 import { CredentialsController } from './presentation/controllers/credentials.controller';
 import { OAuth2Controller } from './presentation/controllers/oauth2.controller';
 
@@ -22,12 +23,14 @@ import { OAuth2Controller } from './presentation/controllers/oauth2.controller';
     OAuth2Service,
     EncryptionService,
     GoogleCredentialsHelper,
+    CredentialIntegrationService,
   ],
   exports: [
     CredentialsService,
     OAuth2Service,
     EncryptionService,
     GoogleCredentialsHelper,
+    CredentialIntegrationService,
   ],
 })
 export class CredentialsModule {}

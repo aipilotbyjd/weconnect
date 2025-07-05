@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 import { WorkflowExecutionLog, LogLevel } from '../../domain/entities/workflow-execution-log.entity';
 import { RetryConfiguration, ErrorHandlingConfiguration } from '../../domain/interfaces/retry-configuration.interface';
+import { WORKFLOW_NODE_QUEUE, NodeJobType } from '../../infrastructure/queues/constants';
 
 @Injectable()
 export class ErrorHandlingService {
@@ -12,6 +15,8 @@ export class ErrorHandlingService {
   constructor(
     @InjectRepository(WorkflowExecutionLog)
     private logRepository: Repository<WorkflowExecutionLog>,
+    @InjectQueue(WORKFLOW_NODE_QUEUE)
+    private nodeQueue: Queue,
   ) {}
 
   calculateRetryDelay(
@@ -138,7 +143,7 @@ export class ErrorHandlingService {
     await this.logRepository.save({
       executionId: context.executionId,
       nodeId: context.nodeId,
-      level: LogLevel.WARN,
+      level: LogLevel.INFO,
       message: `Retrying node ${context.nodeName} (attempt ${context.attempt + 1})`,
       data: {
         currentAttempt: context.attempt,
@@ -160,6 +165,27 @@ export class ErrorHandlingService {
     },
   ): void {
     this.circuitBreakers.set(nodeId, new CircuitBreaker(config));
+  }
+
+  async scheduleRetry(
+    nodeId: string,
+    executionId: string,
+    inputData: Record<string, any>,
+    retryCount: number,
+    delay: number,
+  ): Promise<void> {
+    await this.nodeQueue.add(
+      NodeJobType.RETRY,
+      {
+        nodeId,
+        executionId,
+        inputData,
+        retryCount,
+      },
+      { delay }
+    );
+
+    this.logger.log(`Scheduled retry ${retryCount} for node ${nodeId} in ${delay}ms`);
   }
 }
 

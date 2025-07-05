@@ -31,8 +31,9 @@ export class WorkflowsController {
   @ApiOperation({ summary: 'Get workflow by ID' })
   @ApiResponse({ status: 200, description: 'Workflow retrieved successfully', type: Workflow })
   @ApiResponse({ status: 404, description: 'Workflow not found' })
-  findOne(@Param('id') id: string): Promise<Workflow> {
-    return this.workflowsService.findOne(id);
+  @ApiResponse({ status: 403, description: 'Forbidden - not your workflow' })
+  findOne(@Param('id') id: string, @Req() req: any): Promise<Workflow> {
+    return this.workflowsService.findOneWithAuth(id, req.user.id);
   }
 
   @Patch(':id')
@@ -63,5 +64,26 @@ export class WorkflowsController {
   @ApiResponse({ status: 200, description: 'Workflow deactivated successfully', type: Workflow })
   deactivate(@Param('id') id: string, @Req() req: any): Promise<Workflow> {
     return this.workflowsService.deactivate(id, req.user.id);
+  }
+
+  @Get(':id/validate-connections')
+  @ApiOperation({ summary: 'Validate workflow connections' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Connection validation results',
+    schema: {
+      type: 'object',
+      properties: {
+        isValid: { type: 'boolean' },
+        errors: { type: 'array', items: { type: 'string' } },
+        warnings: { type: 'array', items: { type: 'string' } },
+        executionOrder: { type: 'array', items: { type: 'string' } },
+        nodeCount: { type: 'number' },
+        connectionCount: { type: 'number' }
+      }
+    }
+  })
+  validateConnections(@Param('id') id: string, @Req() req: any): Promise<any> {
+    return this.workflowsService.validateConnections(id, req.user.id);
   }
 }

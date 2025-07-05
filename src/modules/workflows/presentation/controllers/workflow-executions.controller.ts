@@ -38,20 +38,30 @@ export class WorkflowExecutionsController {
     @Param('workflowId') workflowId: string,
     @Query('status') status?: string,
     @Query('limit') limit?: number,
+    @Req() req: any,
   ): Promise<WorkflowExecution[]> {
-    // TODO: Implement filtering
-    return [];
+    return this.executionService.findWorkflowExecutions(
+      workflowId,
+      req.user.id,
+      { status, limit: limit || 50 }
+    );
   }
 
   @Get(':executionId')
   @ApiOperation({ summary: 'Get execution details' })
   @ApiResponse({ status: 200, description: 'Execution details', type: WorkflowExecution })
+  @ApiResponse({ status: 404, description: 'Execution not found' })
+  @ApiResponse({ status: 403, description: 'Access denied' })
   async findOne(
     @Param('workflowId') workflowId: string,
     @Param('executionId') executionId: string,
+    @Req() req: any,
   ): Promise<WorkflowExecution> {
-    // TODO: Implement
-    throw new Error('Not implemented');
+    return this.executionService.findOneWithAuth(
+      executionId, 
+      workflowId, 
+      req.user.id
+    );
   }
 
   @Get(':executionId/logs')

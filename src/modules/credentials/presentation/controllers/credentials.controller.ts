@@ -121,4 +121,29 @@ export class CredentialsController {
     const { encryptedData, ...result } = credential;
     return result;
   }
+
+  @Get(':id/test')
+  @ApiOperation({ summary: 'Test credential connectivity' })
+  @ApiParam({ name: 'id', description: 'Credential ID' })
+  async testCredential(
+    @Req() req: RequestWithUser,
+    @Param('id') id: string,
+  ) {
+    const userId = req.user.id;
+    return await this.credentialsService.testCredential(id, userId);
+  }
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Get credential statistics' })
+  async getStats(@Req() req: RequestWithUser) {
+    const userId = req.user.id;
+    return await this.credentialsService.getCredentialStats(userId);
+  }
+
+  @Post('refresh-expired')
+  @ApiOperation({ summary: 'Refresh all expired OAuth2 tokens' })
+  async refreshExpiredTokens(@Req() req: RequestWithUser) {
+    const userId = req.user.id;
+    return await this.credentialsService.refreshExpiredTokens(userId);
+  }
 }

@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { WorkflowNode } from './workflow-node.entity';
@@ -15,6 +15,9 @@ export enum WorkflowStatus {
 }
 
 @Entity('workflows')
+@Index(['userId', 'isActive'])
+@Index(['organizationId', 'status'])
+@Index(['createdAt'])
 export class Workflow extends BaseEntity {
   @ApiProperty({ description: 'Workflow name', example: 'Email Marketing Campaign' })
   @Column()
