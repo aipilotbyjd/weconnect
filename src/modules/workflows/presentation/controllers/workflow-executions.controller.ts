@@ -36,9 +36,9 @@ export class WorkflowExecutionsController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   async findAll(
     @Param('workflowId') workflowId: string,
+    @Req() req: any,
     @Query('status') status?: string,
     @Query('limit') limit?: number,
-    @Req() req: any,
   ): Promise<WorkflowExecution[]> {
     return this.executionService.findWorkflowExecutions(
       workflowId,

@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { HttpModule } from '@nestjs/axios';
+import { CredentialsModule } from '../../../credentials/credentials.module';
 import { WorkflowExecutionProcessor } from './processors/workflow-execution.processor';
 import { WorkflowNodeProcessor } from './processors/workflow-node.processor';
 import { WORKFLOW_EXECUTION_QUEUE, WORKFLOW_NODE_QUEUE } from './constants';
@@ -22,6 +23,13 @@ import {
   EmailNodeExecutor,
   DelayNodeExecutor,
 } from '../../application/node-executors/executors';
+import { GmailNodeExecutor } from '../../application/node-executors/executors/gmail-node.executor';
+import { SlackNodeExecutor } from '../../application/node-executors/executors/slack-node.executor';
+import { DiscordNodeExecutor } from '../../application/node-executors/executors/discord-node.executor';
+import { TelegramNodeExecutor } from '../../application/node-executors/executors/telegram-node.executor';
+import { GitHubNodeExecutor } from '../../application/node-executors/executors/github-node.executor';
+import { GoogleSheetsNodeExecutor } from '../../application/node-executors/executors/google-sheets-node.executor';
+import { TrelloNodeExecutor } from '../../application/node-executors/executors/trello-node.executor';
 
 @Module({
   imports: [
@@ -55,6 +63,7 @@ import {
       },
     ),
     HttpModule,
+    CredentialsModule,
   ],
   providers: [
     WorkflowExecutionProcessor,
@@ -68,6 +77,13 @@ import {
     WebhookNodeExecutor,
     EmailNodeExecutor,
     DelayNodeExecutor,
+    GmailNodeExecutor,
+    SlackNodeExecutor,
+    DiscordNodeExecutor,
+    TelegramNodeExecutor,
+    GitHubNodeExecutor,
+    GoogleSheetsNodeExecutor,
+    TrelloNodeExecutor,
   ],
   exports: [BullModule],
 })

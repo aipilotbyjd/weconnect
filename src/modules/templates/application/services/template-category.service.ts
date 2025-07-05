@@ -36,7 +36,7 @@ export class TemplateCategoryService {
     // Create category
     const category = this.categoryRepository.create({
       ...dto,
-      parent,
+      parent: parent || undefined,
     });
 
     return await this.categoryRepository.save(category);

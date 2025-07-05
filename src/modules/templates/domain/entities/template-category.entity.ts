@@ -37,7 +37,7 @@ export class TemplateCategory extends BaseEntity {
   children: TemplateCategory[];
 
   @TreeParent()
-  parent: TemplateCategory;
+  parent: TemplateCategory | null;
 
   @ManyToMany(() => WorkflowTemplate, (template) => template.categories)
   templates: WorkflowTemplate[];

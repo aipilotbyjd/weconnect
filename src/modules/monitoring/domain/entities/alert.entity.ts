@@ -48,7 +48,6 @@ export class Alert extends BaseEntity {
   @Column({
     type: 'enum',
     enum: AlertStatus,
-    default: AlertStatus.PENDING,
   })
   status: AlertStatus;
 

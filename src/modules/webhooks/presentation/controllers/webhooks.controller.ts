@@ -9,7 +9,7 @@ import { CreateWebhookDto } from '../dto/create-webhook.dto';
 @ApiTags('webhooks')
 @Controller('webhooks')
 export class WebhooksController {
-  constructor(private readonly webhooksService: WebhooksService) {}
+  constructor(private readonly webhooksService: WebhooksService) { }
 
   @Post('workflows/:workflowId')
   @ApiBearerAuth()
@@ -66,12 +66,20 @@ export class WebhooksController {
       throw new Error('Request payload too large');
     }
 
+    const enrichedBody = {
+      ...body,
+      _webhook: {
+        ip: req.ip || req.connection?.remoteAddress || 'unknown',
+        userAgent: headers['user-agent'],
+        timestamp: new Date(),
+      },
+    };
+
     return this.webhooksService.triggerWebhook(
-      path, 
-      req.method, 
-      this.sanitizeHeaders(headers), 
-      body,
-      req.ip || req.connection.remoteAddress
+      path,
+      req.method,
+      this.sanitizeHeaders(headers),
+      enrichedBody
     );
   }
 
@@ -83,13 +91,13 @@ export class WebhooksController {
   private sanitizeHeaders(headers: any): Record<string, string> {
     const allowedHeaders = ['content-type', 'user-agent', 'x-webhook-signature', 'x-webhook-signature-256'];
     const sanitized: Record<string, string> = {};
-    
+
     for (const key of allowedHeaders) {
       if (headers[key]) {
         sanitized[key] = String(headers[key]).substring(0, 1000); // Limit header length
       }
     }
-    
+
     return sanitized;
   }
 }

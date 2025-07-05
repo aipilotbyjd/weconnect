@@ -1,9 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Alert, AlertType, AlertSeverity, AlertStatus } from '../../domain/entities/alert.entity';
-import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
+
+// Define a simple interface for email sending
+interface EmailService {
+  sendMail(options: {
+    to: string;
+    subject: string;
+    html: string;
+  }): Promise<void>;
+}
 
 interface AlertConfig {
   type: AlertType | string;
@@ -21,8 +29,8 @@ export class AlertingService {
   constructor(
     @InjectRepository(Alert)
     private alertRepository: Repository<Alert>,
-    private mailerService: MailerService,
     private configService: ConfigService,
+    @Optional() private emailService?: EmailService,
   ) {
     this.initializeAlertChannels();
   }
@@ -36,14 +44,18 @@ export class AlertingService {
   }
 
   async sendAlert(config: AlertConfig): Promise<Alert> {
-    const alert = await this.alertRepository.save({
+    // Create alert entity first
+    const alertEntity = this.alertRepository.create({
       type: config.type as AlertType,
       title: config.title,
       message: config.message,
       severity: config.severity || this.determineSeverity(config.type as AlertType),
       metadata: config.metadata,
-      status: AlertStatus.PENDING,
+      status: AlertStatus.PENDING as AlertStatus,
+      channelsNotified: [],
     });
+
+    const alert = await this.alertRepository.save(alertEntity);
 
     // Get enabled channels from config
     const enabledChannels = this.configService.get<string[]>('alerts.channels') || ['email'];
@@ -61,8 +73,13 @@ export class AlertingService {
       }
     }
 
-    // Update alert status
-    alert.status = (alert.channelsNotified.length > 0 ? AlertStatus.SENT : AlertStatus.PENDING) as AlertStatus;
+    // Update alert status based on notification results
+    if (alert.channelsNotified.length > 0) {
+      alert.status = AlertStatus.SENT;
+    } else {
+      alert.status = AlertStatus.PENDING;
+    }
+    
     return this.alertRepository.save(alert);
   }
 
@@ -83,6 +100,11 @@ export class AlertingService {
   }
 
   private async sendEmailAlert(alert: Alert): Promise<void> {
+    if (!this.emailService) {
+      this.logger.warn('Email service not configured, skipping email alert');
+      return;
+    }
+
     const recipients = this.configService.get<string[]>('alerts.emailRecipients') || [];
     
     if (recipients.length === 0) {
@@ -90,22 +112,27 @@ export class AlertingService {
       return;
     }
 
-    await this.mailerService.sendMail({
-      to: recipients.join(','),
-      subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
-      html: `
-        <h2>${alert.title}</h2>
-        <p><strong>Type:</strong> ${alert.type}</p>
-        <p><strong>Severity:</strong> ${alert.severity}</p>
-        <p><strong>Time:</strong> ${alert.createdAt}</p>
-        <p><strong>Message:</strong></p>
-        <p>${alert.message}</p>
-        ${alert.metadata ? `
-          <p><strong>Details:</strong></p>
-          <pre>${JSON.stringify(alert.metadata, null, 2)}</pre>
-        ` : ''}
-      `,
-    });
+    try {
+      await this.emailService.sendMail({
+        to: recipients.join(','),
+        subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
+        html: `
+          <h2>${alert.title}</h2>
+          <p><strong>Type:</strong> ${alert.type}</p>
+          <p><strong>Severity:</strong> ${alert.severity}</p>
+          <p><strong>Time:</strong> ${alert.createdAt}</p>
+          <p><strong>Message:</strong></p>
+          <p>${alert.message}</p>
+          ${alert.metadata ? `
+            <p><strong>Details:</strong></p>
+            <pre>${JSON.stringify(alert.metadata, null, 2)}</pre>
+          ` : ''}
+        `,
+      });
+    } catch (error) {
+      this.logger.error('Failed to send email alert:', error);
+      throw error;
+    }
   }
 
   private async sendSlackAlert(alert: Alert): Promise<void> {

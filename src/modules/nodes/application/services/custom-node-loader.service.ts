@@ -78,7 +78,7 @@ export class CustomNodeLoaderService {
         }
         throw new Error(`Module ${module} is not allowed in custom nodes`);
       },
-      exports: {},
+      exports: {} as any,
     };
 
     // Execute the code in sandbox
@@ -87,7 +87,7 @@ export class CustomNodeLoaderService {
     script.runInContext(context);
 
     // Get the exported executor class
-    const ExecutorClass = sandbox.exports.default || sandbox.exports.NodeExecutor;
+    const ExecutorClass = (sandbox.exports as any).default || (sandbox.exports as any).NodeExecutor;
     if (!ExecutorClass) {
       throw new Error('Custom node must export a default executor class');
     }
