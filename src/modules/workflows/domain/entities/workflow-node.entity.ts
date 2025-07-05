@@ -12,6 +12,13 @@ export enum NodeType {
   HTTP_REQUEST = 'http-request',
   EMAIL = 'email',
   DELAY = 'delay',
+  GMAIL = 'gmail',
+  SLACK = 'slack',
+  DISCORD = 'discord',
+  TELEGRAM = 'telegram',
+  GITHUB = 'github',
+  GOOGLE_SHEETS = 'google-sheets',
+  TRELLO = 'trello',
 }
 
 @Entity('workflow_nodes')

@@ -324,9 +324,29 @@ export class DiscordNodeExecutor implements NodeExecutor {
     }
 
     if (config.credentialId) {
-      // TODO: Integrate with credential management system
-      this.logger.warn('Using mock Discord bot token - implement credential management');
-      return 'mock_discord_bot_token';
+      try {
+        const credential = await this.credentialIntegrationService.getCredentialById(
+          config.credentialId,
+          inputData._credentialContext
+        );
+        return credential.data.botToken || credential.data.token;
+      } catch (error) {
+        this.logger.error(`Failed to get Discord credential: ${error.message}`);
+        throw new Error(`Failed to retrieve Discord credentials: ${error.message}`);
+      }
+    }
+
+    // Try to get credential by service name
+    if (inputData._credentialContext) {
+      try {
+        const credential = await this.credentialIntegrationService.getCredentialByService(
+          'discord',
+          inputData._credentialContext
+        );
+        return credential.data.botToken || credential.data.token;
+      } catch (error) {
+        this.logger.error(`Failed to get Discord credential by service: ${error.message}`);
+      }
     }
 
     throw new Error('No Discord bot token or credential ID provided');

@@ -1,8 +1,10 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../../../auth/domain/entities/user.entity';
 import { Organization } from '../../../organizations/domain/entities/organization.entity';
+import { CredentialShare } from './credential-share.entity';
+import { CredentialRotation } from './credential-rotation.entity';
 
 export enum CredentialType {
   API_KEY = 'api_key',
@@ -68,7 +70,23 @@ export class Credential extends BaseEntity {
   @Column()
   organizationId: string;
 
-  // Credential sharing settings
+  // Rotation fields
+  @ApiProperty({ description: 'When credential was rotated' })
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  rotatedAt?: Date;
+
+  @ApiProperty({ description: 'ID of the credential this was rotated to' })
+  @Column('uuid', { nullable: true })
+  rotatedToCredentialId?: string;
+
+  // Relations for sharing and rotation
+  @OneToMany(() => CredentialShare, share => share.credential)
+  shares: CredentialShare[];
+
+  @OneToMany(() => CredentialRotation, rotation => rotation.credential)
+  rotations: CredentialRotation[];
+
+  // Credential sharing settings (legacy - kept for backward compatibility)
   @Column({ type: 'json', nullable: true })
   sharing?: {
     isShared: boolean;
@@ -77,5 +95,14 @@ export class Credential extends BaseEntity {
 
   get isExpired(): boolean {
     return this.expiresAt ? new Date() > this.expiresAt : false;
+  }
+
+  get isRotated(): boolean {
+    return !!this.rotatedAt;
+  }
+
+  get needsRotation(): boolean {
+    // This would be determined by rotation policies
+    return false;
   }
 }

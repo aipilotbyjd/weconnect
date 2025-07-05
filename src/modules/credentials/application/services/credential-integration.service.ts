@@ -67,18 +67,43 @@ export class CredentialIntegrationService {
   }
 
   /**
-   * Get specific credential data by credential ID
+   * Get specific credential data by credential ID with context
    */
   async getCredentialById(
     credentialId: string,
-    userId: string
-  ): Promise<ServiceCredentials> {
+    context?: any
+  ): Promise<{ data: ServiceCredentials }> {
+    const userId = context?.userId || 'unknown';
     const credentials = await this.credentialsService.getDecryptedData(credentialId, userId);
     
     return {
-      service: 'unknown',
-      type: 'retrieved',
-      ...credentials,
+      data: {
+        service: 'unknown',
+        type: 'retrieved',
+        ...credentials,
+      }
+    };
+  }
+
+  /**
+   * Get credential by service name with context
+   */
+  async getCredentialByService(
+    service: string,
+    context?: any
+  ): Promise<{ data: ServiceCredentials }> {
+    const userId = context?.userId || 'unknown';
+    const credentials = await this.getServiceCredentials(service, userId, {
+      autoRefresh: true,
+      required: true,
+    });
+    
+    if (!credentials) {
+      throw new NotFoundException(`No credentials found for service: ${service}`);
+    }
+
+    return {
+      data: credentials
     };
   }
 

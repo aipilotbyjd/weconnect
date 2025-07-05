@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { WorkflowNode } from '../../../domain/entities/workflow-node.entity';
 import { NodeExecutor } from '../node-executor.interface';
+import { CredentialIntegrationService } from '../../../../credentials/application/services/credential-integration.service';
 
 export interface TrelloConfig {
   operation: 'createCard' | 'updateCard' | 'deleteCard' | 'moveCard' | 'addComment' | 'getCards' | 'getBoards' | 'getLists' | 'createList' | 'addMember' | 'addLabel';
@@ -34,7 +35,10 @@ export interface TrelloConfig {
 export class TrelloNodeExecutor implements NodeExecutor {
   private readonly logger = new Logger(TrelloNodeExecutor.name);
 
-  constructor(private httpService: HttpService) {}
+  constructor(
+    private httpService: HttpService,
+    private credentialIntegrationService: CredentialIntegrationService,
+  ) {}
 
   async execute(
     node: WorkflowNode,
@@ -159,11 +163,35 @@ export class TrelloNodeExecutor implements NodeExecutor {
     }
 
     if (config.credentialId) {
-      this.logger.warn('Using mock Trello credentials - implement credential management');
-      return {
-        apiKey: 'mock_trello_api_key',
-        token: 'mock_trello_token',
-      };
+      try {
+        const credential = await this.credentialIntegrationService.getCredentialById(
+          config.credentialId,
+          inputData._credentialContext
+        );
+        return {
+          apiKey: credential.data.apiKey,
+          token: credential.data.token,
+        };
+      } catch (error) {
+        this.logger.error(`Failed to get Trello credential: ${error.message}`);
+        throw new Error(`Failed to retrieve Trello credentials: ${error.message}`);
+      }
+    }
+
+    // Try to get credential by service name
+    if (inputData._credentialContext && (!apiKey || !token)) {
+      try {
+        const credential = await this.credentialIntegrationService.getCredentialByService(
+          'trello',
+          inputData._credentialContext
+        );
+        return {
+          apiKey: credential.data.apiKey,
+          token: credential.data.token,
+        };
+      } catch (error) {
+        this.logger.error(`Failed to get Trello credential by service: ${error.message}`);
+      }
     }
 
     if (!apiKey || !token) {

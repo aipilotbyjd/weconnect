@@ -123,28 +123,28 @@ export class TelegramNodeExecutor implements NodeExecutor {
 
     // Then try credential ID
     if (config.credentialId) {
-      const userId = inputData._context?.userId || inputData.userId;
-      if (!userId) {
-        throw new Error('User ID is required to fetch credentials');
+      try {
+        const credential = await this.credentialService.getCredentialById(
+          config.credentialId,
+          inputData._credentialContext
+        );
+        return credential.data.botToken || credential.data.token;
+      } catch (error) {
+        this.logger.error(`Failed to get Telegram credential: ${error.message}`);
+        throw new Error(`Failed to retrieve Telegram credentials: ${error.message}`);
       }
-
-      const credentials = await this.credentialService.getCredentialById(config.credentialId, userId);
-      
-      if (!credentials.botToken && !credentials.token) {
-        throw new Error('Telegram bot token not found in credentials');
-      }
-
-      return credentials.botToken || credentials.token;
     }
 
     // Finally try service-based credential lookup
-    const userId = inputData._context?.userId || inputData.userId;
-    if (userId) {
+    if (inputData._credentialContext) {
       try {
-        const credentials = await this.credentialService.getBotCredentials('telegram', userId);
-        return credentials.botToken || credentials.token!;
+        const credential = await this.credentialService.getCredentialByService(
+          'telegram',
+          inputData._credentialContext
+        );
+        return credential.data.botToken || credential.data.token;
       } catch (error) {
-        this.logger.warn(`Failed to get Telegram credentials for user ${userId}: ${error.message}`);
+        this.logger.error(`Failed to get Telegram credential by service: ${error.message}`);
       }
     }
 

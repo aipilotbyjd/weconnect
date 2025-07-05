@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { WorkflowNode } from '../../../domain/entities/workflow-node.entity';
 import { NodeExecutor } from '../node-executor.interface';
+import { CredentialIntegrationService } from '../../../../credentials/application/services/credential-integration.service';
 
 export interface GoogleSheetsConfig {
   operation: 'readSheet' | 'writeSheet' | 'appendRow' | 'updateRow' | 'deleteRow' | 'createSheet' | 'clearSheet' | 'getSheetInfo';
@@ -32,7 +33,10 @@ export interface GoogleSheetsConfig {
 export class GoogleSheetsNodeExecutor implements NodeExecutor {
   private readonly logger = new Logger(GoogleSheetsNodeExecutor.name);
 
-  constructor(private httpService: HttpService) {}
+  constructor(
+    private httpService: HttpService,
+    private credentialIntegrationService: CredentialIntegrationService,
+  ) {}
 
   async execute(
     node: WorkflowNode,
@@ -138,8 +142,29 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     }
 
     if (config.credentialId) {
-      this.logger.warn('Using mock Google Sheets access token - implement credential management');
-      return 'mock_google_sheets_access_token';
+      try {
+        const credential = await this.credentialIntegrationService.getCredentialById(
+          config.credentialId,
+          inputData._credentialContext
+        );
+        return credential.data.access_token;
+      } catch (error) {
+        this.logger.error(`Failed to get Google Sheets credential: ${error.message}`);
+        throw new Error(`Failed to retrieve Google Sheets credentials: ${error.message}`);
+      }
+    }
+
+    // Try to get credential by service name
+    if (inputData._credentialContext) {
+      try {
+        const credential = await this.credentialIntegrationService.getCredentialByService(
+          'google_sheets',
+          inputData._credentialContext
+        );
+        return credential.data.access_token;
+      } catch (error) {
+        this.logger.error(`Failed to get Google Sheets credential by service: ${error.message}`);
+      }
     }
 
     throw new Error('No Google Sheets access token or credential ID provided');

@@ -10,6 +10,13 @@ import {
   EmailNodeExecutor,
   DelayNodeExecutor,
 } from './executors';
+import { GmailNodeExecutor } from './executors/gmail-node.executor';
+import { SlackNodeExecutor } from './executors/slack-node.executor';
+import { DiscordNodeExecutor } from './executors/discord-node.executor';
+import { TelegramNodeExecutor } from './executors/telegram-node.executor';
+import { GitHubNodeExecutor } from './executors/github-node.executor';
+import { GoogleSheetsNodeExecutor } from './executors/google-sheets-node.executor';
+import { TrelloNodeExecutor } from './executors/trello-node.executor';
 
 @Injectable()
 export class NodeExecutorFactory {
@@ -23,8 +30,15 @@ export class NodeExecutorFactory {
     private httpRequestExecutor: HttpRequestNodeExecutor,
     private emailExecutor: EmailNodeExecutor,
     private delayExecutor: DelayNodeExecutor,
+    private gmailExecutor: GmailNodeExecutor,
+    private slackExecutor: SlackNodeExecutor,
+    private discordExecutor: DiscordNodeExecutor,
+    private telegramExecutor: TelegramNodeExecutor,
+    private githubExecutor: GitHubNodeExecutor,
+    private googleSheetsExecutor: GoogleSheetsNodeExecutor,
+    private trelloExecutor: TrelloNodeExecutor,
   ) {
-    this.executors = new Map<NodeType, NodeExecutor>();
+    this.executors = new MapNodeType, NodeExecutor();
     this.executors.set(NodeType.TRIGGER, this.triggerExecutor);
     this.executors.set(NodeType.ACTION, this.actionExecutor);
     this.executors.set(NodeType.CONDITION, this.conditionExecutor);
@@ -32,6 +46,13 @@ export class NodeExecutorFactory {
     this.executors.set(NodeType.HTTP_REQUEST, this.httpRequestExecutor);
     this.executors.set(NodeType.EMAIL, this.emailExecutor);
     this.executors.set(NodeType.DELAY, this.delayExecutor);
+    this.executors.set(NodeType.GMAIL, this.gmailExecutor);
+    this.executors.set(NodeType.SLACK, this.slackExecutor);
+    this.executors.set(NodeType.DISCORD, this.discordExecutor);
+    this.executors.set(NodeType.TELEGRAM, this.telegramExecutor);
+    this.executors.set(NodeType.GITHUB, this.githubExecutor);
+    this.executors.set(NodeType.GOOGLE_SHEETS, this.googleSheetsExecutor);
+    this.executors.set(NodeType.TRELLO, this.trelloExecutor);
   }
 
   getExecutor(nodeType: NodeType): NodeExecutor {
