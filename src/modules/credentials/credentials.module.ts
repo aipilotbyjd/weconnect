@@ -13,7 +13,7 @@ import { OAuth2Service } from './application/services/oauth2.service';
 import { EncryptionService } from './application/services/encryption.service';
 import { GoogleCredentialsHelper } from './application/services/google-credentials.helper';
 import { CredentialIntegrationService } from './application/services/credential-integration.service';
-import { WorkflowCredentialContextService } from '../workflows/application/services/workflow-credential-context.service';
+import { WorkflowCredentialContextService } from './application/services/workflow-credential-context.service';
 import { CredentialsController } from './presentation/controllers/credentials.controller';
 import { CredentialSharingController } from './presentation/controllers/credential-sharing.controller';
 import { CredentialRotationController } from './presentation/controllers/credential-rotation.controller';

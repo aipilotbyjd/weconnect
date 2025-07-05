@@ -10,7 +10,7 @@ import { WorkflowExecutionLog, LogLevel } from '../../domain/entities/workflow-e
 import { WorkflowNodeConnection, ConnectionType } from '../../domain/entities/workflow-node-connection.entity';
 import { WORKFLOW_EXECUTION_QUEUE, WORKFLOW_NODE_QUEUE, WorkflowJobType, NodeJobType } from '../../infrastructure/queues/constants';
 import { NodeExecutorFactory } from '../node-executors/node-executor.factory';
-import { WorkflowCredentialContextService } from './workflow-credential-context.service';
+import { WorkflowCredentialContextService } from '../../../credentials/application/services/workflow-credential-context.service';
 
 @Injectable()
 export class WorkflowExecutionService {

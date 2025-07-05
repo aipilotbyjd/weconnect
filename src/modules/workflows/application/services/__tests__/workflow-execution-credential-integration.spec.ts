@@ -3,11 +3,11 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { WorkflowExecutionService } from '../workflow-execution.service';
 import { WorkflowCredentialContextService } from '../../../../credentials/application/services/workflow-credential-context.service';
-import { NodeExecutorFactory } from '../node-executors/node-executor.factory';
-import { WorkflowExecution } from '../../domain/entities/workflow-execution.entity';
-import { WorkflowExecutionLog } from '../../domain/entities/workflow-execution-log.entity';
-import { WorkflowNode, NodeType } from '../../domain/entities/workflow-node.entity';
-import { NodeExecutor } from '../node-executors/node-executor.interface';
+import { NodeExecutorFactory } from '../../node-executors/node-executor.factory';
+import { WorkflowExecution } from '../../../domain/entities/workflow-execution.entity';
+import { WorkflowExecutionLog } from '../../../domain/entities/workflow-execution-log.entity';
+import { WorkflowNode, NodeType } from '../../../domain/entities/workflow-node.entity';
+import { NodeExecutor } from '../../node-executors/node-executor.interface';
 
 describe('WorkflowExecutionService - Credential Integration', () => {
   let service: WorkflowExecutionService;
@@ -100,6 +100,7 @@ describe('WorkflowExecutionService - Credential Integration', () => {
         executionId: 'exec-123',
         nodeId: 'node-1',
         organizationId: 'org-123',
+        timestamp: new Date().toISOString(),
       };
 
       const contextualInputData = {
@@ -183,6 +184,7 @@ describe('WorkflowExecutionService - Credential Integration', () => {
         executionId: 'exec-123',
         nodeId: 'node-1',
         organizationId: 'org-123',
+        timestamp: new Date().toISOString(),
       };
 
       const contextualInputData = {
