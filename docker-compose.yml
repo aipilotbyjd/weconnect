@@ -25,6 +25,23 @@ services:
       - redis_data:/data
     networks:
       - weconnect-network
+    command: redis-server --appendonly yes
+
+  # Optional: Bull Board for queue monitoring
+  # Uncomment the following lines to enable Bull Board UI
+  # bull-board:
+  #   image: deadly0/bull-board
+  #   container_name: weconnect-bull-board
+  #   environment:
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #     REDIS_PASSWORD: ""
+  #   ports:
+  #     - "3030:3000"
+  #   depends_on:
+  #     - redis
+  #   networks:
+  #     - weconnect-network
 
 volumes:
   postgres_data:

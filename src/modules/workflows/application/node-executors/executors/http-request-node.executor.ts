@@ -69,13 +69,13 @@ export class HttpRequestNodeExecutor implements NodeExecutor {
     if (typeof obj === 'string') {
       return obj.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
         const keys = key.trim().split('.');
-        let value = data;
+        let value: any = data;
 
         for (const k of keys) {
           value = value?.[k];
         }
 
-        return value !== undefined ? value : match;
+        return value !== undefined ? String(value) : match;
       });
     }
 

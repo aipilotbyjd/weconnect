@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WORKFLOW_NODE_QUEUE, NodeJobType } from '../constants';
 import { WorkflowNode } from '../../../domain/entities/workflow-node.entity';
-import { WorkflowExecutionLog } from '../../../domain/entities/workflow-execution-log.entity';
+import { WorkflowExecutionLog, LogLevel } from '../../../domain/entities/workflow-execution-log.entity';
 import { WorkflowExecutionService } from '../../../application/services/workflow-execution.service';
 
 interface NodeExecutionJobData {
@@ -48,9 +48,9 @@ export class WorkflowNodeProcessor {
       );
 
       await this.logRepository.save({
-        executionId,
-        nodeId,
-        level: 'info',
+        execution: { id: executionId } as any,
+        node: { id: nodeId } as any,
+        level: LogLevel.INFO,
         message: `Node ${node.name} executed successfully`,
         nodeOutput: result,
       });
@@ -61,9 +61,9 @@ export class WorkflowNodeProcessor {
       this.logger.error(`Node execution ${nodeId} failed:`, error);
 
       await this.logRepository.save({
-        executionId,
-        nodeId,
-        level: 'error',
+        execution: { id: executionId } as any,
+        node: { id: nodeId } as any,
+        level: LogLevel.ERROR,
         message: `Node execution failed: ${error.message}`,
         nodeOutput: error,
       });

@@ -5,7 +5,7 @@ export interface NodeProperty {
   required?: boolean;
   default?: any;
   description?: string;
-  options?: Array<{ name: string; value: any }>;
+  options?: Array<{ name: string; value: any }> | NodeProperty[];
   placeholder?: string;
   typeOptions?: {
     multipleValues?: boolean;

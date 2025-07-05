@@ -51,7 +51,7 @@ export class WorkflowExecutionsController {
     @Param('executionId') executionId: string,
   ): Promise<WorkflowExecution> {
     // TODO: Implement
-    return null;
+    throw new Error('Not implemented');
   }
 
   @Get(':executionId/logs')

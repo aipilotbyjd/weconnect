@@ -24,15 +24,14 @@ export class NodeExecutorFactory {
     private emailExecutor: EmailNodeExecutor,
     private delayExecutor: DelayNodeExecutor,
   ) {
-    this.executors = new Map([
-      [NodeType.TRIGGER, this.triggerExecutor],
-      [NodeType.ACTION, this.actionExecutor],
-      [NodeType.CONDITION, this.conditionExecutor],
-      [NodeType.WEBHOOK, this.webhookExecutor],
-      [NodeType.HTTP_REQUEST, this.httpRequestExecutor],
-      [NodeType.EMAIL, this.emailExecutor],
-      [NodeType.DELAY, this.delayExecutor],
-    ]);
+    this.executors = new Map<NodeType, NodeExecutor>();
+    this.executors.set(NodeType.TRIGGER, this.triggerExecutor);
+    this.executors.set(NodeType.ACTION, this.actionExecutor);
+    this.executors.set(NodeType.CONDITION, this.conditionExecutor);
+    this.executors.set(NodeType.WEBHOOK, this.webhookExecutor);
+    this.executors.set(NodeType.HTTP_REQUEST, this.httpRequestExecutor);
+    this.executors.set(NodeType.EMAIL, this.emailExecutor);
+    this.executors.set(NodeType.DELAY, this.delayExecutor);
   }
 
   getExecutor(nodeType: NodeType): NodeExecutor {

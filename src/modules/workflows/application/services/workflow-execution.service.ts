@@ -112,7 +112,7 @@ export class WorkflowExecutionService {
       });
 
       // Execute node
-      const result = await executor.execute(node, inputData, executionId);
+      const result = await executor.execute(node, inputData || {}, executionId);
 
       // Log node completion
       await this.logRepository.save({
