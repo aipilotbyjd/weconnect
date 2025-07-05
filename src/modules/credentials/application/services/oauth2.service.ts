@@ -26,8 +26,8 @@ export class OAuth2Service {
   constructor(private configService: ConfigService) {
     const clientId = this.configService.get('GOOGLE_CLIENT_ID');
     const clientSecret = this.configService.get('GOOGLE_CLIENT_SECRET');
-    this.redirectUri = this.configService.get('GOOGLE_CALLBACK_URL') || 
-      'http://localhost:3001/api/v1/oauth2/google/callback';
+    this.redirectUri = this.configService.get('GOOGLE_REDIRECT_URI') || 
+      'http://localhost:3000/auth/oauth2/google/callback';
 
     this.googleOAuth2Client = new google.auth.OAuth2(
       clientId,
@@ -46,6 +46,21 @@ export class OAuth2Service {
       state: state,
       prompt: 'consent', // Force consent to ensure refresh token
     });
+  }
+
+  // Get auth URL with custom scopes
+  getAuthUrl(scopes: string[], state: string): string {
+    return this.googleOAuth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: scopes,
+      state: state,
+      prompt: 'consent',
+    });
+  }
+
+  // Get tokens from authorization code
+  async getTokens(code: string): Promise<OAuth2Token> {
+    return this.exchangeCodeForTokens(code);
   }
 
   // Exchange authorization code for tokens

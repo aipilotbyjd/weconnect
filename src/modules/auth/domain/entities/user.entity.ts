@@ -1,7 +1,9 @@
-import { Entity, Column, BeforeInsert } from 'typeorm';
+import { Entity, Column, BeforeInsert, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import * as bcrypt from 'bcryptjs';
+import { OrganizationMember } from '../../../organizations/domain/entities/organization-member.entity';
+import { Organization } from '../../../organizations/domain/entities/organization.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -40,6 +42,27 @@ export class User extends BaseEntity {
   @ApiProperty({ description: 'Last login timestamp' })
   @Column({ type: 'timestamp with time zone', nullable: true })
   lastLoginAt?: Date;
+
+  // Current active organization
+  @Column({ nullable: true })
+  currentOrganizationId?: string;
+
+  @ManyToOne(() => Organization, { nullable: true })
+  @JoinColumn({ name: 'currentOrganizationId' })
+  currentOrganization?: Organization;
+
+  // Organization memberships
+  @OneToMany(() => OrganizationMember, (member) => member.user)
+  organizationMemberships: OrganizationMember[];
+
+  @Column({ nullable: true })
+  profilePicture?: string;
+
+  @Column({ nullable: true })
+  timezone?: string;
+
+  @Column({ type: 'json', nullable: true })
+  preferences?: Record<string, any>;
 
   @BeforeInsert()
   async hashPassword() {

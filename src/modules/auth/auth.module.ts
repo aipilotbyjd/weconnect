@@ -15,6 +15,7 @@ import { User } from './domain/entities/user.entity';
 
 // Infrastructure Layer
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
+import { JwtAuthGuard } from './infrastructure/guards/jwt-auth.guard';
 
 import jwtConfig from '../../config/jwt.config';
 
@@ -35,7 +36,7 @@ import jwtConfig from '../../config/jwt.config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard],
+  exports: [AuthService, JwtStrategy, JwtAuthGuard],
 })
 export class AuthModule {}

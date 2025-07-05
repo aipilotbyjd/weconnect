@@ -8,6 +8,9 @@ import { NodesModule } from './modules/nodes/nodes.module';
 import { ExecutionsModule } from './modules/executions/executions.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { CredentialsModule } from './modules/credentials/credentials.module';
+import { TemplatesModule } from './modules/templates/templates.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import redisConfig from './config/redis.config';
@@ -30,10 +33,14 @@ import redisConfig from './config/redis.config';
     }),
     
     // Feature Modules
+    OrganizationsModule,
+    AuthModule,
+    CredentialsModule,
+    TemplatesModule,
     WorkflowsModule, 
     NodesModule, 
     ExecutionsModule, 
-    AuthModule, WebhooksModule
+    WebhooksModule
   ],
   controllers: [AppController],
   providers: [AppService],

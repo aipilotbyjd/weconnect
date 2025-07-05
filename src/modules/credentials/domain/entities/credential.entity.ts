@@ -2,6 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../../../auth/domain/entities/user.entity';
+import { Organization } from '../../../organizations/domain/entities/organization.entity';
 
 export enum CredentialType {
   API_KEY = 'api_key',
@@ -58,6 +59,21 @@ export class Credential extends BaseEntity {
 
   @Column()
   userId: string;
+
+  // Organization relationship
+  @ManyToOne(() => Organization, (org) => org.credentials)
+  @JoinColumn({ name: 'organizationId' })
+  organization: Organization;
+
+  @Column()
+  organizationId: string;
+
+  // Credential sharing settings
+  @Column({ type: 'json', nullable: true })
+  sharing?: {
+    isShared: boolean;
+    sharedWith: string[]; // user IDs who can use this credential
+  };
 
   get isExpired(): boolean {
     return this.expiresAt ? new Date() > this.expiresAt : false;

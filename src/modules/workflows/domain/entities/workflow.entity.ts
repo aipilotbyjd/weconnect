@@ -4,6 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../../../auth/domain/entities/user.entity';
 import { WorkflowNode } from './workflow-node.entity';
 import { WorkflowExecution } from './workflow-execution.entity';
+import { Organization } from '../../../organizations/domain/entities/organization.entity';
 
 export enum WorkflowStatus {
   DRAFT = 'draft',
@@ -55,9 +56,27 @@ export class Workflow extends BaseEntity {
   @Column()
   userId: string;
 
+  // Organization relationship
+  @ManyToOne(() => Organization, (org) => org.workflows)
+  @JoinColumn({ name: 'organizationId' })
+  organization: Organization;
+
+  @Column()
+  organizationId: string;
+
   @OneToMany(() => WorkflowNode, node => node.workflow, { cascade: true })
   nodes: WorkflowNode[];
 
   @OneToMany(() => WorkflowExecution, execution => execution.workflow)
   executions: WorkflowExecution[];
+
+  // Workflow sharing settings
+  @Column({ type: 'json', nullable: true })
+  sharing?: {
+    isPublic: boolean;
+    sharedWith: string[]; // user IDs
+  };
+
+  @Column({ type: 'json', nullable: true })
+  tags?: string[];
 }
