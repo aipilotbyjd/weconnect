@@ -30,6 +30,8 @@ import { TelegramNodeDefinition, TelegramNodeExecutor } from '../../infrastructu
 // Database nodes
 import { PostgreSQLNodeDefinition, PostgreSQLNodeExecutor } from '../../infrastructure/built-in/database/postgresql.node';
 import { MySQLNodeDefinition, MySQLNodeExecutor } from '../../infrastructure/built-in/database/mysql.node';
+// import { MongoDBNodeDefinition, MongoDBNodeExecutor } from '../../infrastructure/built-in/database/mongodb.node';
+// import { RedisNodeDefinition, RedisNodeExecutor } from '../../infrastructure/built-in/database/redis.node';
 
 // Data processing nodes
 import { JsonTransformNodeDefinition, JsonTransformNodeExecutor } from '../../infrastructure/built-in/data/json-transform.node';
@@ -82,6 +84,8 @@ export class BuiltInNodesService implements OnModuleInit {
     // Database nodes
     this.nodeRegistry.registerNode(PostgreSQLNodeDefinition, new PostgreSQLNodeExecutor());
     this.nodeRegistry.registerNode(MySQLNodeDefinition, new MySQLNodeExecutor());
+    // this.nodeRegistry.registerNode(MongoDBNodeDefinition, new MongoDBNodeExecutor());
+    // this.nodeRegistry.registerNode(RedisNodeDefinition, new RedisNodeExecutor());
     
     // Data processing nodes
     this.nodeRegistry.registerNode(JsonTransformNodeDefinition, new JsonTransformNodeExecutor());
