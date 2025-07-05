@@ -147,7 +147,11 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
           config.credentialId,
           inputData._credentialContext
         );
-        return credential.data.access_token;
+        const accessToken = credential.data.access_token;
+        if (!accessToken) {
+          throw new Error('Google Sheets credential is missing access_token');
+        }
+        return accessToken;
       } catch (error) {
         this.logger.error(`Failed to get Google Sheets credential: ${error.message}`);
         throw new Error(`Failed to retrieve Google Sheets credentials: ${error.message}`);
@@ -161,7 +165,11 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
           'google_sheets',
           inputData._credentialContext
         );
-        return credential.data.access_token;
+        const accessToken = credential.data.access_token;
+        if (!accessToken) {
+          throw new Error('Google Sheets credential is missing access_token');
+        }
+        return accessToken;
       } catch (error) {
         this.logger.error(`Failed to get Google Sheets credential by service: ${error.message}`);
       }

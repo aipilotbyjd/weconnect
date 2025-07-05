@@ -166,7 +166,11 @@ export class GitHubNodeExecutor implements NodeExecutor {
           config.credentialId,
           inputData._credentialContext
         );
-        return credential.data.access_token;
+        const accessToken = credential.data.access_token;
+        if (!accessToken) {
+          throw new Error('GitHub credential is missing access_token');
+        }
+        return accessToken;
       } catch (error) {
         this.logger.error(`Failed to get GitHub credential: ${error.message}`);
         throw new Error(`Failed to retrieve GitHub credentials: ${error.message}`);
@@ -180,7 +184,11 @@ export class GitHubNodeExecutor implements NodeExecutor {
           'github',
           inputData._credentialContext
         );
-        return credential.data.access_token;
+        const accessToken = credential.data.access_token;
+        if (!accessToken) {
+          throw new Error('GitHub credential is missing access_token');
+        }
+        return accessToken;
       } catch (error) {
         this.logger.error(`Failed to get GitHub credential by service: ${error.message}`);
       }

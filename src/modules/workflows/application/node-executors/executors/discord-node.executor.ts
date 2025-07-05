@@ -329,7 +329,11 @@ export class DiscordNodeExecutor implements NodeExecutor {
           config.credentialId,
           inputData._credentialContext
         );
-        return credential.data.botToken || credential.data.token;
+        const token = credential.data.botToken || credential.data.token;
+        if (!token) {
+          throw new Error('Discord credential is missing botToken or token');
+        }
+        return token;
       } catch (error) {
         this.logger.error(`Failed to get Discord credential: ${error.message}`);
         throw new Error(`Failed to retrieve Discord credentials: ${error.message}`);
@@ -343,7 +347,11 @@ export class DiscordNodeExecutor implements NodeExecutor {
           'discord',
           inputData._credentialContext
         );
-        return credential.data.botToken || credential.data.token;
+        const token = credential.data.botToken || credential.data.token;
+        if (!token) {
+          throw new Error('Discord credential is missing botToken or token');
+        }
+        return token;
       } catch (error) {
         this.logger.error(`Failed to get Discord credential by service: ${error.message}`);
       }

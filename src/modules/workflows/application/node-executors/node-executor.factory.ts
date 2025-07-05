@@ -38,7 +38,7 @@ export class NodeExecutorFactory {
     private googleSheetsExecutor: GoogleSheetsNodeExecutor,
     private trelloExecutor: TrelloNodeExecutor,
   ) {
-    this.executors = new MapNodeType, NodeExecutor();
+    this.executors = new Map<NodeType, NodeExecutor>();
     this.executors.set(NodeType.TRIGGER, this.triggerExecutor);
     this.executors.set(NodeType.ACTION, this.actionExecutor);
     this.executors.set(NodeType.CONDITION, this.conditionExecutor);

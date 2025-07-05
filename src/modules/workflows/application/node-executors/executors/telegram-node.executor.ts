@@ -128,7 +128,11 @@ export class TelegramNodeExecutor implements NodeExecutor {
           config.credentialId,
           inputData._credentialContext
         );
-        return credential.data.botToken || credential.data.token;
+        const token = credential.data.botToken || credential.data.token;
+        if (!token) {
+          throw new Error('Telegram credential is missing botToken or token');
+        }
+        return token;
       } catch (error) {
         this.logger.error(`Failed to get Telegram credential: ${error.message}`);
         throw new Error(`Failed to retrieve Telegram credentials: ${error.message}`);
@@ -142,7 +146,11 @@ export class TelegramNodeExecutor implements NodeExecutor {
           'telegram',
           inputData._credentialContext
         );
-        return credential.data.botToken || credential.data.token;
+        const token = credential.data.botToken || credential.data.token;
+        if (!token) {
+          throw new Error('Telegram credential is missing botToken or token');
+        }
+        return token;
       } catch (error) {
         this.logger.error(`Failed to get Telegram credential by service: ${error.message}`);
       }
