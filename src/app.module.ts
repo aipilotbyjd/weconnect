@@ -11,6 +11,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
 import { TemplatesModule } from './modules/templates/templates.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import redisConfig from './config/redis.config';
@@ -37,6 +38,7 @@ import redisConfig from './config/redis.config';
     AuthModule,
     CredentialsModule,
     TemplatesModule,
+    SchedulerModule,
     WorkflowsModule, 
     NodesModule, 
     ExecutionsModule, 

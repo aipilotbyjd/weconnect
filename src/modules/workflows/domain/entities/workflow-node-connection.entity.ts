@@ -28,6 +28,10 @@ export class WorkflowNodeConnection extends BaseEntity {
   @Column({ default: 0 })
   targetInputIndex: number;
 
+  @ApiProperty({ description: 'Connection condition' })
+  @Column({ type: 'json', nullable: true })
+  condition?: Record<string, any>;
+
   // Relations
   @ManyToOne(() => WorkflowNode, node => node.outgoingConnections, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sourceNodeId' })

@@ -7,6 +7,7 @@ import { HttpRequestNodeDefinition, HttpRequestNodeExecutor } from '../../infras
 import { SetNodeDefinition, SetNodeExecutor } from '../../infrastructure/built-in/core/set.node';
 import { IfNodeDefinition, IfNodeExecutor } from '../../infrastructure/built-in/core/if.node';
 import { FunctionNodeDefinition, FunctionNodeExecutor } from '../../infrastructure/built-in/core/function.node';
+import { ScheduledTriggerNodeDefinition, ScheduledTriggerNodeExecutor } from '../../infrastructure/built-in/core/scheduled-trigger.node';
 
 // Integration nodes
 import { GmailNodeDefinition, GmailNodeExecutor } from '../../infrastructure/built-in/integrations/gmail.node';
@@ -38,6 +39,7 @@ export class BuiltInNodesService implements OnModuleInit {
     this.nodeRegistry.registerNode(SetNodeDefinition, new SetNodeExecutor());
     this.nodeRegistry.registerNode(IfNodeDefinition, new IfNodeExecutor());
     this.nodeRegistry.registerNode(FunctionNodeDefinition, new FunctionNodeExecutor());
+    this.nodeRegistry.registerNode(ScheduledTriggerNodeDefinition, new ScheduledTriggerNodeExecutor());
 
     // Register integration nodes
     // Google services

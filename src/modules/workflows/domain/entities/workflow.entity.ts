@@ -1,9 +1,10 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../../../auth/domain/entities/user.entity';
 import { WorkflowNode } from './workflow-node.entity';
 import { WorkflowExecution } from './workflow-execution.entity';
+import { WorkflowVersion } from './workflow-version.entity';
+import { User } from '../../../auth/domain/entities/user.entity';
 import { Organization } from '../../../organizations/domain/entities/organization.entity';
 
 export enum WorkflowStatus {
@@ -69,6 +70,9 @@ export class Workflow extends BaseEntity {
 
   @OneToMany(() => WorkflowExecution, execution => execution.workflow)
   executions: WorkflowExecution[];
+
+  @OneToMany(() => WorkflowVersion, version => version.workflow)
+  versions: WorkflowVersion[];
 
   // Workflow sharing settings
   @Column({ type: 'json', nullable: true })
