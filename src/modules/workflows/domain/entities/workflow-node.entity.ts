@@ -19,6 +19,7 @@ export enum NodeType {
   GITHUB = 'github',
   GOOGLE_SHEETS = 'google-sheets',
   TRELLO = 'trello',
+  AI_AGENT = 'ai-agent',
 }
 
 @Entity('workflow_nodes')

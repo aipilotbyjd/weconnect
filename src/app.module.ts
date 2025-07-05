@@ -11,6 +11,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
 import { TemplatesModule } from './modules/templates/templates.module';
+import { AIAgentsModule } from './modules/ai-agents/ai-agents.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MonitoringModule } from './modules/monitoring/monitoring.module';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -48,6 +49,7 @@ import redisConfig from './config/redis.config';
     AuthModule,
     CredentialsModule,
     TemplatesModule,
+    AIAgentsModule,
     SchedulerModule,
     MonitoringModule,
     WorkflowsModule, 

@@ -41,6 +41,9 @@ import { TextProcessingNodeDefinition, TextProcessingNodeExecutor } from '../../
 // Advanced integration nodes
 import { WhatsAppNodeDefinition, WhatsAppNodeExecutor } from '../../infrastructure/built-in/integrations/whatsapp.node';
 
+// AI Agent nodes
+import { AIAgentNodeDefinition, AIAgentNodeExecutor } from '../../../ai-agents/infrastructure/nodes/ai-agent.node';
+
 @Injectable()
 export class BuiltInNodesService implements OnModuleInit {
   private readonly logger = new Logger(BuiltInNodesService.name);
@@ -63,6 +66,9 @@ export class BuiltInNodesService implements OnModuleInit {
     this.nodeRegistry.registerNode(LoopNodeDefinition, new LoopNodeExecutor());
     this.nodeRegistry.registerNode(DateTimeNodeDefinition, new DateTimeNodeExecutor());
     this.nodeRegistry.registerNode(ValidationNodeDefinition, new ValidationNodeExecutor());
+
+    // Register AI agent node
+    this.nodeRegistry.registerNode(AIAgentNodeDefinition, new AIAgentNodeExecutor());
 
     // Register integration nodes
     // Google services
