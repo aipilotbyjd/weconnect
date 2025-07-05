@@ -62,11 +62,7 @@ export class AlertingService {
     }
 
     // Update alert status
-    if (alert.channelsNotified.length > 0) {
-      alert.status = AlertStatus.SENT;
-    } else {
-      alert.status = AlertStatus.PENDING;
-    }
+    alert.status = (alert.channelsNotified.length > 0 ? AlertStatus.SENT : AlertStatus.PENDING) as AlertStatus;
     return this.alertRepository.save(alert);
   }
 

@@ -6,7 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { Credential } from './domain/entities/credential.entity';
 import { CredentialShare } from './domain/entities/credential-share.entity';
 import { CredentialRotation } from './domain/entities/credential-rotation.entity';
-import { CredentialService } from './application/services/credentials.service';
+import { CredentialsService } from './application/services/credentials.service';
 import { CredentialSharingService } from './application/services/credential-sharing.service';
 import { CredentialRotationService } from './application/services/credential-rotation.service';
 import { OAuth2Service } from './application/services/oauth2.service';
@@ -34,7 +34,6 @@ import { OAuth2Controller } from './presentation/controllers/oauth2.controller';
   ],
   providers: [
     CredentialsService,
-    CredentialService,
     CredentialSharingService,
     CredentialRotationService,
     OAuth2Service,
@@ -45,7 +44,6 @@ import { OAuth2Controller } from './presentation/controllers/oauth2.controller';
   ],
   exports: [
     CredentialsService,
-    CredentialService,
     CredentialSharingService,
     CredentialRotationService,
     OAuth2Service,

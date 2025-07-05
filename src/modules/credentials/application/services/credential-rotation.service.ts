@@ -5,7 +5,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Credential } from '../../domain/entities/credential.entity';
 import { CredentialRotation } from '../../domain/entities/credential-rotation.entity';
 import { RotationStatus, RotationType } from '../../domain/enums/credential-rotation.enum';
-import { CredentialService } from './credentials.service';
+import { CredentialsService } from './credentials.service';
 import { EncryptionService } from './encryption.service';
 
 export interface RotationPolicy {
@@ -52,7 +52,7 @@ export class CredentialRotationService {
     private credentialRepository: Repository<Credential>,
     @InjectRepository(CredentialRotation)
     private rotationRepository: Repository<CredentialRotation>,
-    private credentialService: CredentialService,
+    private credentialService: CredentialsService,
     private encryptionService: EncryptionService,
   ) {}
 
@@ -288,13 +288,11 @@ export class CredentialRotationService {
       rotatedFrom: credential.id,
     };
 
-    const newCredential = await this.credentialService.create({
+    const newCredential = await this.credentialService.create(credential.userId, {
       name: `${credential.name} (Rotated)`,
       service: credential.service,
       type: credential.type,
       data: newCredentialData,
-      userId: credential.userId,
-      organizationId: credential.organizationId,
     });
 
     return newCredential;
@@ -328,13 +326,11 @@ export class CredentialRotationService {
       rotatedFrom: credential.id,
     };
 
-    const newCredential = await this.credentialService.create({
+    const newCredential = await this.credentialService.create(credential.userId, {
       name: `${credential.name} (Rotated)`,
       service: credential.service,
       type: credential.type,
       data: newCredentialData,
-      userId: credential.userId,
-      organizationId: credential.organizationId,
     });
 
     return newCredential;
@@ -355,13 +351,11 @@ export class CredentialRotationService {
       rotatedFrom: credential.id,
     };
 
-    const newCredential = await this.credentialService.create({
+    const newCredential = await this.credentialService.create(credential.userId, {
       name: `${credential.name} (Rotated)`,
       service: credential.service,
       type: credential.type,
       data: newCredentialData,
-      userId: credential.userId,
-      organizationId: credential.organizationId,
     });
 
     return newCredential;
