@@ -46,7 +46,7 @@ export class ApiKeyStrategy extends PassportStrategy(Strategy, 'api-key') {
     // Check IP whitelist
     if (keyRecord.ipWhitelist && keyRecord.ipWhitelist.length > 0) {
       const clientIp = req.ip || req.socket.remoteAddress;
-      if (!keyRecord.ipWhitelist.includes(clientIp)) {
+      if (!clientIp || !keyRecord.ipWhitelist.includes(clientIp)) {
         throw new UnauthorizedException('IP address not whitelisted');
       }
     }
@@ -82,7 +82,10 @@ export class ApiKeyStrategy extends PassportStrategy(Strategy, 'api-key') {
     // Check query parameter
     const queryKey = req.query.api_key;
     if (queryKey) {
-      return Array.isArray(queryKey) ? queryKey[0] : queryKey;
+      if (Array.isArray(queryKey)) {
+        return typeof queryKey[0] === 'string' ? queryKey[0] : null;
+      }
+      return typeof queryKey === 'string' ? queryKey : null;
     }
 
     return null;

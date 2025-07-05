@@ -1,6 +1,6 @@
 import { Injectable, Logger, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { Credential } from '../../domain/entities/credential.entity';
 import { CredentialShare } from '../../domain/entities/credential-share.entity';
 import { SharePermission, ShareStatus } from '../../domain/enums/credential-share.enum';
@@ -266,7 +266,7 @@ export class CredentialSharingService {
     const result = await this.shareRepository.update(
       {
         status: ShareStatus.ACTIVE,
-        expiresAt: Repository.LessThan(new Date()),
+        expiresAt: LessThan(new Date()),
       },
       {
         status: ShareStatus.EXPIRED,

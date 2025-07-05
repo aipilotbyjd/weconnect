@@ -28,10 +28,12 @@ import redisConfig from './config/redis.config';
     }),
     
     // Rate limiting
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 100,
-    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 seconds in milliseconds
+        limit: 100,
+      },
+    ]),
     
     // Database
     TypeOrmModule.forRootAsync({

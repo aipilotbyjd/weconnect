@@ -88,6 +88,4 @@ export class Alert extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   resolutionNotes?: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
 }

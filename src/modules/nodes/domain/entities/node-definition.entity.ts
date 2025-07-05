@@ -7,6 +7,10 @@ export interface NodeProperty {
   description?: string;
   options?: Array<{ name: string; value: any }> | NodeProperty[];
   placeholder?: string;
+  displayOptions?: {
+    show?: Record<string, any>;
+    hide?: Record<string, any>;
+  };
   typeOptions?: {
     multipleValues?: boolean;
     loadOptionsMethod?: string;

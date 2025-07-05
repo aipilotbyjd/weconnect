@@ -5,7 +5,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Credential } from '../../domain/entities/credential.entity';
 import { CredentialRotation } from '../../domain/entities/credential-rotation.entity';
 import { RotationStatus, RotationType } from '../../domain/enums/credential-rotation.enum';
-import { CredentialService } from './credential.service';
+import { CredentialService } from './credentials.service';
 import { EncryptionService } from './encryption.service';
 
 export interface RotationPolicy {
@@ -85,14 +85,19 @@ export class CredentialRotationService {
     const nextRotationAt = new Date();
     nextRotationAt.setDate(nextRotationAt.getDate() + rotationPolicy.rotationIntervalDays);
 
-    const rotation = this.rotationRepository.create({
+    const rotationData: Partial<CredentialRotation> = {
       credentialId,
       rotationType: rotationPolicy.rotationType,
       policy: rotationPolicy,
-      nextRotationAt: rotationPolicy.autoRotate ? nextRotationAt : null,
       status: RotationStatus.ACTIVE,
       createdByUserId: userId,
-    });
+    };
+
+    if (rotationPolicy.autoRotate) {
+      rotationData.nextRotationAt = nextRotationAt;
+    }
+
+    const rotation = this.rotationRepository.create(rotationData);
 
     const savedRotation = await this.rotationRepository.save(rotation);
 

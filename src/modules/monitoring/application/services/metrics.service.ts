@@ -252,7 +252,7 @@ export class MetricsService {
 
     cpus.forEach(cpu => {
       for (const type in cpu.times) {
-        totalTick += cpu.times[type as keyof os.CpuTimes];
+        totalTick += cpu.times[type as keyof typeof cpu.times];
       }
       totalIdle += cpu.times.idle;
     });

@@ -12,7 +12,7 @@ export class ApiKeyRateLimitGuard extends ThrottlerGuard {
     super(options, storageService, reflector);
   }
 
-  protected getTracker(req: Record<string, any>): string {
+  protected async getTracker(req: Record<string, any>): Promise<string> {
     // Rate limit by API key if present, otherwise by IP
     const apiKey = req.headers['x-api-key'];
     if (apiKey) {

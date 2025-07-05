@@ -190,7 +190,7 @@ export class LoopNodeExecutor implements INodeExecutor {
     // Process each batch
     for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
       const batch = batches[batchIndex];
-      const batchData = {
+      const batchData: any = {
         $batch: batch,
         $batchSize: batch.length,
         $batchIndex: batchIndex,

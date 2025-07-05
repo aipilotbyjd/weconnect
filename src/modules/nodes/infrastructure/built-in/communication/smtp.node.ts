@@ -165,7 +165,7 @@ export class SMTPNodeExecutor implements INodeExecutor {
         };
       }
 
-      const transporter = nodemailer.createTransporter(transporterConfig);
+      const transporter = nodemailer.createTransport(transporterConfig);
 
       // Process each input item
       const results: any[] = [];

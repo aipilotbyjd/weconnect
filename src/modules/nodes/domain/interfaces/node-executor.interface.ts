@@ -12,6 +12,7 @@ export interface NodeExecutionResult {
   success: boolean;
   data?: any[];
   error?: string;
+  outputs?: Record<string, any[]>;
   metadata?: {
     executionTime?: number;
     itemsProcessed?: number;
