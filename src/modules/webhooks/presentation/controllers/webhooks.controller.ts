@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Body, UseGuards, Req, Headers, All, UseFilters, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, UseGuards, Req, Headers, All, UseFilters, UseInterceptors, UsePipes, ValidationPipe, BadRequestException } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -14,14 +14,22 @@ export class WebhooksController {
   @Post('workflows/:workflowId')
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Create webhook for workflow' })
   @ApiResponse({ status: 201, description: 'Webhook created successfully', type: Webhook })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid input' })
   createWebhook(
     @Param('workflowId') workflowId: string,
-    @Body() body: { name: string },
+    @Body() createWebhookDto: CreateWebhookDto,
     @Req() req: any,
   ): Promise<Webhook> {
-    return this.webhooksService.createWebhook(workflowId, body.name, req.user.id);
+    if (!createWebhookDto || !createWebhookDto.name) {
+      throw new BadRequestException('Webhook name is required');
+    }
+    if (!req.user || !req.user.id) {
+      throw new BadRequestException('User authentication required');
+    }
+    return this.webhooksService.createWebhook(workflowId, createWebhookDto.name, req.user.id);
   }
 
   @Get()
