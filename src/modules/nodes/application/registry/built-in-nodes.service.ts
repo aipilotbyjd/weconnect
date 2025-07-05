@@ -40,6 +40,19 @@ import { TextProcessingNodeDefinition, TextProcessingNodeExecutor } from '../../
 
 // Advanced integration nodes
 import { WhatsAppNodeDefinition, WhatsAppNodeExecutor } from '../../infrastructure/built-in/integrations/whatsapp.node';
+import { SocialMediaNodeDefinition, SocialMediaNodeExecutor } from '../../infrastructure/built-in/integrations/social-media.node';
+
+// Communication nodes
+import { EmailOperationsNodeDefinition, EmailOperationsNodeExecutor } from '../../infrastructure/built-in/communication/email-operations.node';
+
+// Media nodes
+import { ImageProcessingNodeDefinition, ImageProcessingNodeExecutor } from '../../infrastructure/built-in/media/image-processing.node';
+
+// Payment nodes
+import { PaymentProcessingNodeDefinition, PaymentProcessingNodeExecutor } from '../../infrastructure/built-in/payments/payment-processing.node';
+
+// Analytics nodes
+import { DataAnalyticsNodeDefinition, DataAnalyticsNodeExecutor } from '../../infrastructure/built-in/analytics/data-analytics.node';
 
 // AI Agent nodes
 import { AIAgentNodeDefinition, AIAgentNodeExecutor } from '../../../ai-agents/infrastructure/nodes/ai-agent.node';
@@ -113,6 +126,19 @@ export class BuiltInNodesService implements OnModuleInit {
     
     // Advanced integration nodes
     this.nodeRegistry.registerNode(WhatsAppNodeDefinition, new WhatsAppNodeExecutor());
+    this.nodeRegistry.registerNode(SocialMediaNodeDefinition, new SocialMediaNodeExecutor());
+    
+    // Communication nodes
+    this.nodeRegistry.registerNode(EmailOperationsNodeDefinition, new EmailOperationsNodeExecutor());
+    
+    // Media nodes
+    this.nodeRegistry.registerNode(ImageProcessingNodeDefinition, new ImageProcessingNodeExecutor());
+    
+    // Payment nodes
+    this.nodeRegistry.registerNode(PaymentProcessingNodeDefinition, new PaymentProcessingNodeExecutor());
+    
+    // Analytics nodes
+    this.nodeRegistry.registerNode(DataAnalyticsNodeDefinition, new DataAnalyticsNodeExecutor());
 
     this.logger.log(`Registered ${this.nodeRegistry.getRegisteredNodeNames().length} built-in nodes`);
   }
