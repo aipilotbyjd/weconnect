@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Tool } from '@langchain/core/tools';
+import { DynamicTool } from '@langchain/core/tools';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 
@@ -110,8 +110,8 @@ export class AIToolService {
   /**
    * Create LangChain tools based on configuration
    */
-  createTools(toolConfigs: ToolConfig[], workflowContext?: any): Tool[] {
-    const tools: Tool[] = [];
+  createTools(toolConfigs: ToolConfig[], workflowContext?: any): DynamicTool[] {
+    const tools: DynamicTool[] = [];
 
     for (const config of toolConfigs) {
       try {
@@ -130,7 +130,7 @@ export class AIToolService {
   /**
    * Create a single LangChain tool
    */
-  private createSingleTool(config: ToolConfig, workflowContext?: any): Tool | null {
+  private createSingleTool(config: ToolConfig, workflowContext?: any): DynamicTool | null {
     switch (config.name) {
       case BuiltInToolType.HTTP_REQUEST:
         return this.createHttpRequestTool();
@@ -159,8 +159,8 @@ export class AIToolService {
   /**
    * Create HTTP Request Tool
    */
-  private createHttpRequestTool(): Tool {
-    return new Tool({
+  private createHttpRequestTool(): DynamicTool {
+    return new DynamicTool({
       name: 'http_request',
       description: 'Make HTTP requests to external APIs. Input should be JSON with url, method (optional), headers (optional), and body (optional).',
       func: async (input: string) => {
@@ -195,8 +195,8 @@ export class AIToolService {
   /**
    * Create Workflow Data Tool
    */
-  private createWorkflowDataTool(workflowContext?: any): Tool {
-    return new Tool({
+  private createWorkflowDataTool(workflowContext?: any): DynamicTool {
+    return new DynamicTool({
       name: 'workflow_data',
       description: 'Get data from previous workflow nodes. Input should be JSON with nodeId and optional dataPath.',
       func: async (input: string) => {
@@ -234,8 +234,8 @@ export class AIToolService {
   /**
    * Create Text Processor Tool
    */
-  private createTextProcessorTool(): Tool {
-    return new Tool({
+  private createTextProcessorTool(): DynamicTool {
+    return new DynamicTool({
       name: 'text_processor',
       description: 'Process text data. Input should be JSON with text and operation (uppercase, lowercase, trim, length, split, replace).',
       func: async (input: string) => {
@@ -269,8 +269,8 @@ export class AIToolService {
   /**
    * Create Date Time Tool
    */
-  private createDateTimeTool(): Tool {
-    return new Tool({
+  private createDateTimeTool(): DynamicTool {
+    return new DynamicTool({
       name: 'date_time',
       description: 'Work with dates and times. Input should be JSON with operation (now, format, add, subtract) and optional parameters.',
       func: async (input: string) => {
@@ -306,8 +306,8 @@ export class AIToolService {
   /**
    * Create JSON Parser Tool
    */
-  private createJsonParserTool(): Tool {
-    return new Tool({
+  private createJsonParserTool(): DynamicTool {
+    return new DynamicTool({
       name: 'json_parser',
       description: 'Parse, stringify, or manipulate JSON data. Input should be JSON with operation and data.',
       func: async (input: string) => {
@@ -342,8 +342,8 @@ export class AIToolService {
   /**
    * Create Calculator Tool
    */
-  private createCalculatorTool(): Tool {
-    return new Tool({
+  private createCalculatorTool(): DynamicTool {
+    return new DynamicTool({
       name: 'calculator',
       description: 'Perform mathematical calculations. Input should be a mathematical expression as a string.',
       func: async (input: string) => {

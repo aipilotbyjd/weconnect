@@ -53,7 +53,7 @@ export class AIAgentNodeExecutor implements INodeExecutor {
       }
 
       // Prepare input data
-      let inputData = context.inputData;
+      let inputData = Array.isArray(context.inputData) ? context.inputData[0] || {} : context.inputData;
       
       // If a custom prompt is provided, use it as input
       if (prompt) {

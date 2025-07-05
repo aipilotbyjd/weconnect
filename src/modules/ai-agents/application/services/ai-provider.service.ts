@@ -53,7 +53,7 @@ export class AIProviderService {
 
         case AIProvider.GOOGLE:
           return new ChatGoogleGenerativeAI({
-            modelName: model,
+            model,
             temperature,
             maxOutputTokens: maxTokens,
             apiKey: config.apiKey || this.configService.get('GOOGLE_AI_API_KEY'),

@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, Index, ForeignKey } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from 'typeorm';
 
 export class CreateAIAgentsTables1751692000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -240,63 +240,84 @@ export class CreateAIAgentsTables1751692000000 implements MigrationInterface {
     // Create foreign keys
     await queryRunner.createForeignKey(
       'ai_agent_executions',
-      new ForeignKey({
+      new TableForeignKey({
         columnNames: ['agentId'],
         referencedTableName: 'ai_agents',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
+        name: 'FK_ai_agent_executions_agentId',
       }),
     );
 
     await queryRunner.createForeignKey(
       'ai_agent_tools',
-      new ForeignKey({
+      new TableForeignKey({
         columnNames: ['agentId'],
         referencedTableName: 'ai_agents',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
+        name: 'FK_ai_agent_tools_agentId',
       }),
     );
 
     await queryRunner.createForeignKey(
       'ai_agent_memory',
-      new ForeignKey({
+      new TableForeignKey({
         columnNames: ['agentId'],
         referencedTableName: 'ai_agents',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
+        name: 'FK_ai_agent_memory_agentId',
       }),
     );
 
     // Create indexes for better performance
     await queryRunner.createIndex(
       'ai_agent_executions',
-      new Index('IDX_ai_agent_executions_agent_id', ['agentId']),
+      new TableIndex({
+        name: 'IDX_ai_agent_executions_agent_id',
+        columnNames: ['agentId'],
+      }),
     );
 
     await queryRunner.createIndex(
       'ai_agent_executions',
-      new Index('IDX_ai_agent_executions_workflow_execution_id', ['workflowExecutionId']),
+      new TableIndex({
+        name: 'IDX_ai_agent_executions_workflow_execution_id',
+        columnNames: ['workflowExecutionId'],
+      }),
     );
 
     await queryRunner.createIndex(
       'ai_agent_executions',
-      new Index('IDX_ai_agent_executions_status', ['status']),
+      new TableIndex({
+        name: 'IDX_ai_agent_executions_status',
+        columnNames: ['status'],
+      }),
     );
 
     await queryRunner.createIndex(
       'ai_agent_tools',
-      new Index('IDX_ai_agent_tools_agent_id', ['agentId']),
+      new TableIndex({
+        name: 'IDX_ai_agent_tools_agent_id',
+        columnNames: ['agentId'],
+      }),
     );
 
     await queryRunner.createIndex(
       'ai_agent_memory',
-      new Index('IDX_ai_agent_memory_agent_session', ['agentId', 'sessionId']),
+      new TableIndex({
+        name: 'IDX_ai_agent_memory_agent_session',
+        columnNames: ['agentId', 'sessionId'],
+      }),
     );
 
     await queryRunner.createIndex(
       'ai_agent_memory',
-      new Index('IDX_ai_agent_memory_expires_at', ['expiresAt']),
+      new TableIndex({
+        name: 'IDX_ai_agent_memory_expires_at',
+        columnNames: ['expiresAt'],
+      }),
     );
   }
 

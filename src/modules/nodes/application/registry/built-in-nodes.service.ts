@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger, Inject, forwardRef } from '@nestjs/common';
 import { NodeRegistryService } from './node-registry.service';
 
 // Core nodes
@@ -43,12 +43,20 @@ import { WhatsAppNodeDefinition, WhatsAppNodeExecutor } from '../../infrastructu
 
 // AI Agent nodes
 import { AIAgentNodeDefinition, AIAgentNodeExecutor } from '../../../ai-agents/infrastructure/nodes/ai-agent.node';
+import { AIAgentExecutorService } from '../../../ai-agents/application/services/ai-agent-executor.service';
+import { AIAgentService } from '../../../ai-agents/application/services/ai-agent.service';
 
 @Injectable()
 export class BuiltInNodesService implements OnModuleInit {
   private readonly logger = new Logger(BuiltInNodesService.name);
 
-  constructor(private readonly nodeRegistry: NodeRegistryService) {}
+  constructor(
+    private readonly nodeRegistry: NodeRegistryService,
+    @Inject(forwardRef(() => AIAgentExecutorService))
+    private readonly aiAgentExecutorService?: AIAgentExecutorService,
+    @Inject(forwardRef(() => AIAgentService))
+    private readonly aiAgentService?: AIAgentService,
+  ) {}
 
   async onModuleInit() {
     this.registerBuiltInNodes();
@@ -67,8 +75,13 @@ export class BuiltInNodesService implements OnModuleInit {
     this.nodeRegistry.registerNode(DateTimeNodeDefinition, new DateTimeNodeExecutor());
     this.nodeRegistry.registerNode(ValidationNodeDefinition, new ValidationNodeExecutor());
 
-    // Register AI agent node
-    this.nodeRegistry.registerNode(AIAgentNodeDefinition, new AIAgentNodeExecutor());
+    // Register AI agent node (if services are available)
+    if (this.aiAgentExecutorService && this.aiAgentService) {
+      this.nodeRegistry.registerNode(
+        AIAgentNodeDefinition, 
+        new AIAgentNodeExecutor(this.aiAgentExecutorService, this.aiAgentService)
+      );
+    }
 
     // Register integration nodes
     // Google services

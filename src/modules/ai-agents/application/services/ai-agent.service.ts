@@ -105,7 +105,7 @@ export class AIAgentService {
     // Validate provider configuration if provider or model is being updated
     if (updateDto.provider || updateDto.model) {
       this.providerService.validateProviderConfig({
-        provider: updateDto.provider || agent.provider,
+        provider: updateDto.provider || (agent.provider as AIProvider),
         model: updateDto.model || agent.model,
         temperature: updateDto.temperature,
         maxTokens: updateDto.maxTokens,
