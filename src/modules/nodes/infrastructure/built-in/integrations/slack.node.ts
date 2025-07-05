@@ -1,5 +1,6 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
 import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { WebClient } from '@slack/web-api';
 
 export const SlackNodeDefinition = new NodeDefinition({
   name: 'Slack',

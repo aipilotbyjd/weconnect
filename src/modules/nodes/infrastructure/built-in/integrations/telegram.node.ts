@@ -1,5 +1,6 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
 import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import axios, { AxiosInstance } from 'axios';
 
 export const TelegramNodeDefinition = new NodeDefinition({
   name: 'Telegram',
@@ -29,6 +30,14 @@ export const TelegramNodeDefinition = new NodeDefinition({
         { name: 'Send Message', value: 'sendMessage' },
         { name: 'Send Photo', value: 'sendPhoto' },
         { name: 'Send Document', value: 'sendDocument' },
+        { name: 'Send Video', value: 'sendVideo' },
+        { name: 'Send Audio', value: 'sendAudio' },
+        { name: 'Send Location', value: 'sendLocation' },
+        { name: 'Send Poll', value: 'sendPoll' },
+        { name: 'Edit Message', value: 'editMessage' },
+        { name: 'Delete Message', value: 'deleteMessage' },
+        { name: 'Get Chat Info', value: 'getChatInfo' },
+        { name: 'Get Updates', value: 'getUpdates' },
       ],
       default: 'sendMessage',
       required: true,
