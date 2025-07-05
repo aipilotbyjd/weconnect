@@ -87,6 +87,6 @@ import { WorkflowQueueModule } from './infrastructure/queues/workflow-queue.modu
     GoogleSheetsNodeExecutor,
     TrelloNodeExecutor,
   ],
-  exports: [WorkflowsService, WorkflowExecutionService],
+  exports: [WorkflowsService, WorkflowExecutionService, ExecutionCleanupService],
 })
 export class WorkflowsModule { }

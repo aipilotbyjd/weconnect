@@ -8,6 +8,7 @@ import {
   JoinColumn,
   Unique,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../../../auth/domain/entities/user.entity';
 import { Organization } from './organization.entity';
 
@@ -51,6 +52,7 @@ export class OrganizationMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty({ type: () => Organization, description: 'Organization this member belongs to' })
   @ManyToOne(() => Organization, (org) => org.members, {
     onDelete: 'CASCADE',
   })
@@ -60,6 +62,7 @@ export class OrganizationMember {
   @Column()
   organizationId: string;
 
+  @ApiProperty({ type: () => User, description: 'User who is a member' })
   @ManyToOne(() => User, (user) => user.organizationMemberships, {
     onDelete: 'CASCADE',
   })

@@ -8,6 +8,7 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../../../auth/domain/entities/user.entity';
 import { Workflow } from '../../../workflows/domain/entities/workflow.entity';
 import { Credential } from '../../../credentials/domain/entities/credential.entity';
@@ -85,14 +86,17 @@ export class Organization {
   executionResetDate?: Date;
 
   // Relations
+  @ApiProperty({ type: () => [OrganizationMember], description: 'Organization members' })
   @OneToMany(() => OrganizationMember, (member) => member.organization, {
     cascade: true,
   })
   members: OrganizationMember[];
 
+  @ApiProperty({ type: () => [Workflow], description: 'Organization workflows' })
   @OneToMany(() => Workflow, (workflow) => workflow.organization)
   workflows: Workflow[];
 
+  @ApiProperty({ type: () => [Credential], description: 'Organization credentials' })
   @OneToMany(() => Credential, (credential) => credential.organization)
   credentials: Credential[];
 

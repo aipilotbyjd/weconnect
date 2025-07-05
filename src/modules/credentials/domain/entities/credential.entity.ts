@@ -55,6 +55,7 @@ export class Credential extends BaseEntity {
   expiresAt?: Date;
 
   // Relations
+  @ApiProperty({ type: () => User, description: 'Credential owner' })
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'userId' })
   user: User;
@@ -63,6 +64,7 @@ export class Credential extends BaseEntity {
   userId: string;
 
   // Organization relationship
+  @ApiProperty({ type: () => Organization, description: 'Organization this credential belongs to' })
   @ManyToOne(() => Organization, (org) => org.credentials)
   @JoinColumn({ name: 'organizationId' })
   organization: Organization;
@@ -80,9 +82,11 @@ export class Credential extends BaseEntity {
   rotatedToCredentialId?: string;
 
   // Relations for sharing and rotation
+  @ApiProperty({ type: () => [CredentialShare], description: 'Credential shares' })
   @OneToMany(() => CredentialShare, share => share.credential)
   shares: CredentialShare[];
 
+  @ApiProperty({ type: () => [CredentialRotation], description: 'Credential rotations' })
   @OneToMany(() => CredentialRotation, rotation => rotation.credential)
   rotations: CredentialRotation[];
 

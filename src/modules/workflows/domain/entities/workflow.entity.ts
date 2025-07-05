@@ -52,7 +52,7 @@ export class Workflow extends BaseEntity {
   lastExecutedAt?: Date;
 
   // Relations
-  @ApiProperty({ description: 'Workflow owner' })
+  @ApiProperty({ type: () => User, description: 'Workflow owner' })
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'userId' })
   user: User;
@@ -61,6 +61,7 @@ export class Workflow extends BaseEntity {
   userId: string;
 
   // Organization relationship
+  @ApiProperty({ type: () => Organization, description: 'Organization this workflow belongs to' })
   @ManyToOne(() => Organization, (org) => org.workflows)
   @JoinColumn({ name: 'organizationId' })
   organization: Organization;
@@ -68,12 +69,15 @@ export class Workflow extends BaseEntity {
   @Column()
   organizationId: string;
 
+  @ApiProperty({ type: () => [WorkflowNode], description: 'Workflow nodes' })
   @OneToMany(() => WorkflowNode, node => node.workflow, { cascade: true })
   nodes: WorkflowNode[];
 
+  @ApiProperty({ type: () => [WorkflowExecution], description: 'Workflow executions' })
   @OneToMany(() => WorkflowExecution, execution => execution.workflow)
   executions: WorkflowExecution[];
 
+  @ApiProperty({ type: () => [WorkflowVersion], description: 'Workflow versions' })
   @OneToMany(() => WorkflowVersion, version => version.workflow)
   versions: WorkflowVersion[];
 

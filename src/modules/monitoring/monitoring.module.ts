@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { WorkflowsModule } from '../workflows/workflows.module';
+import { WorkflowQueueModule } from '../workflows/infrastructure/queues/workflow-queue.module';
 import { MonitoringService } from './application/services/monitoring.service';
 import { MetricsService } from './application/services/metrics.service';
 import { AlertingService } from './application/services/alerting.service';
@@ -18,6 +20,8 @@ import { AuditLog } from './domain/entities/audit-log.entity';
       Alert,
       AuditLog,
     ]),
+    WorkflowsModule,
+    WorkflowQueueModule,
   ],
   controllers: [MonitoringController],
   providers: [

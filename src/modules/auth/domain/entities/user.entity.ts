@@ -52,6 +52,7 @@ export class User extends BaseEntity {
   currentOrganization?: Organization;
 
   // Organization memberships
+  @ApiProperty({ type: () => [OrganizationMember], description: 'User organization memberships' })
   @OneToMany(() => OrganizationMember, (member) => member.user)
   organizationMemberships: OrganizationMember[];
 
