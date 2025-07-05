@@ -10,6 +10,8 @@ import { FunctionNodeDefinition, FunctionNodeExecutor } from '../../infrastructu
 import { ScheduledTriggerNodeDefinition, ScheduledTriggerNodeExecutor } from '../../infrastructure/built-in/core/scheduled-trigger.node';
 import { WaitNodeDefinition, WaitNodeExecutor } from '../../infrastructure/built-in/core/wait.node';
 import { LoopNodeDefinition, LoopNodeExecutor } from '../../infrastructure/built-in/core/loop.node';
+import { DateTimeNodeDefinition, DateTimeNodeExecutor } from '../../infrastructure/built-in/core/datetime.node';
+import { ValidationNodeDefinition, ValidationNodeExecutor } from '../../infrastructure/built-in/core/validation.node';
 
 // Integration nodes
 import { GmailNodeDefinition, GmailNodeExecutor } from '../../infrastructure/built-in/integrations/gmail.node';
@@ -27,6 +29,15 @@ import { TelegramNodeDefinition, TelegramNodeExecutor } from '../../infrastructu
 
 // Database nodes
 import { PostgreSQLNodeDefinition, PostgreSQLNodeExecutor } from '../../infrastructure/built-in/database/postgresql.node';
+import { MySQLNodeDefinition, MySQLNodeExecutor } from '../../infrastructure/built-in/database/mysql.node';
+
+// Data processing nodes
+import { JsonTransformNodeDefinition, JsonTransformNodeExecutor } from '../../infrastructure/built-in/data/json-transform.node';
+import { FileOperationsNodeDefinition, FileOperationsNodeExecutor } from '../../infrastructure/built-in/data/file-operations.node';
+import { TextProcessingNodeDefinition, TextProcessingNodeExecutor } from '../../infrastructure/built-in/data/text-processing.node';
+
+// Advanced integration nodes
+import { WhatsAppNodeDefinition, WhatsAppNodeExecutor } from '../../infrastructure/built-in/integrations/whatsapp.node';
 
 @Injectable()
 export class BuiltInNodesService implements OnModuleInit {
@@ -48,6 +59,8 @@ export class BuiltInNodesService implements OnModuleInit {
     this.nodeRegistry.registerNode(ScheduledTriggerNodeDefinition, new ScheduledTriggerNodeExecutor());
     this.nodeRegistry.registerNode(WaitNodeDefinition, new WaitNodeExecutor());
     this.nodeRegistry.registerNode(LoopNodeDefinition, new LoopNodeExecutor());
+    this.nodeRegistry.registerNode(DateTimeNodeDefinition, new DateTimeNodeExecutor());
+    this.nodeRegistry.registerNode(ValidationNodeDefinition, new ValidationNodeExecutor());
 
     // Register integration nodes
     // Google services
@@ -68,6 +81,15 @@ export class BuiltInNodesService implements OnModuleInit {
     
     // Database nodes
     this.nodeRegistry.registerNode(PostgreSQLNodeDefinition, new PostgreSQLNodeExecutor());
+    this.nodeRegistry.registerNode(MySQLNodeDefinition, new MySQLNodeExecutor());
+    
+    // Data processing nodes
+    this.nodeRegistry.registerNode(JsonTransformNodeDefinition, new JsonTransformNodeExecutor());
+    this.nodeRegistry.registerNode(FileOperationsNodeDefinition, new FileOperationsNodeExecutor());
+    this.nodeRegistry.registerNode(TextProcessingNodeDefinition, new TextProcessingNodeExecutor());
+    
+    // Advanced integration nodes
+    this.nodeRegistry.registerNode(WhatsAppNodeDefinition, new WhatsAppNodeExecutor());
 
     this.logger.log(`Registered ${this.nodeRegistry.getRegisteredNodeNames().length} built-in nodes`);
   }
