@@ -1,5 +1,5 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, Firestore, FieldValue } from 'firebase-admin/firestore';
 
@@ -466,19 +466,19 @@ export class FirestoreNodeExecutor implements INodeExecutor {
               id: doc.id,
               data: doc.data(),
               exists: doc.exists,
-            });
+            } as any);
             break;
           case 'set':
             transaction.set(docRef, data);
-            results.push({ operation: 'set', documentId });
+            results.push({ operation: 'set', documentId } as any);
             break;
           case 'update':
             transaction.update(docRef, data);
-            results.push({ operation: 'update', documentId });
+            results.push({ operation: 'update', documentId } as any);
             break;
           case 'delete':
             transaction.delete(docRef);
-            results.push({ operation: 'delete', documentId });
+            results.push({ operation: 'delete', documentId } as any);
             break;
           default:
             throw new Error(`Unsupported transaction operation: ${type}`);

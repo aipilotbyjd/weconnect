@@ -4,19 +4,21 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-  Logger,
+  Injectable,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { QueryFailedError, EntityNotFoundError } from 'typeorm';
+import { LoggerService, LogCategory } from '../infrastructure/logging/logger.service';
 
+@Injectable()
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(GlobalExceptionFilter.name);
+  constructor(private readonly logger: LoggerService) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest();
+    const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
@@ -61,7 +63,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // Log error for monitoring
     this.logger.error(
       `${request.method} ${request.url} - ${status} - ${message}`,
-      exception instanceof Error ? exception.stack : undefined,
+      exception instanceof Error ? exception : new Error(String(exception)),
+      {
+        category: LogCategory.API,
+        metadata: {
+          statusCode: status,
+          path: request.url,
+          method: request.method,
+          code,
+          userAgent: request.get('User-Agent'),
+          ip: request.ip,
+        },
+      },
     );
 
     const errorResponse = {

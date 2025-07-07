@@ -1,5 +1,5 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 import Airtable from 'airtable';
 
 export const AirtableNodeDefinition = new NodeDefinition({
@@ -421,7 +421,7 @@ export class AirtableNodeExecutor implements INodeExecutor {
     for (let i = 0; i < batchData.length; i += batchSize) {
       const batch = batchData.slice(i, i + batchSize);
       const batchResults = await table.create(batch);
-      results.push(...batchResults.map((record: any) => ({
+      results.push(...(batchResults as any[]).map((record: any) => ({
         id: record.id,
         fields: record.fields,
         createdTime: record._rawJson.createdTime,
@@ -444,7 +444,7 @@ export class AirtableNodeExecutor implements INodeExecutor {
     for (let i = 0; i < batchData.length; i += batchSize) {
       const batch = batchData.slice(i, i + batchSize);
       const batchResults = await table.update(batch);
-      results.push(...batchResults.map((record: any) => ({
+      results.push(...(batchResults as any[]).map((record: any) => ({
         id: record.id,
         fields: record.fields,
         createdTime: record._rawJson.createdTime,
@@ -467,7 +467,7 @@ export class AirtableNodeExecutor implements INodeExecutor {
     for (let i = 0; i < recordIds.length; i += batchSize) {
       const batch = recordIds.slice(i, i + batchSize);
       const batchResults = await table.destroy(batch);
-      results.push(...batchResults.map((record: any) => ({
+      results.push(...(batchResults as any[]).map((record: any) => ({
         id: record.id,
         deleted: true,
       })));

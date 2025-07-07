@@ -1,8 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_FILTER } from '@nestjs/core';
+
+// Core
+import { CoreModule } from './core/core.module';
+import { GlobalExceptionFilter } from './core/filters/global-exception.filter';
+
+// Controllers and Services
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
+// Feature Modules
 import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { NodesModule } from './modules/nodes/nodes.module';
 import { ExecutionsModule } from './modules/executions/executions.module';
@@ -14,13 +24,17 @@ import { TemplatesModule } from './modules/templates/templates.module';
 import { AIAgentsModule } from './modules/ai-agents/ai-agents.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MonitoringModule } from './modules/monitoring/monitoring.module';
-import { ThrottlerModule } from '@nestjs/throttler';
+
+// Configuration
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import redisConfig from './config/redis.config';
 
 @Module({
   imports: [
+    // Core Infrastructure
+    CoreModule,
+    
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
@@ -44,20 +58,26 @@ import redisConfig from './config/redis.config';
       inject: [ConfigService],
     }),
     
-    // Feature Modules
+    // Feature Modules (ordered by dependency)
     OrganizationsModule,
     AuthModule,
     CredentialsModule,
     TemplatesModule,
+    NodesModule,
     AIAgentsModule,
     SchedulerModule,
     MonitoringModule,
     WorkflowsModule, 
-    NodesModule, 
     ExecutionsModule, 
     WebhooksModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

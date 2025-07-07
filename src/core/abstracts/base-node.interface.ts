@@ -1,17 +1,28 @@
 export interface NodeExecutionContext {
   nodeId: string;
+  workflowId: string;
   executionId: string;
-  inputData: any;
-  configuration: Record<string, any>;
+  inputData: any[];
+  parameters: Record<string, any>;
+  credentials?: Record<string, any>;
   previousNodeOutputs: Record<string, any>;
+  workflow?: any;
+  metadata?: Record<string, any>;
 }
 
 export interface NodeExecutionResult {
   success: boolean;
-  outputData: any;
+  data?: any[];
+  outputData?: any;
+  error?: string;
   errorMessage?: string;
+  outputs?: Record<string, any[]>;
   logs?: string[];
-  metadata?: Record<string, any>;
+  metadata?: {
+    executionTime?: number;
+    itemsProcessed?: number;
+    [key: string]: any;
+  };
 }
 
 export interface INodeExecutor {

@@ -1,9 +1,8 @@
-import { NodeDefinition } from '../../../domain/node-definition.interface';
-import { NodeExecutor } from '../../../domain/node-executor.interface';
-import { NodeExecutionContext } from '../../../domain/node-execution-context.interface';
+import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
 import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { Injectable, Logger } from '@nestjs/common';
 
-export const RedisNodeDefinition: NodeDefinition = {
+export const RedisNodeDefinition = new NodeDefinition({
   name: 'Redis',
   category: 'Database',
   description: 'Perform Redis cache and key-value operations including strings, hashes, lists, sets',
@@ -110,12 +109,14 @@ export const RedisNodeDefinition: NodeDefinition = {
       default: ''
     }
   ]
-};
+});
 
-export class RedisNodeExecutor implements NodeExecutor {
+@Injectable()
+export class RedisNodeExecutor implements INodeExecutor {
   private readonly logger = new Logger(RedisNodeExecutor.name);
 
-  async execute(context: NodeExecutionContext): Promise<any> {
+  async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
+    const startTime = Date.now();
     const { parameters, credentials } = context;
     
     try {
@@ -133,7 +134,6 @@ export class RedisNodeExecutor implements NodeExecutor {
         port,
         password,
         db: database,
-        retryDelayOnFailover: 100,
         maxRetriesPerRequest: 3
       });
 
@@ -181,9 +181,13 @@ export class RedisNodeExecutor implements NodeExecutor {
 
         return {
           success: true,
-          data: result,
-          operation,
-          key: parameters.key
+          data: [result],
+          outputs: { default: [result] },
+          metadata: {
+            executionTime: Date.now() - startTime,
+            operation,
+            key: parameters.key
+          }
         };
 
       } finally {
@@ -193,7 +197,10 @@ export class RedisNodeExecutor implements NodeExecutor {
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error.message,
+        metadata: {
+          executionTime: Date.now() - startTime
+        }
       };
     }
   }
