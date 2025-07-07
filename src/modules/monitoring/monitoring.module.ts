@@ -11,6 +11,7 @@ import { ExecutionMetric } from './domain/entities/execution-metric.entity';
 import { SystemMetric } from './domain/entities/system-metric.entity';
 import { Alert } from './domain/entities/alert.entity';
 import { AuditLog } from './domain/entities/audit-log.entity';
+import { QueueMonitoringModule } from './infrastructure/queue-monitoring.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuditLog } from './domain/entities/audit-log.entity';
     ]),
     WorkflowsModule,
     WorkflowQueueModule,
+    QueueMonitoringModule,
   ],
   controllers: [MonitoringController],
   providers: [

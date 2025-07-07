@@ -47,20 +47,21 @@ services:
     volumes:
       - .:/app
 
-  # Optional: Bull Board for queue monitoring
-  bull-board:
-    image: deadly0/bull-board
-    container_name: weconnect-bull-board
+  # Arena - Professional queue monitoring UI
+  arena:
+    image: mixmaxhq/arena
+    container_name: weconnect-arena
+    ports:
+      - "4567:4567"
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ""
-    ports:
-      - "3030:3000"
     depends_on:
       - redis
     networks:
       - weconnect-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
