@@ -1,5 +1,5 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 export const SupabaseNodeDefinition = new NodeDefinition({
@@ -251,7 +251,7 @@ export class SupabaseNodeExecutor implements INodeExecutor {
   private async executeSelect(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
     const { table, columns, filters, orderBy, limit, range } = context.parameters;
     
-    let query = supabase.from(table).select(columns || '*');
+    let query = supabase.from(table).select(columns || '*') as any;
 
     // Apply filters
     if (filters && Object.keys(filters).length > 0) {
@@ -287,7 +287,7 @@ export class SupabaseNodeExecutor implements INodeExecutor {
   private async executeInsert(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
     const { table, data, returnData } = context.parameters;
     
-    let query = supabase.from(table).insert(data);
+    let query = supabase.from(table).insert(data) as any;
     
     if (returnData) {
       query = query.select();
@@ -303,7 +303,7 @@ export class SupabaseNodeExecutor implements INodeExecutor {
   private async executeUpdate(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
     const { table, data, filters, returnData } = context.parameters;
     
-    let query = supabase.from(table).update(data);
+    let query = supabase.from(table).update(data) as any;
 
     // Apply filters
     if (filters && Object.keys(filters).length > 0) {
@@ -326,7 +326,7 @@ export class SupabaseNodeExecutor implements INodeExecutor {
   private async executeDelete(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
     const { table, filters, returnData } = context.parameters;
     
-    let query = supabase.from(table).delete();
+    let query = supabase.from(table).delete() as any;
 
     // Apply filters
     if (filters && Object.keys(filters).length > 0) {
@@ -349,7 +349,7 @@ export class SupabaseNodeExecutor implements INodeExecutor {
   private async executeUpsert(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
     const { table, data, returnData } = context.parameters;
     
-    let query = supabase.from(table).upsert(data);
+    let query = supabase.from(table).upsert(data) as any;
     
     if (returnData) {
       query = query.select();
@@ -381,4 +381,18 @@ export class SupabaseNodeExecutor implements INodeExecutor {
     
     return { data };
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation - override in specific implementations
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }

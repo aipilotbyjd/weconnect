@@ -1,5 +1,5 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 import { S3Client, S3ClientConfig } from '@aws-sdk/client-s3';
 import {
   GetObjectCommand,
@@ -586,4 +586,18 @@ export class AWSS3NodeExecutor implements INodeExecutor {
       region: response.LocationConstraint || 'us-east-1',
     };
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation - override in specific implementations
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }

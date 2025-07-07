@@ -1,5 +1,5 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 import * as nodemailer from 'nodemailer';
 
 export const SMTPNodeDefinition = new NodeDefinition({
@@ -269,4 +269,18 @@ export class SMTPNodeExecutor implements INodeExecutor {
       return data[key] || match;
     });
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation - override in specific implementations
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }

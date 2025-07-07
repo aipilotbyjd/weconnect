@@ -1,6 +1,6 @@
 // import * as Jimp from 'jimp'; // Commented out for compilation
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 
 export const ImageProcessingNodeDefinition = new NodeDefinition({
   name: 'ImageProcessing',
@@ -127,4 +127,18 @@ export class ImageProcessingNodeExecutor implements INodeExecutor {
       };
     }
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation - override in specific implementations
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }

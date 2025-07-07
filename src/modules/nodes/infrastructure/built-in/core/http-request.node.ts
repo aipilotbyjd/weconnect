@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 
 export const HttpRequestNodeDefinition = new NodeDefinition({
   name: 'HttpRequest',
@@ -114,4 +114,21 @@ export class HttpRequestNodeExecutor implements INodeExecutor {
       };
     }
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation for HTTP request
+    if (!configuration.url) {
+      return false;
+    }
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }

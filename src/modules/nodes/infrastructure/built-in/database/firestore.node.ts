@@ -268,7 +268,7 @@ export class FirestoreNodeExecutor implements INodeExecutor {
   private async getCollection(context: NodeExecutionContext): Promise<any> {
     const { collection, orderBy, limit, startAfter } = context.parameters;
     
-    let query = this.firestore!.collection(collection);
+    let query: any = this.firestore!.collection(collection);
     
     // Apply ordering
     if (orderBy && orderBy.length > 0) {
@@ -374,7 +374,7 @@ export class FirestoreNodeExecutor implements INodeExecutor {
   private async queryCollection(context: NodeExecutionContext): Promise<any> {
     const { collection, queryFilters, orderBy, limit, startAfter } = context.parameters;
     
-    let query = this.firestore!.collection(collection);
+    let query: any = this.firestore!.collection(collection);
     
     // Apply filters
     if (queryFilters && queryFilters.length > 0) {
@@ -453,7 +453,7 @@ export class FirestoreNodeExecutor implements INodeExecutor {
     const { transactionOperations } = context.parameters;
     
     const result = await this.firestore!.runTransaction(async (transaction) => {
-      const results = [];
+      const results: any[] = [];
       
       for (const operation of transactionOperations) {
         const { type, collection, documentId, data } = operation;
@@ -466,19 +466,19 @@ export class FirestoreNodeExecutor implements INodeExecutor {
               id: doc.id,
               data: doc.data(),
               exists: doc.exists,
-            } as any);
+            });
             break;
           case 'set':
             transaction.set(docRef, data);
-            results.push({ operation: 'set', documentId } as any);
+            results.push({ operation: 'set', documentId });
             break;
           case 'update':
             transaction.update(docRef, data);
-            results.push({ operation: 'update', documentId } as any);
+            results.push({ operation: 'update', documentId });
             break;
           case 'delete':
             transaction.delete(docRef);
-            results.push({ operation: 'delete', documentId } as any);
+            results.push({ operation: 'delete', documentId });
             break;
           default:
             throw new Error(`Unsupported transaction operation: ${type}`);
@@ -493,4 +493,18 @@ export class FirestoreNodeExecutor implements INodeExecutor {
       results: result,
     };
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation - override in specific implementations
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }

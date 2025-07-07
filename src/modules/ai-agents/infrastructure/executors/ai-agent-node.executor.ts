@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../nodes/domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../core/abstracts/base-node.interface';
 import { AIAgentExecutorService, AIAgentExecutionContext } from '../../application/services/ai-agent-executor.service';
 import { AIAgentService } from '../../application/services/ai-agent.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -131,6 +131,43 @@ export class AIAgentNodeExecutor implements INodeExecutor {
     // Fallback: create a simple mapping from input data
     return {
       [context.nodeId]: context.inputData,
+    };
+  }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation for AI Agent
+    if (!configuration.agentId) {
+      return false;
+    }
+    return true;
+  }
+
+  getConfigurationSchema(): Record<string, any> {
+    return {
+      type: 'object',
+      properties: {
+        agentId: {
+          type: 'string',
+          description: 'ID of the AI agent to execute'
+        },
+        prompt: {
+          type: 'string',
+          description: 'Custom prompt for the AI agent'
+        },
+        sessionId: {
+          type: 'string',
+          description: 'Session ID for conversation continuity'
+        },
+        includeWorkflowContext: {
+          type: 'boolean',
+          description: 'Whether to include previous workflow outputs as context'
+        },
+        customParameters: {
+          type: 'object',
+          description: 'Additional parameters to pass to the agent'
+        }
+      },
+      required: ['agentId']
     };
   }
 }

@@ -1,5 +1,5 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 
 export const DateTimeNodeDefinition = new NodeDefinition({
   name: 'DateTime',
@@ -682,4 +682,18 @@ export class DateTimeNodeExecutor implements INodeExecutor {
     const days = Math.floor((date.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
     return Math.ceil((days + start.getDay() + 1) / 7);
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation - override in specific implementations
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }

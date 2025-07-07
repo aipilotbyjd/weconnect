@@ -1,5 +1,5 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 import { Pool } from 'pg';
 
 export const PostgreSQLNodeDefinition = new NodeDefinition({
@@ -312,4 +312,18 @@ export class PostgreSQLNodeExecutor implements INodeExecutor {
     const result = await this.pool!.query(query, whereValues);
     return result.rows;
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation - override in specific implementations
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }

@@ -1,79 +1,46 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 import { Injectable, Logger } from '@nestjs/common';
 
 export const RedisNodeDefinition = new NodeDefinition({
   name: 'Redis',
-  category: 'Database',
+  displayName: 'Redis',
   description: 'Perform Redis cache and key-value operations including strings, hashes, lists, sets',
-  version: '1.0.0',
+  version: 1,
+  group: ['Database'],
   icon: 'database',
-  color: '#DC382D',
-  inputs: [
-    {
-      name: 'default',
-      type: 'any',
-      displayName: 'Input',
-      description: 'Input data for the Redis operation'
-    }
-  ],
-  outputs: [
-    {
-      name: 'default',
-      type: 'any',
-      displayName: 'Result',
-      description: 'Redis operation result'
-    }
-  ],
+  defaults: {
+    name: 'Redis',
+    color: '#DC382D'
+  },
+  inputs: ['default'],
+  outputs: ['default'],
   credentials: [
     {
       name: 'redisCredentials',
-      displayName: 'Redis Credentials',
-      properties: {
-        host: {
-          type: 'string',
-          displayName: 'Host',
-          description: 'Redis server host',
-          required: true,
-          default: 'localhost'
-        },
-        port: {
-          type: 'number',
-          displayName: 'Port',
-          description: 'Redis server port',
-          required: true,
-          default: 6379
-        },
-        password: {
-          type: 'string',
-          displayName: 'Password',
-          description: 'Redis server password (if required)',
-          required: false,
-          default: ''
-        }
-      }
+      required: true
     }
   ],
   properties: [
     {
       name: 'operation',
-      type: 'select',
+      type: 'options',
       displayName: 'Operation',
       description: 'Redis operation to perform',
       required: true,
       default: 'get',
       options: [
-        { value: 'get', label: 'Get Value' },
-        { value: 'set', label: 'Set Value' },
-        { value: 'del', label: 'Delete Key' },
-        { value: 'exists', label: 'Key Exists' },
-        { value: 'keys', label: 'Get Keys' },
-        { value: 'expire', label: 'Set Expiration' },
-        { value: 'incr', label: 'Increment' },
-        { value: 'decr', label: 'Decrement' },
-        { value: 'hget', label: 'Hash Get' },
-        { value: 'hset', label: 'Hash Set' },
-        { value: 'hgetall', label: 'Hash Get All' }
+        { name: 'Get Value', value: 'get' },
+        { name: 'Set Value', value: 'set' },
+        { name: 'Delete Key', value: 'del' },
+        { name: 'Key Exists', value: 'exists' },
+        { name: 'Get Keys', value: 'keys' },
+        { name: 'Set Expiration', value: 'expire' },
+        { name: 'Increment', value: 'incr' },
+        { name: 'Decrement', value: 'decr' },
+        { name: 'Hash Get', value: 'hget' },
+        { name: 'Hash Set', value: 'hset' },
+        { name: 'Hash Get All', value: 'hgetall' }
       ]
     },
     {
@@ -108,7 +75,9 @@ export const RedisNodeDefinition = new NodeDefinition({
       required: false,
       default: ''
     }
-  ]
+  ],
+  isCustom: false,
+  isActive: true
 });
 
 @Injectable()
@@ -203,5 +172,53 @@ export class RedisNodeExecutor implements INodeExecutor {
         }
       };
     }
+  }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation for Redis operations
+    if (!configuration.operation) {
+      return false;
+    }
+
+    if (!configuration.key) {
+      return false;
+    }
+
+    if (['set', 'hset'].includes(configuration.operation) && !configuration.value) {
+      return false;
+    }
+
+    if (['hget', 'hset'].includes(configuration.operation) && !configuration.field) {
+      return false;
+    }
+
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {
+        operation: {
+          type: 'string',
+          enum: ['get', 'set', 'del', 'exists', 'keys', 'expire', 'incr', 'decr', 'hget', 'hset', 'hgetall']
+        },
+        key: {
+          type: 'string'
+        },
+        value: {
+          type: 'string'
+        },
+        field: {
+          type: 'string'
+        },
+        database: {
+          type: 'number',
+          minimum: 0,
+          maximum: 15
+        }
+      },
+      required: ['operation', 'key']
+    };
   }
 }

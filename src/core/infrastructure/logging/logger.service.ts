@@ -22,6 +22,7 @@ export interface LogContext {
   nodeId?: string;
   correlationId?: string;
   metadata?: Record<string, any>;
+  error?: string;
 }
 
 @Injectable()
@@ -35,7 +36,12 @@ export class LoggerService {
   }
 
   error(message: string, error?: Error, context?: LogContext): void {
-    this.log('error', message, { error: error?.stack || error?.message, ...context });
+    const errorContext: LogContext = {
+      category: context?.category || LogCategory.SYSTEM,
+      ...context,
+      error: error?.stack || error?.message
+    };
+    this.log('error', message, errorContext);
   }
 
   warn(message: string, context?: LogContext): void {
@@ -55,9 +61,9 @@ export class LoggerService {
 
     // In production, you might want to use a proper logging library like Winston
     if (this.environment === 'development') {
-      console[level as keyof Console]?.(JSON.stringify(logEntry, null, 2));
+      console.log(JSON.stringify(logEntry, null, 2));
     } else {
-      console[level as keyof Console]?.(JSON.stringify(logEntry));
+      console.log(JSON.stringify(logEntry));
     }
   }
 

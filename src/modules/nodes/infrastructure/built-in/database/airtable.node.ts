@@ -416,16 +416,18 @@ export class AirtableNodeExecutor implements INodeExecutor {
 
     // Airtable API allows max 10 records per batch
     const batchSize = 10;
-    const results = [];
+    const results: any[] = [];
 
     for (let i = 0; i < batchData.length; i += batchSize) {
       const batch = batchData.slice(i, i + batchSize);
       const batchResults = await table.create(batch);
-      results.push(...(batchResults as any[]).map((record: any) => ({
-        id: record.id,
-        fields: record.fields,
-        createdTime: record._rawJson.createdTime,
-      })));
+      for (const record of batchResults) {
+        results.push({
+          id: record.id,
+          fields: record.fields,
+          createdTime: record._rawJson.createdTime,
+        });
+      }
     }
 
     return {
@@ -439,16 +441,18 @@ export class AirtableNodeExecutor implements INodeExecutor {
 
     // Airtable API allows max 10 records per batch
     const batchSize = 10;
-    const results = [];
+    const results: any[] = [];
 
     for (let i = 0; i < batchData.length; i += batchSize) {
       const batch = batchData.slice(i, i + batchSize);
       const batchResults = await table.update(batch);
-      results.push(...(batchResults as any[]).map((record: any) => ({
-        id: record.id,
-        fields: record.fields,
-        createdTime: record._rawJson.createdTime,
-      })));
+      for (const record of batchResults) {
+        results.push({
+          id: record.id,
+          fields: record.fields,
+          createdTime: record._rawJson.createdTime,
+        });
+      }
     }
 
     return {
@@ -462,15 +466,17 @@ export class AirtableNodeExecutor implements INodeExecutor {
 
     // Airtable API allows max 10 records per batch
     const batchSize = 10;
-    const results = [];
+    const results: any[] = [];
 
     for (let i = 0; i < recordIds.length; i += batchSize) {
       const batch = recordIds.slice(i, i + batchSize);
       const batchResults = await table.destroy(batch);
-      results.push(...(batchResults as any[]).map((record: any) => ({
-        id: record.id,
-        deleted: true,
-      })));
+      for (const record of batchResults) {
+        results.push({
+          id: record.id,
+          deleted: true,
+        });
+      }
     }
 
     return {
@@ -478,4 +484,18 @@ export class AirtableNodeExecutor implements INodeExecutor {
       count: results.length,
     };
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation - override in specific implementations
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }

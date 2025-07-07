@@ -1,5 +1,5 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../domain/interfaces/node-executor.interface';
+import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
 import * as fs from 'fs';
 // import * as csv from 'csv-parser'; // Commented out for compilation
 
@@ -813,4 +813,18 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
       Math.abs((value - mean) / stddev) > threshold ? index : -1
     ).filter(index => index !== -1);
   }
+
+  validate(configuration: Record<string, any>): boolean {
+    // Basic validation - override in specific implementations
+    return true;
+  }
+
+  getConfigurationSchema(): any {
+    return {
+      type: 'object',
+      properties: {},
+      required: []
+    };
+  }
+
 }
