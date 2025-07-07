@@ -27,6 +27,26 @@ services:
       - weconnect-network
     command: redis-server --appendonly yes
 
+  app:
+    build: .
+    container_name: weconnect-app
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: weconnect
+      DB_PASSWORD: weconnect123
+      DB_DATABASE: weconnect
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - weconnect-network
+    volumes:
+      - .:/app
+
   # Optional: Bull Board for queue monitoring
   bull-board:
     image: deadly0/bull-board

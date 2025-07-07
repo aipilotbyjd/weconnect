@@ -1,0 +1,38 @@
+# Development Dockerfile for WeConnect
+
+FROM node:20-alpine
+
+# Install necessary tools
+RUN apk add --no-cache \
+    git \
+    openssh-client \
+    bash \
+    curl
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci && npm cache clean --force
+
+# Copy source code
+COPY . .
+
+# Create uploads directory
+RUN mkdir -p uploads
+
+# Expose ports
+EXPOSE 3000 9229
+
+# Set environment to development
+ENV NODE_ENV=development
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# Start the application in development mode
+CMD ["npm", "run", "start:dev"]

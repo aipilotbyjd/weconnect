@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: weconnect-app-dev
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: weconnect
+      DB_PASSWORD: weconnect123
+      DB_DATABASE: weconnect
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      LOG_LEVEL: debug
+    ports:
+      - "3000:3000"
+      - "9229:9229" # Debug port
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - weconnect-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:debug
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: weconnect-postgres-dev
+    environment:
+      POSTGRES_DB: weconnect_dev
+      POSTGRES_USER: weconnect
+      POSTGRES_PASSWORD: weconnect123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - weconnect-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: weconnect-redis-dev
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - weconnect-network
+    command: redis-server --appendonly yes
+
+  # Redis GUI for development
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: weconnect-redis-gui
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - weconnect-network
+
+  # PostgreSQL GUI for development
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: weconnect-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@weconnect.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    networks:
+      - weconnect-network
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  weconnect-network:
+    driver: bridge
