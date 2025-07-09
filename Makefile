@@ -5,8 +5,8 @@
 # VARIABLES
 # ==============================================================================
 
-# Dynamically get the main service name from the docker-compose.override.yml file
-APP_SERVICE_NAME := $(shell sed -n 's/^\s*\([a-zA-Z0-9_-]\+\):.*/\1/p' docker-compose.override.yml | head -n 1)
+# Dynamically get the main service name from the docker-compose.dev.yml file
+APP_SERVICE_NAME := $(shell sed -n 's/^\s*\([a-zA-Z0-9_-]\+\):.*/\1/p' docker-compose.dev.yml | head -n 1)
 CYAN := \033[36m
 GREEN := \033[32m
 RESET := \033[0m
