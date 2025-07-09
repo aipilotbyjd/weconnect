@@ -24,6 +24,9 @@ COPY . .
 # Create uploads directory
 RUN mkdir -p uploads
 
+# Build the application
+RUN npm run build
+
 # Expose ports
 EXPOSE 3000 9229
 
