@@ -1,47 +1,27 @@
-version: '3.8'
-
 services:
-  # The app service is extended for development
   app:
     build:
       target: development
     container_name: weconnect-app-dev
     ports:
-      - "3000:3000"
-      - "9229:9229" # Debug port
+      - '3000:3000'
+      - '9229:9229' # Debug port
     volumes:
       - .:/app
       - /app/node_modules # Isolate node_modules
-    # Use environment variables directly for dev convenience
-    environment:
-      DB_PASSWORD: ${DB_PASSWORD:-weconnect123}
-    secrets: [] # No secrets in dev
     command: npm run start:dev
-    depends_on:
-      - postgres
-      - redis
-    # No healthcheck needed for dev with hot-reloading
     healthcheck:
-      disable: true
+      disable: true # Disable healthcheck for dev
 
-  # The postgres service is extended for development
   postgres:
     container_name: weconnect-postgres-dev
     ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-weconnect123}
-    secrets: []
-    healthcheck:
-      disable: true
+      - '5433:5432'
 
-  # The redis service is extended for development
   redis:
     container_name: weconnect-redis-dev
     ports:
-      - "6380:6379"
-    healthcheck:
-      disable: true
+      - '6380:6379'
 
   # GUI for PostgreSQL in development
   pgadmin:
@@ -51,7 +31,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: dev@example.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "8080:80"
+      - '8080:80'
     networks:
       - weconnect-network
     depends_on:
@@ -64,7 +44,7 @@ services:
     environment:
       REDIS_HOSTS: local:redis:6379
     ports:
-      - "8081:8081"
+      - '8081:8081'
     networks:
       - weconnect-network
     depends_on:

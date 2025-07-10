@@ -7,9 +7,8 @@
 node_modules
 dist
 npm-debug.log*
-yarn-debug.log*
 
-# Environment and secrets (never commit these)
+# Environment files and secrets
 .env
 .env.*
 !.env.example
@@ -18,9 +17,3 @@ secrets/
 # IDE and editor configs
 .vscode
 .idea
-*.swp
-*.swo
-
-# Test reports
-coverage
-.nyc_output
