@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Workflow } from '../../domain/entities/workflow.entity';
@@ -21,64 +25,78 @@ export class WorkflowsService {
     private readonly connectionRepository: Repository<WorkflowNodeConnection>,
   ) {}
 
-  async create(createWorkflowDto: CreateWorkflowDto, userId: string, organizationId?: string): Promise<Workflow> {
+  async create(
+    createWorkflowDto: CreateWorkflowDto,
+    userId: string,
+    organizationId?: string,
+  ): Promise<Workflow> {
     const { nodes, connections, ...workflowData } = createWorkflowDto;
-    
+
     // Debugging - Log the organizationId
     console.log('Organization ID provided:', organizationId);
-    if (!organizationId || organizationId === 'default-org') {
-      throw new Error('Please provide a valid organization ID. It seems to be default or missing.');
+    if (!organizationId) {
+      throw new Error(
+        'Please provide a valid organization ID. It seems to be default or missing.',
+      );
     }
-    
-    return await this.workflowRepository.manager.transaction(async manager => {
-      // Create workflow
-      const workflow = this.workflowRepository.create({
-        ...workflowData,
-        userId,
-        organizationId,
-      });
-      
-      const savedWorkflow = await manager.save(workflow);
-      
-      // Create nodes if provided
-      const nodeIdMap = new Map<string, string>(); // temp ID -> real ID
-      
-      if (nodes && nodes.length > 0) {
-        const workflowNodes = nodes.map((nodeData, index) => {
-          const node = this.workflowNodeRepository.create({
-            ...nodeData,
-            workflowId: savedWorkflow.id,
-          });
-          
-          // Map temporary ID (index) to actual ID for connections
-          nodeIdMap.set(index.toString(), node.id);
-          return node;
+
+    return await this.workflowRepository.manager.transaction(
+      async (manager) => {
+        // Create workflow
+        const workflow = this.workflowRepository.create({
+          ...workflowData,
+          userId,
+          organizationId,
         });
-        
-        await manager.save(workflowNodes);
-      }
-      
-      // Create connections if provided
-      if (connections && connections.length > 0) {
-        const workflowConnections = connections.map(connData => {
-          // Map temporary node IDs to actual node IDs
-          const sourceNodeId = nodeIdMap.get(connData.sourceNodeId) || connData.sourceNodeId;
-          const targetNodeId = nodeIdMap.get(connData.targetNodeId) || connData.targetNodeId;
-          
-          return this.connectionRepository.create({
-            sourceNodeId,
-            targetNodeId,
-            type: connData.type,
-            sourceOutputIndex: connData.sourceOutputIndex || 0,
-            targetInputIndex: connData.targetInputIndex || 0,
+
+        const savedWorkflow = await manager.save(workflow);
+
+        // Create nodes if provided
+        const nodeIdMap = new Map<string, string>(); // temp ID -> real ID
+        const savedNodes: WorkflowNode[] = [];
+
+        if (nodes && nodes.length > 0) {
+          const workflowNodes = nodes.map((nodeData, index) => {
+            const node = this.workflowNodeRepository.create({
+              ...nodeData,
+              workflowId: savedWorkflow.id,
+            });
+            return { node, tempId: index.toString() };
           });
-        });
-        
-        await manager.save(workflowConnections);
-      }
-      
-      return this.findOne(savedWorkflow.id);
-    });
+
+          // Save nodes first to get their IDs
+          for (const { node, tempId } of workflowNodes) {
+            const savedNode = await manager.save(node);
+            savedNodes.push(savedNode);
+            // Map temporary ID to actual saved ID
+            nodeIdMap.set(tempId, savedNode.id);
+          }
+        }
+
+        // Create connections if provided
+        if (connections && connections.length > 0) {
+          const workflowConnections = connections.map((connData) => {
+            // Map temporary node IDs to actual node IDs
+            const sourceNodeId =
+              nodeIdMap.get(connData.sourceNodeId) || connData.sourceNodeId;
+            const targetNodeId =
+              nodeIdMap.get(connData.targetNodeId) || connData.targetNodeId;
+
+            return this.connectionRepository.create({
+              sourceNodeId,
+              targetNodeId,
+              type: connData.type,
+              sourceOutputIndex: connData.sourceOutputIndex || 0,
+              targetInputIndex: connData.targetInputIndex || 0,
+            });
+          });
+
+          await manager.save(workflowConnections);
+        }
+
+        return this.findOne(savedWorkflow.id);
+      },
+    );
   }
 
   async findAll(userId: string): Promise<Workflow[]> {
@@ -93,12 +111,12 @@ export class WorkflowsService {
     const workflow = await this.workflowRepository.findOne({
       where: { id },
       relations: [
-        'nodes', 
-        'nodes.outgoingConnections', 
-        'nodes.incomingConnections', 
+        'nodes',
+        'nodes.outgoingConnections',
+        'nodes.incomingConnections',
         'nodes.outgoingConnections.targetNode',
         'nodes.incomingConnections.sourceNode',
-        'user'
+        'user',
       ],
     });
 
@@ -113,12 +131,12 @@ export class WorkflowsService {
     const workflow = await this.workflowRepository.findOne({
       where: { id, userId },
       relations: [
-        'nodes', 
-        'nodes.outgoingConnections', 
-        'nodes.incomingConnections', 
+        'nodes',
+        'nodes.outgoingConnections',
+        'nodes.incomingConnections',
         'nodes.outgoingConnections.targetNode',
         'nodes.incomingConnections.sourceNode',
-        'user'
+        'user',
       ],
     });
 
@@ -129,70 +147,78 @@ export class WorkflowsService {
     return workflow;
   }
 
-  async update(id: string, updateWorkflowDto: UpdateWorkflowDto, userId: string): Promise<Workflow> {
+  async update(
+    id: string,
+    updateWorkflowDto: UpdateWorkflowDto,
+    userId: string,
+  ): Promise<Workflow> {
     const workflow = await this.findOne(id);
-    
+
     if (workflow.userId !== userId) {
       throw new ForbiddenException('You can only update your own workflows');
     }
 
     const { nodes, connections, ...workflowData } = updateWorkflowDto;
-    
-    return await this.workflowRepository.manager.transaction(async manager => {
-      // Update workflow data
-      await manager.update(Workflow, id, workflowData);
-      
-      if (nodes) {
-        // Remove existing nodes and their connections
-        await manager.delete(WorkflowNodeConnection, { 
-          sourceNode: { workflowId: id } 
-        });
-        await manager.delete(WorkflowNode, { workflowId: id });
-        
-        // Create nodes with ID mapping
-        const nodeIdMap = new Map<string, string>();
-        
-        if (nodes.length > 0) {
-          const workflowNodes = nodes.map((nodeData, index) => {
-            const node = this.workflowNodeRepository.create({
-              ...nodeData,
-              workflowId: id,
-            });
-            
-            // Map temporary ID to actual ID for connections
-            nodeIdMap.set(index.toString(), node.id);
-            return node;
+
+    return await this.workflowRepository.manager.transaction(
+      async (manager) => {
+        // Update workflow data
+        await manager.update(Workflow, id, workflowData);
+
+        if (nodes) {
+          // Remove existing nodes and their connections
+          await manager.delete(WorkflowNodeConnection, {
+            sourceNode: { workflowId: id },
           });
-          
-          await manager.save(workflowNodes);
-        }
-        
-        // Create connections if provided
-        if (connections && connections.length > 0) {
-          const workflowConnections = connections.map(connData => {
-            const sourceNodeId = nodeIdMap.get(connData.sourceNodeId) || connData.sourceNodeId;
-            const targetNodeId = nodeIdMap.get(connData.targetNodeId) || connData.targetNodeId;
-            
-            return this.connectionRepository.create({
-              sourceNodeId,
-              targetNodeId,
-              type: connData.type,
-              sourceOutputIndex: connData.sourceOutputIndex || 0,
-              targetInputIndex: connData.targetInputIndex || 0,
+          await manager.delete(WorkflowNode, { workflowId: id });
+
+          // Create nodes with ID mapping
+          const nodeIdMap = new Map<string, string>();
+
+          if (nodes.length > 0) {
+            const workflowNodes = nodes.map((nodeData, index) => {
+              const node = this.workflowNodeRepository.create({
+                ...nodeData,
+                workflowId: id,
+              });
+
+              // Map temporary ID to actual ID for connections
+              nodeIdMap.set(index.toString(), node.id);
+              return node;
             });
-          });
-          
-          await manager.save(workflowConnections);
+
+            await manager.save(workflowNodes);
+          }
+
+          // Create connections if provided
+          if (connections && connections.length > 0) {
+            const workflowConnections = connections.map((connData) => {
+              const sourceNodeId =
+                nodeIdMap.get(connData.sourceNodeId) || connData.sourceNodeId;
+              const targetNodeId =
+                nodeIdMap.get(connData.targetNodeId) || connData.targetNodeId;
+
+              return this.connectionRepository.create({
+                sourceNodeId,
+                targetNodeId,
+                type: connData.type,
+                sourceOutputIndex: connData.sourceOutputIndex || 0,
+                targetInputIndex: connData.targetInputIndex || 0,
+              });
+            });
+
+            await manager.save(workflowConnections);
+          }
         }
-      }
-      
-      return this.findOne(id);
-    });
+
+        return this.findOne(id);
+      },
+    );
   }
 
   async remove(id: string, userId: string): Promise<void> {
     const workflow = await this.findOne(id);
-    
+
     if (workflow.userId !== userId) {
       throw new ForbiddenException('You can only delete your own workflows');
     }
@@ -202,50 +228,52 @@ export class WorkflowsService {
 
   async activate(id: string, userId: string): Promise<Workflow> {
     const workflow = await this.findOne(id);
-    
+
     if (workflow.userId !== userId) {
       throw new ForbiddenException('You can only activate your own workflows');
     }
 
     workflow.isActive = true;
     await this.workflowRepository.save(workflow);
-    
+
     return workflow;
   }
 
   async deactivate(id: string, userId: string): Promise<Workflow> {
     const workflow = await this.findOne(id);
-    
+
     if (workflow.userId !== userId) {
-      throw new ForbiddenException('You can only deactivate your own workflows');
+      throw new ForbiddenException(
+        'You can only deactivate your own workflows',
+      );
     }
 
     workflow.isActive = false;
     await this.workflowRepository.save(workflow);
-    
+
     return workflow;
   }
 
   async validateConnections(workflowId: string, userId: string): Promise<any> {
     const workflow = await this.findOneWithAuth(workflowId, userId);
-    
+
     // Extract connections from nodes
     const connections: WorkflowNodeConnection[] = [];
-    workflow.nodes.forEach(node => {
+    workflow.nodes.forEach((node) => {
       if (node.outgoingConnections) {
         connections.push(...node.outgoingConnections);
       }
     });
-    
+
     const validationResult = ConnectionValidator.validateConnections(
       workflow.nodes,
-      connections
+      connections,
     );
-    
-    const executionOrder = validationResult.isValid 
+
+    const executionOrder = validationResult.isValid
       ? ConnectionValidator.getExecutionOrder(workflow.nodes, connections)
       : [];
-    
+
     return {
       ...validationResult,
       executionOrder,
