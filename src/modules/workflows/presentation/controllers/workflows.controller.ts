@@ -17,7 +17,9 @@ export class WorkflowsController {
   @ApiOperation({ summary: 'Create a new workflow' })
   @ApiResponse({ status: 201, description: 'Workflow created successfully', type: Workflow })
   create(@Body() createWorkflowDto: CreateWorkflowDto, @Req() req: any): Promise<Workflow> {
-    return this.workflowsService.create(createWorkflowDto, req.user.id);
+    console.log('User object in controller:', req.user);
+    console.log('Current Organization ID:', req.user.currentOrganizationId);
+    return this.workflowsService.create(createWorkflowDto, req.user.id, req.user.currentOrganizationId);
   }
 
   @Get()

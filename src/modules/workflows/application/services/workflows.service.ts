@@ -24,10 +24,10 @@ export class WorkflowsService {
   async create(createWorkflowDto: CreateWorkflowDto, userId: string, organizationId?: string): Promise<Workflow> {
     const { nodes, connections, ...workflowData } = createWorkflowDto;
     
-    // Get user's organization if not provided
-    if (!organizationId) {
-      // TODO: Get user's default organization
-      organizationId = 'default-org'; // Temporary fallback
+    // Debugging - Log the organizationId
+    console.log('Organization ID provided:', organizationId);
+    if (!organizationId || organizationId === 'default-org') {
+      throw new Error('Please provide a valid organization ID. It seems to be default or missing.');
     }
     
     return await this.workflowRepository.manager.transaction(async manager => {
