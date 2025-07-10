@@ -42,56 +42,60 @@ export class WorkflowsService {
 
     return await this.workflowRepository.manager.transaction(
       async (manager) => {
+        // Get transactional repositories
+        const transactionalWorkflowRepo = manager.getRepository(Workflow);
+        const transactionalNodeRepo = manager.getRepository(WorkflowNode);
+        const transactionalConnectionRepo = manager.getRepository(WorkflowNodeConnection);
+
         // Create workflow
-        const workflow = this.workflowRepository.create({
+        const workflow = transactionalWorkflowRepo.create({
           ...workflowData,
           userId,
           organizationId,
         });
 
-        const savedWorkflow = await manager.save(workflow);
+        const savedWorkflow = await transactionalWorkflowRepo.save(workflow);
 
         // Create nodes if provided
         const nodeIdMap = new Map<string, string>(); // temp ID -> real ID
-        const savedNodes: WorkflowNode[] = [];
 
         if (nodes && nodes.length > 0) {
-          const workflowNodes = nodes.map((nodeData, index) => {
-            const node = this.workflowNodeRepository.create({
+          for (let i = 0; i < nodes.length; i++) {
+            const nodeData = nodes[i];
+            const node = transactionalNodeRepo.create({
               ...nodeData,
               workflowId: savedWorkflow.id,
             });
-            return { node, tempId: index.toString() };
-          });
-
-          // Save nodes first to get their IDs
-          for (const { node, tempId } of workflowNodes) {
-            const savedNode = await manager.save(node);
-            savedNodes.push(savedNode);
-            // Map temporary ID to actual saved ID
-            nodeIdMap.set(tempId, savedNode.id);
+            // Save node to get real ID
+            const savedNode = await transactionalNodeRepo.save(node);
+            nodeIdMap.set(i.toString(), savedNode.id);
           }
         }
 
         // Create connections if provided
         if (connections && connections.length > 0) {
-          const workflowConnections = connections.map((connData) => {
-            // Map temporary node IDs to actual node IDs
-            const sourceNodeId =
-              nodeIdMap.get(connData.sourceNodeId) || connData.sourceNodeId;
-            const targetNodeId =
-              nodeIdMap.get(connData.targetNodeId) || connData.targetNodeId;
+          const workflowConnections = [];
 
-            return this.connectionRepository.create({
+          for (const connData of connections) {
+            const sourceNodeId = nodeIdMap.get(connData.sourceNodeId);
+            const targetNodeId = nodeIdMap.get(connData.targetNodeId);
+
+            if (!sourceNodeId || !targetNodeId) {
+              throw new Error(`Connection references non-existent node ID: source('${connData.sourceNodeId}') or target('${connData.targetNodeId}')`);
+            }
+
+            const connection = transactionalConnectionRepo.create({
               sourceNodeId,
               targetNodeId,
-              type: connData.type,
+              type: connData.type || 'main',
               sourceOutputIndex: connData.sourceOutputIndex || 0,
               targetInputIndex: connData.targetInputIndex || 0,
             });
-          });
 
-          await manager.save(workflowConnections);
+            workflowConnections.push(connection);
+          }
+
+          await transactionalConnectionRepo.save(workflowConnections);
         }
 
         return this.findOne(savedWorkflow.id);
