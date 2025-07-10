@@ -172,8 +172,8 @@ export class TrelloNodeExecutor implements NodeExecutor {
           throw new Error('Trello credential is missing apiKey or token');
         }
         return {
-          apiKey: credential.data.apiKey as string,
-          token: credential.data.token as string,
+          apiKey: credential.data.apiKey,
+          token: credential.data.token,
         };
       } catch (error) {
         this.logger.error(`Failed to get Trello credential: ${error.message}`);
@@ -192,8 +192,8 @@ export class TrelloNodeExecutor implements NodeExecutor {
           throw new Error('Trello credential is missing apiKey or token');
         }
         return {
-          apiKey: credential.data.apiKey as string,
-          token: credential.data.token as string,
+          apiKey: credential.data.apiKey,
+          token: credential.data.token,
         };
       } catch (error) {
         this.logger.error(`Failed to get Trello credential by service: ${error.message}`);
