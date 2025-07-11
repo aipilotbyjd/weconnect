@@ -107,7 +107,24 @@ export class WorkflowsService {
           await transactionalConnectionRepo.save(workflowConnections);
         }
 
-        return this.findOne(savedWorkflow.id);
+        // Use transactional manager to fetch the created workflow with relations
+        const createdWorkflow = await manager.findOne(Workflow, {
+          where: { id: savedWorkflow.id },
+          relations: [
+            'nodes',
+            'nodes.outgoingConnections',
+            'nodes.incomingConnections',
+            'nodes.outgoingConnections.targetNode',
+            'nodes.incomingConnections.sourceNode',
+            'user',
+          ],
+        });
+
+        if (!createdWorkflow) {
+          throw new NotFoundException('Created workflow not found');
+        }
+
+        return createdWorkflow;
       },
     );
   }
