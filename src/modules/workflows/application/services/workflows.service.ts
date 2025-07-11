@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Workflow } from '../../domain/entities/workflow.entity';
 import { WorkflowNode } from '../../domain/entities/workflow-node.entity';
-import { WorkflowNodeConnection } from '../../domain/entities/workflow-node-connection.entity';
+import { WorkflowNodeConnection, ConnectionType } from '../../domain/entities/workflow-node-connection.entity';
 import { CreateWorkflowDto } from '../../presentation/dto/create-workflow.dto';
 import { UpdateWorkflowDto } from '../../presentation/dto/update-workflow.dto';
 import { CreateWorkflowUseCase } from '../use-cases/create-workflow.use-case';
@@ -74,7 +74,7 @@ export class WorkflowsService {
 
         // Create connections if provided
         if (connections && connections.length > 0) {
-          const workflowConnections = [];
+          const workflowConnections: WorkflowNodeConnection[] = [];
 
           for (const connData of connections) {
             const sourceNodeId = nodeIdMap.get(connData.sourceNodeId);
@@ -87,7 +87,7 @@ export class WorkflowsService {
             const connection = transactionalConnectionRepo.create({
               sourceNodeId,
               targetNodeId,
-              type: connData.type || 'main',
+              type: connData.type || ConnectionType.MAIN,
               sourceOutputIndex: connData.sourceOutputIndex || 0,
               targetInputIndex: connData.targetInputIndex || 0,
             });
