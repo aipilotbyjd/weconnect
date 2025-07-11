@@ -68,7 +68,12 @@ export class WorkflowsService {
             });
             // Save node to get real ID
             const savedNode = await transactionalNodeRepo.save(node);
+            // Map both index and any existing ID to the real ID
             nodeIdMap.set(i.toString(), savedNode.id);
+            // If the node has an ID field, also map that
+            if ((nodeData as any).id) {
+              nodeIdMap.set((nodeData as any).id, savedNode.id);
+            }
           }
         }
 
@@ -76,12 +81,16 @@ export class WorkflowsService {
         if (connections && connections.length > 0) {
           const workflowConnections: WorkflowNodeConnection[] = [];
 
+          // Debug: Log available node mappings
+          console.log('Available node mappings:', Object.fromEntries(nodeIdMap));
+          console.log('Connection data:', connections);
+
           for (const connData of connections) {
             const sourceNodeId = nodeIdMap.get(connData.sourceNodeId);
             const targetNodeId = nodeIdMap.get(connData.targetNodeId);
 
             if (!sourceNodeId || !targetNodeId) {
-              throw new Error(`Connection references non-existent node ID: source('${connData.sourceNodeId}') or target('${connData.targetNodeId}')`);
+              throw new Error(`Connection references non-existent node ID: source('${connData.sourceNodeId}') or target('${connData.targetNodeId}'). Available mappings: ${JSON.stringify(Object.fromEntries(nodeIdMap))}`);
             }
 
             const connection = transactionalConnectionRepo.create({
