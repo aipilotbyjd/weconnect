@@ -208,24 +208,24 @@ export class ConditionNodeExecutor extends BaseUnifiedNodeExecutor {
     // Handle special field references
     if (field.startsWith('$input.')) {
       const path = field.substring(7);
-      return this.getNestedValue(inputData, path);
+      return this.getNestedValueLocal(inputData, path);
     }
 
     if (field.startsWith('$node.')) {
       const path = field.substring(6);
-      return this.getNestedValue(context.previousNodeOutputs, path);
+      return this.getNestedValueLocal(context.previousNodeOutputs, path);
     }
 
     if (field.startsWith('$vars.')) {
       const path = field.substring(6);
-      return this.getNestedValue(context.workflowVariables, path);
+      return this.getNestedValueLocal(context.workflowVariables, path);
     }
 
     // Direct field access
-    return this.getNestedValue(inputData, field);
+    return this.getNestedValueLocal(inputData, field);
   }
 
-  private getNestedValue(obj: any, path: string): any {
+  private getNestedValueLocal(obj: any, path: string): any {
     if (!path) return obj;
     return path.split('.').reduce((current, key) => current?.[key], obj);
   }

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpService } from '@nestjs/axios';
 import { of } from 'rxjs';
+import { AxiosResponse } from 'axios';
 import { SlackNodeExecutor } from '../slack-node.executor';
 import { CredentialIntegrationService } from '../../../../../credentials/application/services/credential-integration.service';
 import {
@@ -65,11 +66,13 @@ describe('SlackNodeExecutor', () => {
       const mockCredential = {
         id: 'slack-cred-1',
         data: {
+          service: 'slack',
+          type: 'bot_token',
           token: 'xoxb-slack-bot-token',
         },
       };
 
-      const mockSlackResponse = {
+      const mockSlackResponse: AxiosResponse = {
         data: {
           ok: true,
           ts: '1234567890.123456',
@@ -79,7 +82,13 @@ describe('SlackNodeExecutor', () => {
               'https://workspace.slack.com/archives/C1234567890/p1234567890123456',
           },
         },
-      };
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          headers: {},
+        } as any,
+      } as AxiosResponse;
 
       credentialService.getCredentialById.mockResolvedValue(mockCredential);
       httpService.post.mockReturnValue(of(mockSlackResponse));
@@ -143,17 +152,25 @@ describe('SlackNodeExecutor', () => {
       const mockCredential = {
         id: 'slack-cred-auto',
         data: {
+          service: 'slack',
+          type: 'bot_token',
           bot_token: 'xoxb-slack-auto-token',
         },
       };
 
-      const mockSlackResponse = {
+      const mockSlackResponse: AxiosResponse = {
         data: {
           ok: true,
           ts: '1234567890.123456',
           channel: 'C1234567890',
         },
-      };
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          headers: {},
+        } as any,
+      } as AxiosResponse;
 
       credentialService.getCredentialByService.mockResolvedValue(
         mockCredential,
