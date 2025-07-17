@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -52,7 +56,15 @@ export class AuthService {
   async validateUser(userId: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id: userId, isActive: true },
-      select: ['id', 'email', 'firstName', 'lastName', 'role', 'isActive', 'currentOrganizationId'],
+      select: [
+        'id',
+        'email',
+        'firstName',
+        'lastName',
+        'role',
+        'isActive',
+        'currentOrganizationId',
+      ],
     });
 
     if (!user) {

@@ -1,12 +1,17 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import * as fs from 'fs';
 // import * as csv from 'csv-parser'; // Commented out for compilation
 
 export const DataAnalyticsNodeDefinition = new NodeDefinition({
   name: 'DataAnalytics',
   displayName: 'Data Analytics',
-  description: 'Perform analytics operations on datasets including statistical analysis and data visualization',
+  description:
+    'Perform analytics operations on datasets including statistical analysis and data visualization',
   version: 1,
   group: ['analytics'],
   icon: 'fa:chart-bar',
@@ -131,7 +136,14 @@ export const DataAnalyticsNodeDefinition = new NodeDefinition({
       ],
       displayOptions: {
         show: {
-          operation: ['descriptiveStats', 'correlation', 'trendAnalysis', 'aggregation', 'outlierDetection', 'distribution'],
+          operation: [
+            'descriptiveStats',
+            'correlation',
+            'trendAnalysis',
+            'aggregation',
+            'outlierDetection',
+            'distribution',
+          ],
         },
       },
     },
@@ -289,10 +301,10 @@ export const DataAnalyticsNodeDefinition = new NodeDefinition({
 export class DataAnalyticsNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const { operation, dataSource } = context.parameters;
-      
+
       // Load data based on source
       let data: any[] = [];
       switch (dataSource) {
@@ -307,7 +319,9 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
           break;
         case 'database':
           // Mock database query result
-          data = await this.executeDatabaseQuery(context.parameters.databaseQuery);
+          data = await this.executeDatabaseQuery(
+            context.parameters.databaseQuery,
+          );
           break;
         default:
           throw new Error(`Unsupported data source: ${dataSource}`);
@@ -321,7 +335,10 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
 
       switch (operation) {
         case 'descriptiveStats':
-          result = await this.calculateDescriptiveStats(data, context.parameters);
+          result = await this.calculateDescriptiveStats(
+            data,
+            context.parameters,
+          );
           break;
         case 'groupBy':
           result = await this.performGroupByAnalysis(data, context.parameters);
@@ -382,9 +399,27 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
   private async executeDatabaseQuery(query: string): Promise<any[]> {
     // Mock implementation - replace with actual database connection
     return [
-      { id: 1, name: 'Item 1', value: 100, category: 'A', created_at: '2024-01-01' },
-      { id: 2, name: 'Item 2', value: 150, category: 'B', created_at: '2024-01-02' },
-      { id: 3, name: 'Item 3', value: 200, category: 'A', created_at: '2024-01-03' },
+      {
+        id: 1,
+        name: 'Item 1',
+        value: 100,
+        category: 'A',
+        created_at: '2024-01-01',
+      },
+      {
+        id: 2,
+        name: 'Item 2',
+        value: 150,
+        category: 'B',
+        created_at: '2024-01-02',
+      },
+      {
+        id: 3,
+        name: 'Item 3',
+        value: 200,
+        category: 'A',
+        created_at: '2024-01-03',
+      },
     ];
   }
 
@@ -395,33 +430,48 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
     for (const colConfig of columns) {
       const columnName = colConfig.columnName;
       const dataType = colConfig.dataType;
-      
+
       if (dataType === 'number') {
-        const values = data.map(row => parseFloat(row[columnName])).filter(val => !isNaN(val));
-        
+        const values = data
+          .map((row) => parseFloat(row[columnName]))
+          .filter((val) => !isNaN(val));
+
         if (values.length > 0) {
           const sorted = values.sort((a, b) => a - b);
           const sum = values.reduce((acc, val) => acc + val, 0);
           const mean = sum / values.length;
-          const variance = values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / values.length;
-          
+          const variance =
+            values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) /
+            values.length;
+
           stats[columnName] = {
             count: values.length,
             sum: this.roundNumber(sum, roundDecimals),
             mean: this.roundNumber(mean, roundDecimals),
-            median: this.roundNumber(sorted[Math.floor(sorted.length / 2)], roundDecimals),
+            median: this.roundNumber(
+              sorted[Math.floor(sorted.length / 2)],
+              roundDecimals,
+            ),
             min: this.roundNumber(Math.min(...values), roundDecimals),
             max: this.roundNumber(Math.max(...values), roundDecimals),
             stddev: this.roundNumber(Math.sqrt(variance), roundDecimals),
             variance: this.roundNumber(variance, roundDecimals),
-            q1: this.roundNumber(sorted[Math.floor(sorted.length * 0.25)], roundDecimals),
-            q3: this.roundNumber(sorted[Math.floor(sorted.length * 0.75)], roundDecimals),
+            q1: this.roundNumber(
+              sorted[Math.floor(sorted.length * 0.25)],
+              roundDecimals,
+            ),
+            q3: this.roundNumber(
+              sorted[Math.floor(sorted.length * 0.75)],
+              roundDecimals,
+            ),
           };
         }
       } else {
-        const values = data.map(row => row[columnName]).filter(val => val !== null && val !== undefined);
+        const values = data
+          .map((row) => row[columnName])
+          .filter((val) => val !== null && val !== undefined);
         const uniqueValues = [...new Set(values)];
-        
+
         stats[columnName] = {
           count: values.length,
           unique_count: uniqueValues.length,
@@ -440,8 +490,9 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
   }
 
   private async performGroupByAnalysis(data: any[], params: any) {
-    const { groupByColumn, aggregateColumn, aggregateFunction, roundDecimals } = params;
-    
+    const { groupByColumn, aggregateColumn, aggregateFunction, roundDecimals } =
+      params;
+
     const groups = data.reduce((acc, row) => {
       const groupKey = row[groupByColumn];
       if (!acc[groupKey]) {
@@ -451,17 +502,20 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
       return acc;
     }, {});
 
-    const results = Object.keys(groups).map(groupKey => {
+    const results = Object.keys(groups).map((groupKey) => {
       const groupData = groups[groupKey];
-      const values = groupData.map(row => parseFloat(row[aggregateColumn])).filter(val => !isNaN(val));
-      
+      const values = groupData
+        .map((row) => parseFloat(row[aggregateColumn]))
+        .filter((val) => !isNaN(val));
+
       let aggregateValue: number;
       switch (aggregateFunction) {
         case 'sum':
           aggregateValue = values.reduce((acc, val) => acc + val, 0);
           break;
         case 'average':
-          aggregateValue = values.reduce((acc, val) => acc + val, 0) / values.length;
+          aggregateValue =
+            values.reduce((acc, val) => acc + val, 0) / values.length;
           break;
         case 'count':
           aggregateValue = groupData.length;
@@ -482,7 +536,10 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
 
       return {
         [groupByColumn]: groupKey,
-        [`${aggregateFunction}_${aggregateColumn}`]: this.roundNumber(aggregateValue, roundDecimals),
+        [`${aggregateFunction}_${aggregateColumn}`]: this.roundNumber(
+          aggregateValue,
+          roundDecimals,
+        ),
         record_count: groupData.length,
       };
     });
@@ -499,26 +556,35 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
 
   private async calculateCorrelation(data: any[], params: any) {
     const { columns, roundDecimals } = params;
-    const numericColumns = columns.filter(col => col.dataType === 'number');
-    
+    const numericColumns = columns.filter((col) => col.dataType === 'number');
+
     if (numericColumns.length < 2) {
-      throw new Error('At least 2 numeric columns are required for correlation analysis');
+      throw new Error(
+        'At least 2 numeric columns are required for correlation analysis',
+      );
     }
 
     const correlationMatrix: any = {};
-    
+
     for (let i = 0; i < numericColumns.length; i++) {
       const col1 = numericColumns[i].columnName;
       correlationMatrix[col1] = {};
-      
+
       for (let j = 0; j < numericColumns.length; j++) {
         const col2 = numericColumns[j].columnName;
-        
+
         if (i === j) {
           correlationMatrix[col1][col2] = 1;
         } else {
-          const correlation = this.calculatePearsonCorrelation(data, col1, col2);
-          correlationMatrix[col1][col2] = this.roundNumber(correlation, roundDecimals);
+          const correlation = this.calculatePearsonCorrelation(
+            data,
+            col1,
+            col2,
+          );
+          correlationMatrix[col1][col2] = this.roundNumber(
+            correlation,
+            roundDecimals,
+          );
         }
       }
     }
@@ -533,12 +599,12 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
 
   private async performTrendAnalysis(data: any[], params: any) {
     const { dateColumn, aggregateColumn, timeInterval, roundDecimals } = params;
-    
+
     // Group data by time interval
     const trends = data.reduce((acc, row) => {
       const date = new Date(row[dateColumn]);
       const intervalKey = this.getIntervalKey(date, timeInterval);
-      
+
       if (!acc[intervalKey]) {
         acc[intervalKey] = [];
       }
@@ -548,11 +614,18 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
 
     const trendData = Object.keys(trends)
       .sort()
-      .map(intervalKey => ({
+      .map((intervalKey) => ({
         period: intervalKey,
-        value: this.roundNumber(trends[intervalKey].reduce((acc, val) => acc + val, 0), roundDecimals),
+        value: this.roundNumber(
+          trends[intervalKey].reduce((acc, val) => acc + val, 0),
+          roundDecimals,
+        ),
         count: trends[intervalKey].length,
-        average: this.roundNumber(trends[intervalKey].reduce((acc, val) => acc + val, 0) / trends[intervalKey].length, roundDecimals),
+        average: this.roundNumber(
+          trends[intervalKey].reduce((acc, val) => acc + val, 0) /
+            trends[intervalKey].length,
+          roundDecimals,
+        ),
       }));
 
     return {
@@ -567,9 +640,11 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
 
   private async performAggregation(data: any[], params: any) {
     const { aggregateColumn, aggregateFunction, roundDecimals } = params;
-    
-    const values = data.map(row => parseFloat(row[aggregateColumn])).filter(val => !isNaN(val));
-    
+
+    const values = data
+      .map((row) => parseFloat(row[aggregateColumn]))
+      .filter((val) => !isNaN(val));
+
     let result: number;
     switch (aggregateFunction) {
       case 'sum':
@@ -609,12 +684,16 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
     const { columns, outlierMethod, threshold, roundDecimals } = params;
     const outliers: any = {};
 
-    for (const colConfig of columns.filter(col => col.dataType === 'number')) {
+    for (const colConfig of columns.filter(
+      (col) => col.dataType === 'number',
+    )) {
       const columnName = colConfig.columnName;
-      const values = data.map(row => parseFloat(row[columnName])).filter(val => !isNaN(val));
-      
+      const values = data
+        .map((row) => parseFloat(row[columnName]))
+        .filter((val) => !isNaN(val));
+
       let outlierIndices: number[] = [];
-      
+
       if (outlierMethod === 'iqr') {
         outlierIndices = this.detectOutliersIQR(values);
       } else if (outlierMethod === 'zscore') {
@@ -623,8 +702,11 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
 
       outliers[columnName] = {
         outlier_count: outlierIndices.length,
-        outlier_percentage: this.roundNumber((outlierIndices.length / values.length) * 100, roundDecimals),
-        outlier_values: outlierIndices.map(idx => values[idx]),
+        outlier_percentage: this.roundNumber(
+          (outlierIndices.length / values.length) * 100,
+          roundDecimals,
+        ),
+        outlier_values: outlierIndices.map((idx) => values[idx]),
         method: outlierMethod,
       };
     }
@@ -642,30 +724,43 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
 
     for (const colConfig of columns) {
       const columnName = colConfig.columnName;
-      const values = data.map(row => row[columnName]).filter(val => val !== null && val !== undefined);
-      
+      const values = data
+        .map((row) => row[columnName])
+        .filter((val) => val !== null && val !== undefined);
+
       if (colConfig.dataType === 'number') {
         // Create histogram bins
-        const numericValues = values.map(val => parseFloat(val)).filter(val => !isNaN(val));
+        const numericValues = values
+          .map((val) => parseFloat(val))
+          .filter((val) => !isNaN(val));
         const min = Math.min(...numericValues);
         const max = Math.max(...numericValues);
-        const binCount = Math.min(10, Math.ceil(Math.sqrt(numericValues.length)));
+        const binCount = Math.min(
+          10,
+          Math.ceil(Math.sqrt(numericValues.length)),
+        );
         const binSize = (max - min) / binCount;
-        
+
         const bins = Array.from({ length: binCount }, (_, i) => ({
           range: `${this.roundNumber(min + i * binSize, roundDecimals)}-${this.roundNumber(min + (i + 1) * binSize, roundDecimals)}`,
           count: 0,
           percentage: 0,
         }));
 
-        numericValues.forEach(value => {
-          const binIndex = Math.min(Math.floor((value - min) / binSize), binCount - 1);
+        numericValues.forEach((value) => {
+          const binIndex = Math.min(
+            Math.floor((value - min) / binSize),
+            binCount - 1,
+          );
           bins[binIndex].count++;
         });
 
         if (includePercentages) {
-          bins.forEach(bin => {
-            bin.percentage = this.roundNumber((bin.count / numericValues.length) * 100, roundDecimals);
+          bins.forEach((bin) => {
+            bin.percentage = this.roundNumber(
+              (bin.count / numericValues.length) * 100,
+              roundDecimals,
+            );
           });
         }
 
@@ -677,14 +772,18 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
       } else {
         // Categorical distribution
         const frequency = this.getFrequencyMap(values);
-        const sortedEntries = Object.entries(frequency).sort(([,a], [,b]) => b - a);
-        
+        const sortedEntries = Object.entries(frequency).sort(
+          ([, a], [, b]) => b - a,
+        );
+
         distributions[columnName] = {
           type: 'categorical',
           categories: sortedEntries.map(([value, count]) => ({
             value,
             count,
-            percentage: includePercentages ? this.roundNumber((count / values.length) * 100, roundDecimals) : undefined,
+            percentage: includePercentages
+              ? this.roundNumber((count / values.length) * 100, roundDecimals)
+              : undefined,
           })),
           total_values: values.length,
           unique_values: sortedEntries.length,
@@ -700,22 +799,27 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
   }
 
   private async analyzeFrequency(data: any[], params: any) {
-    const { frequencyColumn, sortOrder, includePercentages, roundDecimals } = params;
-    
-    const values = data.map(row => row[frequencyColumn]).filter(val => val !== null && val !== undefined);
+    const { frequencyColumn, sortOrder, includePercentages, roundDecimals } =
+      params;
+
+    const values = data
+      .map((row) => row[frequencyColumn])
+      .filter((val) => val !== null && val !== undefined);
     const frequency = this.getFrequencyMap(values);
-    
+
     let sortedEntries = Object.entries(frequency);
     if (sortOrder === 'desc') {
-      sortedEntries.sort(([,a], [,b]) => b - a);
+      sortedEntries.sort(([, a], [, b]) => b - a);
     } else {
-      sortedEntries.sort(([,a], [,b]) => a - b);
+      sortedEntries.sort(([, a], [, b]) => a - b);
     }
 
     const results = sortedEntries.map(([value, count]) => ({
       value,
       count,
-      percentage: includePercentages ? this.roundNumber((count / values.length) * 100, roundDecimals) : undefined,
+      percentage: includePercentages
+        ? this.roundNumber((count / values.length) * 100, roundDecimals)
+        : undefined,
     }));
 
     return {
@@ -735,7 +839,9 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
 
   private getMostFrequent(values: any[]): any {
     const frequency = this.getFrequencyMap(values);
-    return Object.keys(frequency).reduce((a, b) => frequency[a] > frequency[b] ? a : b);
+    return Object.keys(frequency).reduce((a, b) =>
+      frequency[a] > frequency[b] ? a : b,
+    );
   }
 
   private getFrequencyMap(values: any[]): { [key: string]: number } {
@@ -746,10 +852,18 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
     }, {});
   }
 
-  private calculatePearsonCorrelation(data: any[], col1: string, col2: string): number {
-    const values1 = data.map(row => parseFloat(row[col1])).filter(val => !isNaN(val));
-    const values2 = data.map(row => parseFloat(row[col2])).filter(val => !isNaN(val));
-    
+  private calculatePearsonCorrelation(
+    data: any[],
+    col1: string,
+    col2: string,
+  ): number {
+    const values1 = data
+      .map((row) => parseFloat(row[col1]))
+      .filter((val) => !isNaN(val));
+    const values2 = data
+      .map((row) => parseFloat(row[col2]))
+      .filter((val) => !isNaN(val));
+
     const n = Math.min(values1.length, values2.length);
     if (n === 0) return 0;
 
@@ -800,18 +914,25 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
     const lowerBound = q1 - 1.5 * iqr;
     const upperBound = q3 + 1.5 * iqr;
 
-    return values.map((value, index) => 
-      (value < lowerBound || value > upperBound) ? index : -1
-    ).filter(index => index !== -1);
+    return values
+      .map((value, index) =>
+        value < lowerBound || value > upperBound ? index : -1,
+      )
+      .filter((index) => index !== -1);
   }
 
   private detectOutliersZScore(values: number[], threshold: number): number[] {
     const mean = values.reduce((acc, val) => acc + val, 0) / values.length;
-    const stddev = Math.sqrt(values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / values.length);
+    const stddev = Math.sqrt(
+      values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) /
+        values.length,
+    );
 
-    return values.map((value, index) => 
-      Math.abs((value - mean) / stddev) > threshold ? index : -1
-    ).filter(index => index !== -1);
+    return values
+      .map((value, index) =>
+        Math.abs((value - mean) / stddev) > threshold ? index : -1,
+      )
+      .filter((index) => index !== -1);
   }
 
   validate(configuration: Record<string, any>): boolean {
@@ -823,8 +944,7 @@ export class DataAnalyticsNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

@@ -33,14 +33,18 @@ export class WorkflowNodeConnection extends BaseEntity {
   condition?: Record<string, any>;
 
   // Relations
-  @ManyToOne(() => WorkflowNode, node => node.outgoingConnections, { onDelete: 'CASCADE' })
+  @ManyToOne(() => WorkflowNode, (node) => node.outgoingConnections, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'sourceNodeId' })
   sourceNode: WorkflowNode;
 
   @Column()
   sourceNodeId: string;
 
-  @ManyToOne(() => WorkflowNode, node => node.incomingConnections, { onDelete: 'CASCADE' })
+  @ManyToOne(() => WorkflowNode, (node) => node.incomingConnections, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'targetNodeId' })
   targetNode: WorkflowNode;
 

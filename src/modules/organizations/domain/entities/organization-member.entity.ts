@@ -26,20 +26,20 @@ export interface RolePermissions {
   canInviteMembers: boolean;
   canRemoveMembers: boolean;
   canManageRoles: boolean;
-  
+
   // Workflow permissions
   canCreateWorkflows: boolean;
   canEditAllWorkflows: boolean;
   canDeleteAllWorkflows: boolean;
   canExecuteAllWorkflows: boolean;
   canViewAllWorkflows: boolean;
-  
+
   // Credential permissions
   canCreateCredentials: boolean;
   canEditAllCredentials: boolean;
   canDeleteAllCredentials: boolean;
   canUseAllCredentials: boolean;
-  
+
   // Execution permissions
   canViewAllExecutions: boolean;
   canRetryExecutions: boolean;
@@ -52,7 +52,10 @@ export class OrganizationMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiProperty({ type: () => Organization, description: 'Organization this member belongs to' })
+  @ApiProperty({
+    type: () => Organization,
+    description: 'Organization this member belongs to',
+  })
   @ManyToOne(() => Organization, (org) => org.members, {
     onDelete: 'CASCADE',
   })

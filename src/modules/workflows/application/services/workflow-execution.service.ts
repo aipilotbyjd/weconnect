@@ -4,11 +4,29 @@ import { Repository } from 'typeorm';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { Workflow } from '../../domain/entities/workflow.entity';
-import { WorkflowNode, NodeType } from '../../domain/entities/workflow-node.entity';
-import { WorkflowExecution, ExecutionStatus, ExecutionMode } from '../../domain/entities/workflow-execution.entity';
-import { WorkflowExecutionLog, LogLevel } from '../../domain/entities/workflow-execution-log.entity';
-import { WorkflowNodeConnection, ConnectionType } from '../../domain/entities/workflow-node-connection.entity';
-import { WORKFLOW_EXECUTION_QUEUE, WORKFLOW_NODE_QUEUE, WorkflowJobType, NodeJobType } from '../../infrastructure/queues/constants';
+import {
+  WorkflowNode,
+  NodeType,
+} from '../../domain/entities/workflow-node.entity';
+import {
+  WorkflowExecution,
+  ExecutionStatus,
+  ExecutionMode,
+} from '../../domain/entities/workflow-execution.entity';
+import {
+  WorkflowExecutionLog,
+  LogLevel,
+} from '../../domain/entities/workflow-execution-log.entity';
+import {
+  WorkflowNodeConnection,
+  ConnectionType,
+} from '../../domain/entities/workflow-node-connection.entity';
+import {
+  WORKFLOW_EXECUTION_QUEUE,
+  WORKFLOW_NODE_QUEUE,
+  WorkflowJobType,
+  NodeJobType,
+} from '../../infrastructure/queues/constants';
 import { NodeExecutorFactory } from '../node-executors/node-executor.factory';
 import { WorkflowCredentialContextService } from '../../../credentials/application/services/workflow-credential-context.service';
 
@@ -42,50 +60,54 @@ export class WorkflowExecutionService {
     inputData?: Record<string, any>,
     timeout = 300000, // 5 minutes default
   ): Promise<WorkflowExecution> {
-    return await this.executionRepository.manager.transaction(async manager => {
-      // Create execution record
-      const execution = await manager.save(WorkflowExecution, {
-        workflowId,
-        status: ExecutionStatus.PENDING,
-        mode,
-        data: inputData || {},
-        metadata: {
-          userId,
-          startedBy: mode,
-          timeout,
-        },
-      });
-
-      try {
-        // Add to queue
-        await this.workflowQueue.add(
-          WorkflowJobType.EXECUTE_WORKFLOW,
-          {
-            executionId: execution.id,
-            workflowId,
+    return await this.executionRepository.manager.transaction(
+      async (manager) => {
+        // Create execution record
+        const execution = await manager.save(WorkflowExecution, {
+          workflowId,
+          status: ExecutionStatus.PENDING,
+          mode,
+          data: inputData || {},
+          metadata: {
             userId,
-            inputData,
+            startedBy: mode,
             timeout,
           },
-          {
-            priority: mode === ExecutionMode.MANUAL ? 1 : 0,
-          },
-        );
-
-        this.logger.log(`Created workflow execution ${execution.id} for workflow ${workflowId}`);
-        return execution;
-      } catch (queueError) {
-        // If queue fails, mark execution as failed
-        await manager.update(WorkflowExecution, execution.id, {
-          status: ExecutionStatus.FAILED,
-          error: { 
-            message: 'Failed to queue execution', 
-            details: queueError.message 
-          } as any,
         });
-        throw queueError;
-      }
-    });
+
+        try {
+          // Add to queue
+          await this.workflowQueue.add(
+            WorkflowJobType.EXECUTE_WORKFLOW,
+            {
+              executionId: execution.id,
+              workflowId,
+              userId,
+              inputData,
+              timeout,
+            },
+            {
+              priority: mode === ExecutionMode.MANUAL ? 1 : 0,
+            },
+          );
+
+          this.logger.log(
+            `Created workflow execution ${execution.id} for workflow ${workflowId}`,
+          );
+          return execution;
+        } catch (queueError) {
+          // If queue fails, mark execution as failed
+          await manager.update(WorkflowExecution, execution.id, {
+            status: ExecutionStatus.FAILED,
+            error: {
+              message: 'Failed to queue execution',
+              details: queueError.message,
+            } as any,
+          });
+          throw queueError;
+        }
+      },
+    );
   }
 
   async executeWorkflow(
@@ -94,7 +116,9 @@ export class WorkflowExecutionService {
     inputData?: Record<string, any>,
     timeout = 300000, // 5 minutes default
   ): Promise<Record<string, any>> {
-    this.logger.log(`Executing workflow ${workflow.id} with execution ${executionId}`);
+    this.logger.log(
+      `Executing workflow ${workflow.id} with execution ${executionId}`,
+    );
 
     // Set up timeout
     const timeoutPromise = new Promise<never>((_, reject) => {
@@ -104,7 +128,11 @@ export class WorkflowExecutionService {
       this.executionTimeouts.set(executionId, timeoutId);
     });
 
-    const executionPromise = this.executeWorkflowInternal(workflow, executionId, inputData);
+    const executionPromise = this.executeWorkflowInternal(
+      workflow,
+      executionId,
+      inputData,
+    );
 
     try {
       return await Promise.race([executionPromise, timeoutPromise]);
@@ -133,8 +161,10 @@ export class WorkflowExecutionService {
     this.executingNodes.set(executionId, new Set());
 
     // Find trigger nodes
-    const triggerNodes = workflow.nodes.filter(node => node.type === NodeType.TRIGGER);
-    
+    const triggerNodes = workflow.nodes.filter(
+      (node) => node.type === NodeType.TRIGGER,
+    );
+
     if (triggerNodes.length === 0) {
       throw new Error('No trigger node found in workflow');
     }
@@ -143,10 +173,10 @@ export class WorkflowExecutionService {
     const results = {};
     for (const triggerNode of triggerNodes) {
       const result = await this.executeNodeAndContinue(
-        triggerNode, 
-        executionId, 
+        triggerNode,
+        executionId,
         inputData,
-        new Set<string>()
+        new Set<string>(),
       );
       results[triggerNode.id] = result;
     }
@@ -160,35 +190,35 @@ export class WorkflowExecutionService {
     inputData?: Record<string, any>,
   ): Promise<Record<string, any>> {
     const startTime = Date.now();
-    
+
     try {
       // Get node executor
       const executor = this.nodeExecutorFactory.getExecutor(node.type);
-      
+
       // Get execution to extract user context
       const execution = await this.executionRepository.findOne({
         where: { id: executionId },
         relations: ['workflow'],
       });
-      
+
       if (!execution) {
         throw new Error(`Execution ${executionId} not found`);
       }
-      
+
       // Inject credential context into input data
       const context = this.credentialContextService.createContext(
         execution.metadata?.userId || 'unknown',
         execution.workflowId,
         executionId,
         node.id,
-        execution.workflow?.organizationId
+        execution.workflow?.organizationId,
       );
-      
+
       const contextualInputData = this.credentialContextService.injectContext(
         inputData || {},
-        context
+        context,
       );
-      
+
       // Log node start
       await this.logRepository.save({
         executionId,
@@ -199,7 +229,11 @@ export class WorkflowExecutionService {
       });
 
       // Execute node with contextual data
-      const result = await executor.execute(node, contextualInputData, executionId);
+      const result = await executor.execute(
+        node,
+        contextualInputData,
+        executionId,
+      );
 
       // Log node completion
       await this.logRepository.save({
@@ -260,22 +294,20 @@ export class WorkflowExecutionService {
     // Execute connected nodes with duplicate prevention
     const nodePromises: Promise<any>[] = [];
     for (const connection of connections) {
-      if (connection.targetNode?.isEnabled && 
-          !nodeSet.has(connection.targetNode.id)) {
-        
+      if (
+        connection.targetNode?.isEnabled &&
+        !nodeSet.has(connection.targetNode.id)
+      ) {
         const shouldExecute = this.shouldExecuteConnection(connection, result);
         if (shouldExecute) {
           nodeSet.add(connection.targetNode.id);
-          
-          const promise = this.nodeQueue.add(
-            NodeJobType.EXECUTE,
-            {
-              nodeId: connection.targetNode.id,
-              executionId,
-              inputData: result,
-              visitedNodes: Array.from(visitedNodes),
-            },
-          );
+
+          const promise = this.nodeQueue.add(NodeJobType.EXECUTE, {
+            nodeId: connection.targetNode.id,
+            executionId,
+            inputData: result,
+            visitedNodes: Array.from(visitedNodes),
+          });
           nodePromises.push(promise);
         }
       }
@@ -289,20 +321,28 @@ export class WorkflowExecutionService {
   async cancelExecution(executionId: string): Promise<void> {
     // Clean up tracking
     this.executingNodes.delete(executionId);
-    
+
     // Clear timeout if exists
     const timeoutId = this.executionTimeouts.get(executionId);
     if (timeoutId) {
       clearTimeout(timeoutId);
       this.executionTimeouts.delete(executionId);
     }
-    
+
     // Remove pending jobs from both queues
-    const nodeJobs = await this.nodeQueue.getJobs(['waiting', 'delayed', 'active']);
-    const workflowJobs = await this.workflowQueue.getJobs(['waiting', 'delayed', 'active']);
-    
+    const nodeJobs = await this.nodeQueue.getJobs([
+      'waiting',
+      'delayed',
+      'active',
+    ]);
+    const workflowJobs = await this.workflowQueue.getJobs([
+      'waiting',
+      'delayed',
+      'active',
+    ]);
+
     const allJobs = [...nodeJobs, ...workflowJobs];
-    
+
     for (const job of allJobs) {
       if (job.data.executionId === executionId) {
         try {
@@ -318,7 +358,7 @@ export class WorkflowExecutionService {
       status: ExecutionStatus.CANCELLED,
       finishedAt: new Date(),
     });
-    
+
     this.logger.log(`Cancelled execution ${executionId}`);
   }
 
@@ -345,9 +385,10 @@ export class WorkflowExecutionService {
   async findWorkflowExecutions(
     workflowId: string,
     userId: string,
-    options: { status?: string; limit?: number } = {}
+    options: { status?: string; limit?: number } = {},
   ): Promise<WorkflowExecution[]> {
-    const query = this.executionRepository.createQueryBuilder('execution')
+    const query = this.executionRepository
+      .createQueryBuilder('execution')
       .leftJoinAndSelect('execution.workflow', 'workflow')
       .where('execution.workflowId = :workflowId', { workflowId })
       .andWhere('workflow.userId = :userId', { userId })
@@ -367,7 +408,7 @@ export class WorkflowExecutionService {
   async findOneWithAuth(
     executionId: string,
     workflowId: string,
-    userId: string
+    userId: string,
   ): Promise<WorkflowExecution> {
     const execution = await this.executionRepository.findOne({
       where: { id: executionId, workflowId },
@@ -394,32 +435,36 @@ export class WorkflowExecutionService {
     if (nodeOutput._conditionBranch) {
       return connection.type === nodeOutput._conditionBranch;
     }
-    
+
     // Generic error detection
     if (connection.type === ConnectionType.ERROR) {
-      return nodeOutput.error === true || 
-             nodeOutput.success === false ||
-             nodeOutput.status === 'failed' ||
-             nodeOutput.statusCode >= 400;
+      return (
+        nodeOutput.error === true ||
+        nodeOutput.success === false ||
+        nodeOutput.status === 'failed' ||
+        nodeOutput.statusCode >= 400
+      );
     }
-    
+
     // Success path
     if (connection.type === ConnectionType.MAIN) {
-      return nodeOutput.error !== true && 
-             nodeOutput.success !== false &&
-             nodeOutput.status !== 'failed' &&
-             (nodeOutput.statusCode === undefined || nodeOutput.statusCode < 400);
+      return (
+        nodeOutput.error !== true &&
+        nodeOutput.success !== false &&
+        nodeOutput.status !== 'failed' &&
+        (nodeOutput.statusCode === undefined || nodeOutput.statusCode < 400)
+      );
     }
-    
+
     // TRUE/FALSE for condition nodes
     if (connection.type === ConnectionType.TRUE) {
       return nodeOutput.result === true || nodeOutput.condition === true;
     }
-    
+
     if (connection.type === ConnectionType.FALSE) {
       return nodeOutput.result === false || nodeOutput.condition === false;
     }
-    
+
     return false;
   }
 }

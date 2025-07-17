@@ -34,14 +34,14 @@ import redisConfig from './config/redis.config';
   imports: [
     // Core Infrastructure
     CoreModule,
-    
+
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
       load: [databaseConfig, jwtConfig, redisConfig],
     }),
-    
+
     // Rate limiting
     ThrottlerModule.forRoot([
       {
@@ -49,7 +49,7 @@ import redisConfig from './config/redis.config';
         limit: 100,
       },
     ]),
-    
+
     // Database
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -57,7 +57,7 @@ import redisConfig from './config/redis.config';
         configService.get('database')!,
       inject: [ConfigService],
     }),
-    
+
     // Feature Modules (ordered by dependency)
     OrganizationsModule,
     AuthModule,
@@ -67,9 +67,9 @@ import redisConfig from './config/redis.config';
     AIAgentsModule,
     SchedulerModule,
     MonitoringModule,
-    WorkflowsModule, 
-    ExecutionsModule, 
-    WebhooksModule
+    WorkflowsModule,
+    ExecutionsModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [

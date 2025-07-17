@@ -1,7 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Credential, CredentialType } from '../../domain/entities/credential.entity';
+import {
+  Credential,
+  CredentialType,
+} from '../../domain/entities/credential.entity';
 import { EncryptionService } from './encryption.service';
 import { OAuth2Service, OAuth2Token } from './oauth2.service';
 import { CreateCredentialDto } from '../../presentation/dto/create-credential.dto';
@@ -13,7 +21,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class CredentialsService {
   private readonly logger = new Logger(CredentialsService.name);
-  
+
   constructor(
     @InjectRepository(Credential)
     private credentialRepository: Repository<Credential>,
@@ -121,9 +129,7 @@ export class CredentialsService {
         userInfo,
         createdAt: new Date().toISOString(),
       },
-      expiresAt: tokens.expiry_date
-        ? new Date(tokens.expiry_date)
-        : undefined,
+      expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : undefined,
     });
 
     return this.credentialRepository.save(credential);
@@ -139,7 +145,7 @@ export class CredentialsService {
     }
 
     const tokens = this.encryptionService.decrypt(credential.encryptedData);
-    
+
     if (!tokens.refresh_token) {
       throw new BadRequestException('No refresh token available');
     }
@@ -163,13 +169,15 @@ export class CredentialsService {
   async validateCredential(id: string, userId: string): Promise<boolean> {
     try {
       const credential = await this.findOne(id, userId);
-      
+
       if (credential.type !== CredentialType.OAUTH2) {
         return true; // Non-OAuth2 credentials are always valid
       }
 
       const tokens = this.encryptionService.decrypt(credential.encryptedData);
-      const isValid = await this.oauth2Service.validateToken(tokens.access_token);
+      const isValid = await this.oauth2Service.validateToken(
+        tokens.access_token,
+      );
 
       if (!isValid && tokens.refresh_token) {
         // Try to refresh the token
@@ -195,25 +203,35 @@ export class CredentialsService {
   async getCredentialsForService(
     service: string,
     userId: string,
-    autoRefresh = true
+    autoRefresh = true,
   ): Promise<any> {
     const credential = await this.findByServiceAndUser(service, userId);
-    
+
     if (!credential) {
-      throw new NotFoundException(`No credentials found for service: ${service}`);
+      throw new NotFoundException(
+        `No credentials found for service: ${service}`,
+      );
     }
 
     // Update last used timestamp
     await this.updateLastUsed(credential.id);
 
-    const decryptedData = this.encryptionService.decrypt(credential.encryptedData);
+    const decryptedData = this.encryptionService.decrypt(
+      credential.encryptedData,
+    );
 
     // Handle OAuth2 token refresh if needed
     if (credential.type === CredentialType.OAUTH2 && autoRefresh) {
       if (this.isTokenExpired(credential)) {
-        this.logger.log(`Refreshing expired token for credential ${credential.id}`);
-        const refreshedCredential = await this.refreshOAuth2Token(credential.id);
-        return this.encryptionService.decrypt(refreshedCredential.encryptedData);
+        this.logger.log(
+          `Refreshing expired token for credential ${credential.id}`,
+        );
+        const refreshedCredential = await this.refreshOAuth2Token(
+          credential.id,
+        );
+        return this.encryptionService.decrypt(
+          refreshedCredential.encryptedData,
+        );
       }
     }
 
@@ -223,14 +241,19 @@ export class CredentialsService {
   /**
    * Test credential connectivity
    */
-  async testCredential(id: string, userId: string): Promise<{
+  async testCredential(
+    id: string,
+    userId: string,
+  ): Promise<{
     isValid: boolean;
     error?: string;
     details?: any;
   }> {
     try {
       const credential = await this.findOne(id, userId);
-      const credentialData = this.encryptionService.decrypt(credential.encryptedData);
+      const credentialData = this.encryptionService.decrypt(
+        credential.encryptedData,
+      );
 
       switch (credential.service) {
         case 'slack':
@@ -247,7 +270,10 @@ export class CredentialsService {
         case 'google_sheets':
           return await this.testGoogleCredential(credentialData);
         default:
-          return { isValid: true, details: 'No test available for this service' };
+          return {
+            isValid: true,
+            details: 'No test available for this service',
+          };
       }
     } catch (error) {
       return {
@@ -268,7 +294,7 @@ export class CredentialsService {
     active: number;
   }> {
     const credentials = await this.findAll(userId);
-    
+
     const stats = {
       total: credentials.length,
       byType: {} as Record<string, number>,
@@ -277,18 +303,18 @@ export class CredentialsService {
       active: 0,
     };
 
-    credentials.forEach(cred => {
+    credentials.forEach((cred) => {
       // Count by type
       stats.byType[cred.type] = (stats.byType[cred.type] || 0) + 1;
-      
+
       // Count by service
       stats.byService[cred.service] = (stats.byService[cred.service] || 0) + 1;
-      
+
       // Count expired and active
       if (cred.isExpired) {
         stats.expired++;
       }
-      
+
       if (cred.isActive) {
         stats.active++;
       }
@@ -305,7 +331,8 @@ export class CredentialsService {
     failed: number;
     errors: string[];
   }> {
-    const query = this.credentialRepository.createQueryBuilder('credential')
+    const query = this.credentialRepository
+      .createQueryBuilder('credential')
       .where('credential.type = :type', { type: CredentialType.OAUTH2 })
       .andWhere('credential.expiresAt < :now', { now: new Date() })
       .andWhere('credential.isActive = true');
@@ -315,7 +342,7 @@ export class CredentialsService {
     }
 
     const expiredCredentials = await query.getMany();
-    
+
     const result = {
       refreshed: 0,
       failed: 0,
@@ -330,7 +357,10 @@ export class CredentialsService {
       } catch (error) {
         result.failed++;
         result.errors.push(`${credential.name}: ${error.message}`);
-        this.logger.error(`Failed to refresh token for credential ${credential.id}:`, error.message);
+        this.logger.error(
+          `Failed to refresh token for credential ${credential.id}:`,
+          error.message,
+        );
       }
     }
 
@@ -340,7 +370,7 @@ export class CredentialsService {
   // Private helper methods
   private isTokenExpired(credential: Credential): boolean {
     if (!credential.expiresAt) return false;
-    
+
     // Consider token expired if it expires in the next 5 minutes
     const expiryThreshold = new Date(Date.now() + 5 * 60 * 1000);
     return credential.expiresAt <= expiryThreshold;
@@ -353,16 +383,18 @@ export class CredentialsService {
           headers: {
             Authorization: `Bearer ${credentialData.token || credentialData.access_token}`,
           },
-        })
+        }),
       );
 
       return {
         isValid: response.data.ok,
-        details: response.data.ok ? {
-          user: response.data.user,
-          team: response.data.team,
-          url: response.data.url,
-        } : response.data.error,
+        details: response.data.ok
+          ? {
+              user: response.data.user,
+              team: response.data.team,
+              url: response.data.url,
+            }
+          : response.data.error,
       };
     } catch (error) {
       return {
@@ -379,7 +411,7 @@ export class CredentialsService {
           headers: {
             Authorization: `Bot ${credentialData.token}`,
           },
-        })
+        }),
       );
 
       return {
@@ -401,16 +433,18 @@ export class CredentialsService {
     try {
       const response = await lastValueFrom(
         this.httpService.get(
-          `https://api.telegram.org/bot${credentialData.botToken}/getMe`
-        )
+          `https://api.telegram.org/bot${credentialData.botToken}/getMe`,
+        ),
       );
 
       return {
         isValid: response.data.ok,
-        details: response.data.ok ? {
-          username: response.data.result.username,
-          first_name: response.data.result.first_name,
-        } : response.data.description,
+        details: response.data.ok
+          ? {
+              username: response.data.result.username,
+              first_name: response.data.result.first_name,
+            }
+          : response.data.description,
       };
     } catch (error) {
       return {
@@ -428,7 +462,7 @@ export class CredentialsService {
             Authorization: `Bearer ${credentialData.access_token || credentialData.token}`,
             Accept: 'application/vnd.github.v3+json',
           },
-        })
+        }),
       );
 
       return {
@@ -451,8 +485,8 @@ export class CredentialsService {
     try {
       const response = await lastValueFrom(
         this.httpService.get(
-          `https://api.trello.com/1/members/me?key=${credentialData.apiKey}&token=${credentialData.token}`
-        )
+          `https://api.trello.com/1/members/me?key=${credentialData.apiKey}&token=${credentialData.token}`,
+        ),
       );
 
       return {
@@ -475,8 +509,8 @@ export class CredentialsService {
     try {
       const response = await lastValueFrom(
         this.httpService.get(
-          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${credentialData.access_token}`
-        )
+          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${credentialData.access_token}`,
+        ),
       );
 
       return {

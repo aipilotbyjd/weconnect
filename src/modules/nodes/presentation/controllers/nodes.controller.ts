@@ -1,5 +1,11 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { NodeRegistryService } from '../../application/registry/node-registry.service';
 import { BuiltInNodesService } from '../../application/registry/built-in-nodes.service';
 
@@ -9,12 +15,16 @@ export class NodesController {
   constructor(
     private readonly nodeRegistry: NodeRegistryService,
     private readonly builtInNodesService: BuiltInNodesService,
-  ) { }
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all available nodes' })
   @ApiResponse({ status: 200, description: 'List of all registered nodes' })
-  @ApiQuery({ name: 'group', required: false, description: 'Filter by node group' })
+  @ApiQuery({
+    name: 'group',
+    required: false,
+    description: 'Filter by node group',
+  })
   getAllNodes(@Query('group') group?: string) {
     if (group) {
       return {
@@ -36,8 +46,8 @@ export class NodesController {
     const allNodes = this.nodeRegistry.getAllNodeDefinitions();
     const groups = new Set<string>();
 
-    allNodes.forEach(node => {
-      node.group.forEach(g => groups.add(g));
+    allNodes.forEach((node) => {
+      node.group.forEach((g) => groups.add(g));
     });
 
     return {

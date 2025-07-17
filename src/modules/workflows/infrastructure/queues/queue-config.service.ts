@@ -16,7 +16,7 @@ export class QueueConfigService {
 
   getQueueOptions(queueName: string): BullModuleOptions {
     const redisConfig = this.configService.get('redis');
-    
+
     return {
       name: queueName,
       redis: {

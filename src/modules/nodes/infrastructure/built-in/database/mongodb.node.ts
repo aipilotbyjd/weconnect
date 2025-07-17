@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import { MongoClient, Db, ObjectId } from 'mongodb';
 
 export const MongoDBNodeDefinition = new NodeDefinition({
@@ -62,7 +66,14 @@ export const MongoDBNodeDefinition = new NodeDefinition({
       default: {},
       displayOptions: {
         show: {
-          operation: ['find', 'findOne', 'updateOne', 'updateMany', 'deleteOne', 'deleteMany'],
+          operation: [
+            'find',
+            'findOne',
+            'updateOne',
+            'updateMany',
+            'deleteOne',
+            'deleteMany',
+          ],
         },
       },
       description: 'Filter conditions as JSON object',
@@ -110,7 +121,7 @@ export class MongoDBNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.mongoDb;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -137,33 +148,47 @@ export class MongoDBNodeExecutor implements INodeExecutor {
 
       const client = new MongoClient(connectionString);
       await client.connect();
-      
+
       const db = client.db(database);
       let result: any;
 
       try {
         const filter = this.parseFilter(context.parameters.filter);
-        const dataToUpdate = JSON.parse(context.parameters.dataToUpdate || '{}');
+        const dataToUpdate = JSON.parse(
+          context.parameters.dataToUpdate || '{}',
+        );
 
         switch (operation) {
           case 'find':
-            result = await db.collection(collection).find(filter).limit(parseInt(context.parameters.limit || '0')).toArray();
+            result = await db
+              .collection(collection)
+              .find(filter)
+              .limit(parseInt(context.parameters.limit || '0'))
+              .toArray();
             break;
           case 'findOne':
             result = await db.collection(collection).findOne(filter);
             break;
           case 'insertOne':
-            result = await db.collection(collection).insertOne({ ...dataToUpdate });
+            result = await db
+              .collection(collection)
+              .insertOne({ ...dataToUpdate });
             break;
           case 'insertMany':
-            const documents = Array.isArray(dataToUpdate) ? dataToUpdate : [dataToUpdate];
+            const documents = Array.isArray(dataToUpdate)
+              ? dataToUpdate
+              : [dataToUpdate];
             result = await db.collection(collection).insertMany(documents);
             break;
           case 'updateOne':
-            result = await db.collection(collection).updateOne(filter, { $set: dataToUpdate });
+            result = await db
+              .collection(collection)
+              .updateOne(filter, { $set: dataToUpdate });
             break;
           case 'updateMany':
-            result = await db.collection(collection).updateMany(filter, { $set: dataToUpdate });
+            result = await db
+              .collection(collection)
+              .updateMany(filter, { $set: dataToUpdate });
             break;
           case 'deleteOne':
             result = await db.collection(collection).deleteOne(filter);
@@ -185,11 +210,9 @@ export class MongoDBNodeExecutor implements INodeExecutor {
             database,
           },
         };
-
       } finally {
         await client.close();
       }
-
     } catch (error) {
       return {
         success: false,
@@ -225,8 +248,7 @@ export class MongoDBNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

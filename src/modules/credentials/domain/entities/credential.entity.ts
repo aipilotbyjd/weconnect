@@ -64,7 +64,10 @@ export class Credential extends BaseEntity {
   userId: string;
 
   // Organization relationship
-  @ApiProperty({ type: () => Organization, description: 'Organization this credential belongs to' })
+  @ApiProperty({
+    type: () => Organization,
+    description: 'Organization this credential belongs to',
+  })
   @ManyToOne(() => Organization, (org) => org.credentials)
   @JoinColumn({ name: 'organizationId' })
   organization: Organization;
@@ -82,12 +85,18 @@ export class Credential extends BaseEntity {
   rotatedToCredentialId?: string;
 
   // Relations for sharing and rotation
-  @ApiProperty({ type: () => [CredentialShare], description: 'Credential shares' })
-  @OneToMany(() => CredentialShare, share => share.credential)
+  @ApiProperty({
+    type: () => [CredentialShare],
+    description: 'Credential shares',
+  })
+  @OneToMany(() => CredentialShare, (share) => share.credential)
   shares: CredentialShare[];
 
-  @ApiProperty({ type: () => [CredentialRotation], description: 'Credential rotations' })
-  @OneToMany(() => CredentialRotation, rotation => rotation.credential)
+  @ApiProperty({
+    type: () => [CredentialRotation],
+    description: 'Credential rotations',
+  })
+  @OneToMany(() => CredentialRotation, (rotation) => rotation.credential)
   rotations: CredentialRotation[];
 
   // Credential sharing settings (legacy - kept for backward compatibility)

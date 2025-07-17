@@ -52,19 +52,36 @@ export class WorkflowNode extends BaseEntity {
   executionOrder: number;
 
   // Relations
-  @ApiProperty({ type: () => Workflow, description: 'Workflow this node belongs to' })
-  @ManyToOne(() => Workflow, workflow => workflow.nodes, { onDelete: 'CASCADE' })
+  @ApiProperty({
+    type: () => Workflow,
+    description: 'Workflow this node belongs to',
+  })
+  @ManyToOne(() => Workflow, (workflow) => workflow.nodes, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'workflowId' })
   workflow: Workflow;
 
   @Column()
   workflowId: string;
 
-  @ApiProperty({ type: () => [WorkflowNodeConnection], description: 'Outgoing connections' })
-  @OneToMany(() => WorkflowNodeConnection, connection => connection.sourceNode)
+  @ApiProperty({
+    type: () => [WorkflowNodeConnection],
+    description: 'Outgoing connections',
+  })
+  @OneToMany(
+    () => WorkflowNodeConnection,
+    (connection) => connection.sourceNode,
+  )
   outgoingConnections: WorkflowNodeConnection[];
 
-  @ApiProperty({ type: () => [WorkflowNodeConnection], description: 'Incoming connections' })
-  @OneToMany(() => WorkflowNodeConnection, connection => connection.targetNode)
+  @ApiProperty({
+    type: () => [WorkflowNodeConnection],
+    description: 'Incoming connections',
+  })
+  @OneToMany(
+    () => WorkflowNodeConnection,
+    (connection) => connection.targetNode,
+  )
   incomingConnections: WorkflowNodeConnection[];
 }

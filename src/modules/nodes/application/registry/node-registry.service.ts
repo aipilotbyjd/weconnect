@@ -27,8 +27,9 @@ export class NodeRegistryService {
   }
 
   getNodesByGroup(group: string): NodeDefinition[] {
-    return Array.from(this.nodeDefinitions.values())
-      .filter(node => node.group.includes(group));
+    return Array.from(this.nodeDefinitions.values()).filter((node) =>
+      node.group.includes(group),
+    );
   }
 
   hasNode(nodeName: string): boolean {

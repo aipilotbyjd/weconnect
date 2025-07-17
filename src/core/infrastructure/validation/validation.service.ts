@@ -92,7 +92,7 @@ export class ValidationService {
    */
   validateJsonSchema(data: any, schema: Record<string, any>): ValidationResult {
     const errors = this.validateAgainstSchema(data, schema);
-    
+
     return {
       isValid: errors.length === 0,
       errors,
@@ -121,17 +121,20 @@ export class ValidationService {
         connectedNodeIds.add(conn.sourceNodeId);
       });
 
-      const triggerNodes = workflow.nodes.filter((node: any) => 
-        node.type === 'trigger' || node.category === 'trigger'
+      const triggerNodes = workflow.nodes.filter(
+        (node: any) => node.type === 'trigger' || node.category === 'trigger',
       );
 
-      const orphanedNodes = workflow.nodes.filter((node: any) => 
-        !connectedNodeIds.has(node.id) && 
-        !triggerNodes.some((trigger: any) => trigger.id === node.id)
+      const orphanedNodes = workflow.nodes.filter(
+        (node: any) =>
+          !connectedNodeIds.has(node.id) &&
+          !triggerNodes.some((trigger: any) => trigger.id === node.id),
       );
 
       if (orphanedNodes.length > 0) {
-        errors.push(`Orphaned nodes detected: ${orphanedNodes.map((n: any) => n.name).join(', ')}`);
+        errors.push(
+          `Orphaned nodes detected: ${orphanedNodes.map((n: any) => n.name).join(', ')}`,
+        );
       }
     }
 
@@ -159,15 +162,22 @@ export class ValidationService {
     return messages;
   }
 
-  private validateAgainstSchema(data: any, schema: Record<string, any>): string[] {
+  private validateAgainstSchema(
+    data: any,
+    schema: Record<string, any>,
+  ): string[] {
     const errors: string[] = [];
-    
+
     // Basic schema validation implementation
     // In a real application, you might want to use a library like Joi or AJV
-    
+
     if (schema.required && Array.isArray(schema.required)) {
       schema.required.forEach((field: string) => {
-        if (!(field in data) || data[field] === undefined || data[field] === null) {
+        if (
+          !(field in data) ||
+          data[field] === undefined ||
+          data[field] === null
+        ) {
           errors.push(`Field '${field}' is required`);
         }
       });
@@ -179,7 +189,9 @@ export class ValidationService {
         const fieldValue = data[field];
 
         if (fieldValue !== undefined && fieldSchema.type) {
-          const actualType = Array.isArray(fieldValue) ? 'array' : typeof fieldValue;
+          const actualType = Array.isArray(fieldValue)
+            ? 'array'
+            : typeof fieldValue;
           if (actualType !== fieldSchema.type) {
             errors.push(`Field '${field}' must be of type ${fieldSchema.type}`);
           }

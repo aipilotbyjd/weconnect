@@ -1,10 +1,15 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const ValidationNodeDefinition = new NodeDefinition({
   name: 'Validation',
   displayName: 'Validation & Utilities',
-  description: 'Validate data, generate random values, and perform utility operations',
+  description:
+    'Validate data, generate random values, and perform utility operations',
   version: 1,
   group: ['regular'],
   icon: 'fa:check-circle',
@@ -43,7 +48,8 @@ export const ValidationNodeDefinition = new NodeDefinition({
       name: 'inputValue',
       displayName: 'Input Value',
       type: 'string',
-      description: 'Value to validate or process (leave empty to use input data)',
+      description:
+        'Value to validate or process (leave empty to use input data)',
       placeholder: 'Enter value to validate...',
     },
     {
@@ -51,9 +57,9 @@ export const ValidationNodeDefinition = new NodeDefinition({
       displayName: 'Validation Rules',
       type: 'json',
       default: {
-        'required': true,
-        'minLength': 3,
-        'maxLength': 50
+        required: true,
+        minLength: 3,
+        maxLength: 50,
       },
       description: 'Custom validation rules (JSON object)',
       displayOptions: {
@@ -168,7 +174,7 @@ export const ValidationNodeDefinition = new NodeDefinition({
 export class ValidationNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const {
         operation,
@@ -190,7 +196,13 @@ export class ValidationNodeExecutor implements INodeExecutor {
 
       for (const item of context.inputData) {
         let result;
-        const valueToProcess = inputValue || item.value || item.email || item.phone || item.url || JSON.stringify(item);
+        const valueToProcess =
+          inputValue ||
+          item.value ||
+          item.email ||
+          item.phone ||
+          item.url ||
+          JSON.stringify(item);
 
         switch (operation) {
           case 'validateEmail':
@@ -217,7 +229,7 @@ export class ValidationNodeExecutor implements INodeExecutor {
               includeUppercase,
               includeLowercase,
               includeNumbers,
-              includeSymbols
+              includeSymbols,
             );
             break;
           case 'generateRandomNumber':
@@ -249,7 +261,7 @@ export class ValidationNodeExecutor implements INodeExecutor {
         }
 
         results.push(result);
-        
+
         // Separate valid and invalid results for split output
         if (result.isValid !== undefined) {
           if (result.isValid) {
@@ -401,7 +413,7 @@ export class ValidationNodeExecutor implements INodeExecutor {
     try {
       parsedUrl = new URL(url);
       isValid = ['http:', 'https:', 'ftp:'].includes(parsedUrl.protocol);
-      
+
       if (!isValid) {
         errors.push('Invalid protocol (must be http, https, or ftp)');
       }
@@ -414,14 +426,16 @@ export class ValidationNodeExecutor implements INodeExecutor {
       value: url,
       isValid: isValid && errors.length === 0,
       errors: errors.length > 0 ? errors : undefined,
-      details: parsedUrl ? {
-        protocol: parsedUrl.protocol,
-        hostname: parsedUrl.hostname,
-        port: parsedUrl.port,
-        pathname: parsedUrl.pathname,
-        search: parsedUrl.search,
-        hash: parsedUrl.hash,
-      } : null,
+      details: parsedUrl
+        ? {
+            protocol: parsedUrl.protocol,
+            hostname: parsedUrl.hostname,
+            port: parsedUrl.port,
+            pathname: parsedUrl.pathname,
+            search: parsedUrl.search,
+            hash: parsedUrl.hash,
+          }
+        : null,
     };
   }
 
@@ -499,11 +513,14 @@ export class ValidationNodeExecutor implements INodeExecutor {
   }
 
   private generateUuid(): any {
-    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      },
+    );
 
     return {
       operation: 'generateUuid',
@@ -518,10 +535,10 @@ export class ValidationNodeExecutor implements INodeExecutor {
     includeUppercase: boolean = true,
     includeLowercase: boolean = true,
     includeNumbers: boolean = true,
-    includeSymbols: boolean = false
+    includeSymbols: boolean = false,
   ): any {
     let charset = '';
-    
+
     if (includeUppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     if (includeLowercase) charset += 'abcdefghijklmnopqrstuvwxyz';
     if (includeNumbers) charset += '0123456789';
@@ -672,13 +689,17 @@ export class ValidationNodeExecutor implements INodeExecutor {
 
     // Length validation
     if (password.length < validationRules.minLength) {
-      errors.push(`Password must be at least ${validationRules.minLength} characters`);
+      errors.push(
+        `Password must be at least ${validationRules.minLength} characters`,
+      );
     } else {
       score += 1;
     }
 
     if (password.length > validationRules.maxLength) {
-      errors.push(`Password must be no more than ${validationRules.maxLength} characters`);
+      errors.push(
+        `Password must be no more than ${validationRules.maxLength} characters`,
+      );
     }
 
     // Character type validation
@@ -700,7 +721,10 @@ export class ValidationNodeExecutor implements INodeExecutor {
       score += 1;
     }
 
-    if (validationRules.requireSymbols && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    if (
+      validationRules.requireSymbols &&
+      !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+    ) {
       errors.push('Password must contain symbols');
     } else if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
       score += 1;
@@ -760,7 +784,8 @@ export class ValidationNodeExecutor implements INodeExecutor {
       };
     }
 
-    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipv4Regex =
+      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
 
     const isValidIPv4 = ipv4Regex.test(ip);
@@ -833,8 +858,7 @@ export class ValidationNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

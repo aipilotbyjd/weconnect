@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const GoogleDocsNodeDefinition = new NodeDefinition({
   name: 'GoogleDocs',
@@ -271,9 +275,9 @@ export const GoogleDocsNodeDefinition = new NodeDefinition({
 export class GoogleDocsNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { 
+      const {
         operation,
         documentId,
         title,
@@ -290,13 +294,13 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
         formatting,
         exportFormat,
       } = context.parameters;
-      
+
       switch (operation) {
         case 'create': {
           if (!title) {
             throw new Error('Document title is required');
           }
-          
+
           const newDoc = {
             documentId: `doc_${Date.now()}`,
             title,
@@ -306,14 +310,16 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
                   startIndex: 0,
                   endIndex: content ? content.length : 0,
                   paragraph: {
-                    elements: [{
-                      startIndex: 0,
-                      endIndex: content ? content.length : 0,
-                      textRun: {
-                        content: content || '',
-                        textStyle: {},
+                    elements: [
+                      {
+                        startIndex: 0,
+                        endIndex: content ? content.length : 0,
+                        textRun: {
+                          content: content || '',
+                          textStyle: {},
+                        },
                       },
-                    }],
+                    ],
                   },
                 },
               ],
@@ -329,7 +335,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
               firstPageFooterId: '',
             },
           };
-          
+
           return {
             success: true,
             data: [newDoc],
@@ -340,12 +346,12 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'get': {
           if (!documentId) {
             throw new Error('Document ID is required');
           }
-          
+
           const document = {
             documentId,
             title: 'Sample Document',
@@ -355,17 +361,20 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
                   startIndex: 0,
                   endIndex: 100,
                   paragraph: {
-                    elements: [{
-                      startIndex: 0,
-                      endIndex: 100,
-                      textRun: {
-                        content: 'This is a sample Google Doc with some content. You can edit, format, and manipulate this text.',
-                        textStyle: {
-                          fontSize: { magnitude: 11, unit: 'PT' },
-                          weightedFontFamily: { fontFamily: 'Arial' },
+                    elements: [
+                      {
+                        startIndex: 0,
+                        endIndex: 100,
+                        textRun: {
+                          content:
+                            'This is a sample Google Doc with some content. You can edit, format, and manipulate this text.',
+                          textStyle: {
+                            fontSize: { magnitude: 11, unit: 'PT' },
+                            weightedFontFamily: { fontFamily: 'Arial' },
+                          },
                         },
                       },
-                    }],
+                    ],
                     paragraphStyle: {
                       namedStyleType: 'NORMAL_TEXT',
                       alignment: 'START',
@@ -377,7 +386,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             revisionId: '42',
             suggestionsViewMode: 'SUGGESTIONS_INLINE',
           };
-          
+
           return {
             success: true,
             data: [document],
@@ -388,24 +397,28 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'update': {
           if (!documentId || !content) {
             throw new Error('Document ID and content are required');
           }
-          
+
           const updateResult = {
             documentId,
             updated: true,
             revisionId: '43',
-            requests: [{
-              insertText: {
-                text: content,
-                location: location?.index ? { index: location.index } : { index: 1 },
+            requests: [
+              {
+                insertText: {
+                  text: content,
+                  location: location?.index
+                    ? { index: location.index }
+                    : { index: 1 },
+                },
               },
-            }],
+            ],
           };
-          
+
           return {
             success: true,
             data: [updateResult],
@@ -416,12 +429,12 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'append': {
           if (!documentId || !content) {
             throw new Error('Document ID and content are required');
           }
-          
+
           const appendResult = {
             documentId,
             appended: true,
@@ -429,7 +442,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             endIndex: 1000, // Simulated end index
             revisionId: '44',
           };
-          
+
           return {
             success: true,
             data: [appendResult],
@@ -440,12 +453,14 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'insert': {
           if (!documentId || !content || location?.index === undefined) {
-            throw new Error('Document ID, content, and location index are required');
+            throw new Error(
+              'Document ID, content, and location index are required',
+            );
           }
-          
+
           const insertResult = {
             documentId,
             inserted: true,
@@ -453,7 +468,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             insertedAt: location.index,
             revisionId: '45',
           };
-          
+
           return {
             success: true,
             data: [insertResult],
@@ -464,12 +479,14 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'replace': {
           if (!documentId || !searchText || !replaceText) {
-            throw new Error('Document ID, search text, and replace text are required');
+            throw new Error(
+              'Document ID, search text, and replace text are required',
+            );
           }
-          
+
           const replaceResult = {
             documentId,
             replaced: true,
@@ -479,7 +496,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             replacements: 3, // Simulated number of replacements
             revisionId: '46',
           };
-          
+
           return {
             success: true,
             data: [replaceResult],
@@ -491,12 +508,18 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'delete': {
-          if (!documentId || startIndex === undefined || endIndex === undefined) {
-            throw new Error('Document ID, start index, and end index are required');
+          if (
+            !documentId ||
+            startIndex === undefined ||
+            endIndex === undefined
+          ) {
+            throw new Error(
+              'Document ID, start index, and end index are required',
+            );
           }
-          
+
           const deleteResult = {
             documentId,
             deleted: true,
@@ -505,7 +528,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             deletedLength: endIndex - startIndex,
             revisionId: '47',
           };
-          
+
           return {
             success: true,
             data: [deleteResult],
@@ -516,20 +539,21 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'getAllText': {
           if (!documentId) {
             throw new Error('Document ID is required');
           }
-          
+
           const textContent = {
             documentId,
             title: 'Sample Document',
-            fullText: 'This is the complete text content of the document. It includes all paragraphs, headers, and other text elements.',
+            fullText:
+              'This is the complete text content of the document. It includes all paragraphs, headers, and other text elements.',
             wordCount: 15,
             characterCount: 108,
           };
-          
+
           return {
             success: true,
             data: [textContent],
@@ -540,12 +564,12 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'insertImage': {
           if (!documentId || !imageUri) {
             throw new Error('Document ID and image URI are required');
           }
-          
+
           const imageResult = {
             documentId,
             imageInserted: true,
@@ -556,7 +580,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             objectId: `img_${Date.now()}`,
             revisionId: '48',
           };
-          
+
           return {
             success: true,
             data: [imageResult],
@@ -567,12 +591,12 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'insertTable': {
           if (!documentId || !tableSize?.rows || !tableSize?.columns) {
             throw new Error('Document ID and table dimensions are required');
           }
-          
+
           const tableResult = {
             documentId,
             tableInserted: true,
@@ -582,7 +606,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             tableId: `table_${Date.now()}`,
             revisionId: '49',
           };
-          
+
           return {
             success: true,
             data: [tableResult],
@@ -593,12 +617,16 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'format': {
-          if (!documentId || (startIndex === undefined || endIndex === undefined)) {
+          if (
+            !documentId ||
+            startIndex === undefined ||
+            endIndex === undefined
+          ) {
             throw new Error('Document ID and text range are required');
           }
-          
+
           const formatResult = {
             documentId,
             formatted: true,
@@ -617,7 +645,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
             revisionId: '50',
           };
-          
+
           return {
             success: true,
             data: [formatResult],
@@ -628,12 +656,12 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'export': {
           if (!documentId || !exportFormat) {
             throw new Error('Document ID and export format are required');
           }
-          
+
           const exportResult = {
             documentId,
             exportFormat,
@@ -649,7 +677,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
               epub: 'application/epub+zip',
             }[exportFormat],
           };
-          
+
           return {
             success: true,
             data: [exportResult],
@@ -661,7 +689,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         default:
           throw new Error(`Unknown operation: ${operation}`);
       }
@@ -685,8 +713,7 @@ export class GoogleDocsNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

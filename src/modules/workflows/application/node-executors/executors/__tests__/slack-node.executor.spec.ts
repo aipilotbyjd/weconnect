@@ -3,7 +3,10 @@ import { HttpService } from '@nestjs/axios';
 import { of } from 'rxjs';
 import { SlackNodeExecutor } from '../slack-node.executor';
 import { CredentialIntegrationService } from '../../../../../credentials/application/services/credential-integration.service';
-import { WorkflowNode, NodeType } from '../../../../domain/entities/workflow-node.entity';
+import {
+  WorkflowNode,
+  NodeType,
+} from '../../../../domain/entities/workflow-node.entity';
 
 describe('SlackNodeExecutor', () => {
   let executor: SlackNodeExecutor;
@@ -72,7 +75,8 @@ describe('SlackNodeExecutor', () => {
           ts: '1234567890.123456',
           channel: 'C1234567890',
           message: {
-            permalink: 'https://workspace.slack.com/archives/C1234567890/p1234567890123456',
+            permalink:
+              'https://workspace.slack.com/archives/C1234567890/p1234567890123456',
           },
         },
       };
@@ -83,12 +87,12 @@ describe('SlackNodeExecutor', () => {
       const result = await executor.execute(
         node as WorkflowNode,
         inputData,
-        'exec-123'
+        'exec-123',
       );
 
       expect(credentialService.getCredentialById).toHaveBeenCalledWith(
         'slack-cred-1',
-        inputData._credentialContext
+        inputData._credentialContext,
       );
 
       expect(httpService.post).toHaveBeenCalledWith(
@@ -99,17 +103,18 @@ describe('SlackNodeExecutor', () => {
         },
         {
           headers: {
-            'Authorization': 'Bearer xoxb-slack-bot-token',
+            Authorization: 'Bearer xoxb-slack-bot-token',
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
 
       expect(result.slack).toEqual({
         messageTs: '1234567890.123456',
         channel: 'C1234567890',
         text: 'Hello World',
-        permalink: 'https://workspace.slack.com/archives/C1234567890/p1234567890123456',
+        permalink:
+          'https://workspace.slack.com/archives/C1234567890/p1234567890123456',
         status: 'sent',
       });
     });
@@ -150,18 +155,20 @@ describe('SlackNodeExecutor', () => {
         },
       };
 
-      credentialService.getCredentialByService.mockResolvedValue(mockCredential);
+      credentialService.getCredentialByService.mockResolvedValue(
+        mockCredential,
+      );
       httpService.post.mockReturnValue(of(mockSlackResponse));
 
       const result = await executor.execute(
         node as WorkflowNode,
         inputData,
-        'exec-123'
+        'exec-123',
       );
 
       expect(credentialService.getCredentialByService).toHaveBeenCalledWith(
         'slack',
-        inputData._credentialContext
+        inputData._credentialContext,
       );
 
       expect(httpService.post).toHaveBeenCalledWith(
@@ -172,10 +179,10 @@ describe('SlackNodeExecutor', () => {
         },
         {
           headers: {
-            'Authorization': 'Bearer xoxb-slack-auto-token',
+            Authorization: 'Bearer xoxb-slack-auto-token',
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
     });
 
@@ -199,17 +206,19 @@ describe('SlackNodeExecutor', () => {
       };
 
       credentialService.getCredentialById.mockRejectedValue(
-        new Error('Credential not found')
+        new Error('Credential not found'),
       );
 
       const result = await executor.execute(
         node as WorkflowNode,
         inputData,
-        'exec-123'
+        'exec-123',
       );
 
       expect(result.slack).toBeNull();
-      expect(result.slackError).toContain('Failed to retrieve Slack credentials');
+      expect(result.slackError).toContain(
+        'Failed to retrieve Slack credentials',
+      );
       expect(result._slack.error).toBeDefined();
     });
   });

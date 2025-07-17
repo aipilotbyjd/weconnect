@@ -1,4 +1,11 @@
-import { Entity, Column, ManyToOne, JoinColumn, Index, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  Index,
+  CreateDateColumn,
+} from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Workflow } from './workflow.entity';

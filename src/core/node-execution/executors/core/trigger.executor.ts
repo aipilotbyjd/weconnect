@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { 
-  BaseUnifiedNodeExecutor, 
-  NodeExecutionContext, 
-  NodeExecutionResult, 
-  NodeSchema 
+import {
+  BaseUnifiedNodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+  NodeSchema,
 } from '../../interfaces/unified-node-executor.interface';
 
 @Injectable()

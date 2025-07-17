@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
-import { 
-  BaseUnifiedNodeExecutor, 
-  NodeExecutionContext, 
-  NodeExecutionResult, 
-  NodeSchema 
+import {
+  BaseUnifiedNodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+  NodeSchema,
 } from '../../interfaces/unified-node-executor.interface';
 
 export interface SlackCredentials {
@@ -65,7 +65,13 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
           description: 'Channel name (with #) or channel ID',
           displayOptions: {
             show: {
-              operation: ['sendMessage', 'getChannelInfo', 'deleteMessage', 'uploadFile', 'setChannelTopic'],
+              operation: [
+                'sendMessage',
+                'getChannelInfo',
+                'deleteMessage',
+                'uploadFile',
+                'setChannelTopic',
+              ],
             },
           },
         },
@@ -249,9 +255,9 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
       const response = await lastValueFrom(
         this.httpService.get('https://slack.com/api/auth.test', {
           headers: {
-            'Authorization': `Bearer ${credentials.token}`,
+            Authorization: `Bearer ${credentials.token}`,
           },
-        })
+        }),
       );
 
       return response.data.ok === true;
@@ -264,16 +270,16 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
   async getOptions(
     optionName: string,
     credentials: Record<string, any>,
-    parameters: Record<string, any>
+    parameters: Record<string, any>,
   ): Promise<{ name: string; value: any }[]> {
     if (optionName === 'channel') {
       try {
         const response = await lastValueFrom(
           this.httpService.get('https://slack.com/api/conversations.list', {
             headers: {
-              'Authorization': `Bearer ${credentials.token}`,
+              Authorization: `Bearer ${credentials.token}`,
             },
-          })
+          }),
         );
 
         if (response.data.ok) {
@@ -292,9 +298,10 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
 
   private async sendMessage(
     context: NodeExecutionContext,
-    credentials: SlackCredentials
+    credentials: SlackCredentials,
   ): Promise<any> {
-    const { channel, text, username, iconEmoji, threadTs, attachments } = context.parameters;
+    const { channel, text, username, iconEmoji, threadTs, attachments } =
+      context.parameters;
 
     const payload: any = {
       channel: this.replaceVariables(channel, context),
@@ -320,10 +327,10 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
     const response = await lastValueFrom(
       this.httpService.post('https://slack.com/api/chat.postMessage', payload, {
         headers: {
-          'Authorization': `Bearer ${credentials.token}`,
+          Authorization: `Bearer ${credentials.token}`,
           'Content-Type': 'application/json',
         },
-      })
+      }),
     );
 
     if (!response.data.ok) {
@@ -341,7 +348,7 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
 
   private async getChannelInfo(
     context: NodeExecutionContext,
-    credentials: SlackCredentials
+    credentials: SlackCredentials,
   ): Promise<any> {
     const channel = this.replaceVariables(context.parameters.channel, context);
 
@@ -350,10 +357,10 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
         `https://slack.com/api/conversations.info?channel=${encodeURIComponent(channel)}`,
         {
           headers: {
-            'Authorization': `Bearer ${credentials.token}`,
+            Authorization: `Bearer ${credentials.token}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     if (!response.data.ok) {
@@ -377,17 +384,17 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
 
   private async listChannels(
     context: NodeExecutionContext,
-    credentials: SlackCredentials
+    credentials: SlackCredentials,
   ): Promise<any> {
     const response = await lastValueFrom(
       this.httpService.get(
         'https://slack.com/api/conversations.list?types=public_channel,private_channel',
         {
           headers: {
-            'Authorization': `Bearer ${credentials.token}`,
+            Authorization: `Bearer ${credentials.token}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     if (!response.data.ok) {
@@ -411,7 +418,7 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
 
   private async deleteMessage(
     context: NodeExecutionContext,
-    credentials: SlackCredentials
+    credentials: SlackCredentials,
   ): Promise<any> {
     const { channel, messageTs } = context.parameters;
 
@@ -424,11 +431,11 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
         },
         {
           headers: {
-            'Authorization': `Bearer ${credentials.token}`,
+            Authorization: `Bearer ${credentials.token}`,
             'Content-Type': 'application/json',
           },
-        }
-      )
+        },
+      ),
     );
 
     if (!response.data.ok) {
@@ -444,7 +451,7 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
 
   private async uploadFile(
     context: NodeExecutionContext,
-    credentials: SlackCredentials
+    credentials: SlackCredentials,
   ): Promise<any> {
     const { channel, fileContent, fileName } = context.parameters;
 
@@ -459,9 +466,9 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
     const response = await lastValueFrom(
       this.httpService.post('https://slack.com/api/files.upload', formData, {
         headers: {
-          'Authorization': `Bearer ${credentials.token}`,
+          Authorization: `Bearer ${credentials.token}`,
         },
-      })
+      }),
     );
 
     if (!response.data.ok) {
@@ -479,7 +486,7 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
 
   private async getUserInfo(
     context: NodeExecutionContext,
-    credentials: SlackCredentials
+    credentials: SlackCredentials,
   ): Promise<any> {
     const userId = this.replaceVariables(context.parameters.userId, context);
 
@@ -488,10 +495,10 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
         `https://slack.com/api/users.info?user=${encodeURIComponent(userId)}`,
         {
           headers: {
-            'Authorization': `Bearer ${credentials.token}`,
+            Authorization: `Bearer ${credentials.token}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     if (!response.data.ok) {
@@ -515,7 +522,7 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
 
   private async setChannelTopic(
     context: NodeExecutionContext,
-    credentials: SlackCredentials
+    credentials: SlackCredentials,
   ): Promise<any> {
     const { channel, topic } = context.parameters;
 
@@ -528,11 +535,11 @@ export class SlackNodeExecutor extends BaseUnifiedNodeExecutor {
         },
         {
           headers: {
-            'Authorization': `Bearer ${credentials.token}`,
+            Authorization: `Bearer ${credentials.token}`,
             'Content-Type': 'application/json',
           },
-        }
-      )
+        },
+      ),
     );
 
     if (!response.data.ok) {

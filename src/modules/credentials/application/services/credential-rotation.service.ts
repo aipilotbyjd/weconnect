@@ -1,10 +1,18 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Credential } from '../../domain/entities/credential.entity';
 import { CredentialRotation } from '../../domain/entities/credential-rotation.entity';
-import { RotationStatus, RotationType } from '../../domain/enums/credential-rotation.enum';
+import {
+  RotationStatus,
+  RotationType,
+} from '../../domain/enums/credential-rotation.enum';
 import { CredentialsService } from './credentials.service';
 import { EncryptionService } from './encryption.service';
 
@@ -76,14 +84,18 @@ export class CredentialRotationService {
     });
 
     if (existingRotation) {
-      throw new BadRequestException('Rotation policy already exists for this credential');
+      throw new BadRequestException(
+        'Rotation policy already exists for this credential',
+      );
     }
 
     const rotationPolicy = { ...this.defaultPolicy, ...policy };
 
     // Calculate next rotation date
     const nextRotationAt = new Date();
-    nextRotationAt.setDate(nextRotationAt.getDate() + rotationPolicy.rotationIntervalDays);
+    nextRotationAt.setDate(
+      nextRotationAt.getDate() + rotationPolicy.rotationIntervalDays,
+    );
 
     const rotationData: Partial<CredentialRotation> = {
       credentialId,
@@ -131,7 +143,9 @@ export class CredentialRotationService {
     // Recalculate next rotation if interval changed
     if (policy.rotationIntervalDays && rotation.policy.autoRotate) {
       const nextRotationAt = new Date();
-      nextRotationAt.setDate(nextRotationAt.getDate() + policy.rotationIntervalDays);
+      nextRotationAt.setDate(
+        nextRotationAt.getDate() + policy.rotationIntervalDays,
+      );
       rotation.nextRotationAt = nextRotationAt;
     }
 
@@ -170,7 +184,7 @@ export class CredentialRotationService {
     const savedRotation = await this.rotationRepository.save(rotation);
 
     this.logger.log(
-      `Rotation scheduled for credential ${credentialId} at ${scheduledAt.toISOString()}`
+      `Rotation scheduled for credential ${credentialId} at ${scheduledAt.toISOString()}`,
     );
 
     return savedRotation;
@@ -190,7 +204,9 @@ export class CredentialRotationService {
       });
 
       if (!currentCredential) {
-        throw new NotFoundException('Credential not found or not owned by user');
+        throw new NotFoundException(
+          'Credential not found or not owned by user',
+        );
       }
 
       // Create rotation record
@@ -222,7 +238,9 @@ export class CredentialRotationService {
             newCredential = await this.rotateCertificate(currentCredential);
             break;
           default:
-            throw new BadRequestException(`Unsupported rotation type: ${rotationType}`);
+            throw new BadRequestException(
+              `Unsupported rotation type: ${rotationType}`,
+            );
         }
 
         // Mark old credential as rotated
@@ -242,7 +260,7 @@ export class CredentialRotationService {
         await this.updateNextRotationDate(credentialId);
 
         this.logger.log(
-          `Credential ${credentialId} rotated successfully to ${newCredential.id}`
+          `Credential ${credentialId} rotated successfully to ${newCredential.id}`,
         );
 
         return {
@@ -262,7 +280,9 @@ export class CredentialRotationService {
         throw error;
       }
     } catch (error) {
-      this.logger.error(`Credential rotation failed for ${credentialId}: ${error.message}`);
+      this.logger.error(
+        `Credential rotation failed for ${credentialId}: ${error.message}`,
+      );
 
       return {
         success: false,
@@ -276,10 +296,15 @@ export class CredentialRotationService {
   private async rotateApiKey(credential: Credential): Promise<Credential> {
     // For API keys, we typically need to generate a new key
     // This is service-specific implementation
-    const decryptedData = await this.encryptionService.decrypt(credential.encryptedData);
-    
+    const decryptedData = await this.encryptionService.decrypt(
+      credential.encryptedData,
+    );
+
     // Generate new API key (implementation depends on service)
-    const newApiKey = await this.generateNewApiKey(credential.service, decryptedData);
+    const newApiKey = await this.generateNewApiKey(
+      credential.service,
+      decryptedData,
+    );
 
     // Create new credential with updated API key
     const newCredentialData = {
@@ -288,12 +313,15 @@ export class CredentialRotationService {
       rotatedFrom: credential.id,
     };
 
-    const newCredential = await this.credentialService.create(credential.userId, {
-      name: `${credential.name} (Rotated)`,
-      service: credential.service,
-      type: credential.type,
-      data: newCredentialData,
-    });
+    const newCredential = await this.credentialService.create(
+      credential.userId,
+      {
+        name: `${credential.name} (Rotated)`,
+        service: credential.service,
+        type: credential.type,
+        data: newCredentialData,
+      },
+    );
 
     return newCredential;
   }
@@ -301,23 +329,32 @@ export class CredentialRotationService {
   private async rotateOAuth2Token(credential: Credential): Promise<Credential> {
     // For OAuth2, we refresh the token
     try {
-      const refreshedCredential = await this.credentialService.refreshOAuth2Token(credential.id);
+      const refreshedCredential =
+        await this.credentialService.refreshOAuth2Token(credential.id);
       return refreshedCredential;
     } catch (error) {
       // If refresh fails, we might need to re-authenticate
-      throw new BadRequestException('OAuth2 token refresh failed. Re-authentication required.');
+      throw new BadRequestException(
+        'OAuth2 token refresh failed. Re-authentication required.',
+      );
     }
   }
 
   private async rotatePassword(credential: Credential): Promise<Credential> {
     // Password rotation typically requires external service integration
-    const decryptedData = await this.encryptionService.decrypt(credential.encryptedData);
-    
+    const decryptedData = await this.encryptionService.decrypt(
+      credential.encryptedData,
+    );
+
     // Generate new password
     const newPassword = this.generateSecurePassword();
 
     // Update password in external service (implementation depends on service)
-    await this.updatePasswordInService(credential.service, decryptedData, newPassword);
+    await this.updatePasswordInService(
+      credential.service,
+      decryptedData,
+      newPassword,
+    );
 
     // Create new credential with updated password
     const newCredentialData = {
@@ -326,20 +363,25 @@ export class CredentialRotationService {
       rotatedFrom: credential.id,
     };
 
-    const newCredential = await this.credentialService.create(credential.userId, {
-      name: `${credential.name} (Rotated)`,
-      service: credential.service,
-      type: credential.type,
-      data: newCredentialData,
-    });
+    const newCredential = await this.credentialService.create(
+      credential.userId,
+      {
+        name: `${credential.name} (Rotated)`,
+        service: credential.service,
+        type: credential.type,
+        data: newCredentialData,
+      },
+    );
 
     return newCredential;
   }
 
   private async rotateCertificate(credential: Credential): Promise<Credential> {
     // Certificate rotation involves generating new certificates
-    const decryptedData = await this.encryptionService.decrypt(credential.encryptedData);
-    
+    const decryptedData = await this.encryptionService.decrypt(
+      credential.encryptedData,
+    );
+
     // Generate new certificate (implementation depends on CA)
     const newCertificate = await this.generateNewCertificate(decryptedData);
 
@@ -351,12 +393,15 @@ export class CredentialRotationService {
       rotatedFrom: credential.id,
     };
 
-    const newCredential = await this.credentialService.create(credential.userId, {
-      name: `${credential.name} (Rotated)`,
-      service: credential.service,
-      type: credential.type,
-      data: newCredentialData,
-    });
+    const newCredential = await this.credentialService.create(
+      credential.userId,
+      {
+        name: `${credential.name} (Rotated)`,
+        service: credential.service,
+        type: credential.type,
+        data: newCredentialData,
+      },
+    );
 
     return newCredential;
   }
@@ -378,16 +423,18 @@ export class CredentialRotationService {
         await this.rotateCredential(
           rotation.credentialId,
           rotation.credential.userId,
-          rotation.rotationType
+          rotation.rotationType,
         );
       } catch (error) {
         this.logger.error(
-          `Failed to process scheduled rotation ${rotation.id}: ${error.message}`
+          `Failed to process scheduled rotation ${rotation.id}: ${error.message}`,
         );
       }
     }
 
-    this.logger.log(`Processed ${scheduledRotations.length} scheduled rotations`);
+    this.logger.log(
+      `Processed ${scheduledRotations.length} scheduled rotations`,
+    );
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
@@ -408,11 +455,11 @@ export class CredentialRotationService {
           await this.rotateCredential(
             rotation.credentialId,
             rotation.credential.userId,
-            rotation.rotationType
+            rotation.rotationType,
           );
         } catch (error) {
           this.logger.error(
-            `Failed to process auto rotation ${rotation.id}: ${error.message}`
+            `Failed to process auto rotation ${rotation.id}: ${error.message}`,
           );
         }
       }
@@ -421,7 +468,10 @@ export class CredentialRotationService {
     this.logger.log(`Processed ${autoRotations.length} automatic rotations`);
   }
 
-  async getRotationHistory(credentialId: string, userId: string): Promise<CredentialRotation[]> {
+  async getRotationHistory(
+    credentialId: string,
+    userId: string,
+  ): Promise<CredentialRotation[]> {
     // Verify credential ownership
     const credential = await this.credentialRepository.findOne({
       where: { id: credentialId, userId },
@@ -453,7 +503,9 @@ export class CredentialRotationService {
       relations: ['credential'],
     });
 
-    const userRotations = rotations.filter(r => r.credential.userId === userId);
+    const userRotations = rotations.filter(
+      (r) => r.credential.userId === userId,
+    );
 
     const immediate: Credential[] = [];
     const warning: Credential[] = [];
@@ -472,7 +524,7 @@ export class CredentialRotationService {
       if (rotation.policy?.maxAge) {
         const maxAgeDate = new Date(rotation.credential.createdAt);
         maxAgeDate.setDate(maxAgeDate.getDate() + rotation.policy.maxAge);
-        
+
         if (maxAgeDate < now) {
           immediate.push(rotation.credential);
         }
@@ -489,14 +541,19 @@ export class CredentialRotationService {
 
     if (rotation && rotation.policy?.autoRotate) {
       const nextRotationAt = new Date();
-      nextRotationAt.setDate(nextRotationAt.getDate() + rotation.policy.rotationIntervalDays);
-      
+      nextRotationAt.setDate(
+        nextRotationAt.getDate() + rotation.policy.rotationIntervalDays,
+      );
+
       rotation.nextRotationAt = nextRotationAt;
       await this.rotationRepository.save(rotation);
     }
   }
 
-  private async generateNewApiKey(service: string, currentData: any): Promise<string> {
+  private async generateNewApiKey(
+    service: string,
+    currentData: any,
+  ): Promise<string> {
     // This would integrate with the specific service's API to generate a new key
     // For now, return a placeholder
     return `new_api_key_${Date.now()}`;
@@ -504,24 +561,31 @@ export class CredentialRotationService {
 
   private generateSecurePassword(): string {
     const length = 16;
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    const charset =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let password = '';
-    
+
     for (let i = 0; i < length; i++) {
       const randomIndex = Math.floor(Math.random() * charset.length);
       password += charset[randomIndex];
     }
-    
+
     return password;
   }
 
-  private async updatePasswordInService(service: string, currentData: any, newPassword: string): Promise<void> {
+  private async updatePasswordInService(
+    service: string,
+    currentData: any,
+    newPassword: string,
+  ): Promise<void> {
     // This would integrate with the specific service's API to update the password
     // Implementation depends on the service
     this.logger.log(`Password updated for ${service} service`);
   }
 
-  private async generateNewCertificate(currentData: any): Promise<{ cert: string; key: string }> {
+  private async generateNewCertificate(
+    currentData: any,
+  ): Promise<{ cert: string; key: string }> {
     // This would integrate with a Certificate Authority to generate new certificates
     // For now, return a placeholder
     return {

@@ -10,7 +10,12 @@ import {
   Req,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { OrganizationsService } from '../../application/services/organizations.service';
 import { CreateOrganizationDto } from '../dto/create-organization.dto';

@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const MySQLNodeDefinition = new NodeDefinition({
   name: 'MySQL',
@@ -60,7 +64,14 @@ export const MySQLNodeDefinition = new NodeDefinition({
       description: 'Database table name',
       displayOptions: {
         show: {
-          operation: ['select', 'insert', 'update', 'delete', 'dropTable', 'describeTable'],
+          operation: [
+            'select',
+            'insert',
+            'update',
+            'delete',
+            'dropTable',
+            'describeTable',
+          ],
         },
       },
     },
@@ -130,10 +141,10 @@ export const MySQLNodeDefinition = new NodeDefinition({
       displayName: 'Table Schema',
       type: 'json',
       default: {
-        'id': 'INT AUTO_INCREMENT PRIMARY KEY',
-        'name': 'VARCHAR(255) NOT NULL',
-        'email': 'VARCHAR(255) UNIQUE',
-        'created_at': 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
+        id: 'INT AUTO_INCREMENT PRIMARY KEY',
+        name: 'VARCHAR(255) NOT NULL',
+        email: 'VARCHAR(255) UNIQUE',
+        created_at: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
       },
       description: 'Table schema definition (column_name: definition)',
       displayOptions: {
@@ -199,7 +210,7 @@ export class MySQLNodeExecutor implements INodeExecutor {
               columns || item.columns,
               where || item.where,
               orderBy || item.orderBy,
-              limit || item.limit
+              limit || item.limit,
             );
             break;
           case 'insert':
@@ -210,14 +221,21 @@ export class MySQLNodeExecutor implements INodeExecutor {
               tableToUse,
               dataToUse,
               where || item.where,
-              returnFields
+              returnFields,
             );
             break;
           case 'delete':
-            result = await this.delete(tableToUse, where || item.where, returnFields);
+            result = await this.delete(
+              tableToUse,
+              where || item.where,
+              returnFields,
+            );
             break;
           case 'createTable':
-            result = await this.createTable(tableToUse, tableSchema || item.tableSchema);
+            result = await this.createTable(
+              tableToUse,
+              tableSchema || item.tableSchema,
+            );
             break;
           case 'dropTable':
             result = await this.dropTable(tableToUse);
@@ -266,7 +284,7 @@ export class MySQLNodeExecutor implements INodeExecutor {
 
     // Mock response based on query type
     const queryType = query.trim().split(' ')[0].toUpperCase();
-    
+
     let mockResult;
     switch (queryType) {
       case 'SELECT':
@@ -312,33 +330,36 @@ export class MySQLNodeExecutor implements INodeExecutor {
     columns: string = '*',
     where?: string,
     orderBy?: string,
-    limit?: number
+    limit?: number,
   ): Promise<any> {
     if (!table) {
       throw new Error('Table name is required');
     }
 
     let query = `SELECT ${columns} FROM ${table}`;
-    
+
     if (where) {
       query += ` WHERE ${where}`;
     }
-    
+
     if (orderBy) {
       query += ` ORDER BY ${orderBy}`;
     }
-    
+
     if (limit) {
       query += ` LIMIT ${limit}`;
     }
 
     // Mock data
-    const mockRows = Array.from({ length: Math.min(limit || 10, 10) }, (_, i) => ({
-      id: i + 1,
-      name: `User ${i + 1}`,
-      email: `user${i + 1}@example.com`,
-      created_at: new Date(Date.now() - Math.random() * 86400000 * 30),
-    }));
+    const mockRows = Array.from(
+      { length: Math.min(limit || 10, 10) },
+      (_, i) => ({
+        id: i + 1,
+        name: `User ${i + 1}`,
+        email: `user${i + 1}@example.com`,
+        created_at: new Date(Date.now() - Math.random() * 86400000 * 30),
+      }),
+    );
 
     return {
       success: true,
@@ -351,13 +372,19 @@ export class MySQLNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async insert(table: string, data: any, returnFields: string = 'all'): Promise<any> {
+  private async insert(
+    table: string,
+    data: any,
+    returnFields: string = 'all',
+  ): Promise<any> {
     if (!table || !data) {
       throw new Error('Table name and data are required');
     }
 
     const columns = Object.keys(data).join(', ');
-    const values = Object.values(data).map(v => `'${v}'`).join(', ');
+    const values = Object.values(data)
+      .map((v) => `'${v}'`)
+      .join(', ');
     const query = `INSERT INTO ${table} (${columns}) VALUES (${values})`;
 
     const insertId = Math.floor(Math.random() * 1000) + 1;
@@ -391,7 +418,7 @@ export class MySQLNodeExecutor implements INodeExecutor {
     table: string,
     data: any,
     where?: string,
-    returnFields: string = 'all'
+    returnFields: string = 'all',
   ): Promise<any> {
     if (!table || !data) {
       throw new Error('Table name and data are required');
@@ -400,9 +427,9 @@ export class MySQLNodeExecutor implements INodeExecutor {
     const setClause = Object.entries(data)
       .map(([key, value]) => `${key} = '${value}'`)
       .join(', ');
-    
+
     let query = `UPDATE ${table} SET ${setClause}`;
-    
+
     if (where) {
       query += ` WHERE ${where}`;
     }
@@ -427,17 +454,23 @@ export class MySQLNodeExecutor implements INodeExecutor {
     return result;
   }
 
-  private async delete(table: string, where?: string, returnFields: string = 'all'): Promise<any> {
+  private async delete(
+    table: string,
+    where?: string,
+    returnFields: string = 'all',
+  ): Promise<any> {
     if (!table) {
       throw new Error('Table name is required');
     }
 
     let query = `DELETE FROM ${table}`;
-    
+
     if (where) {
       query += ` WHERE ${where}`;
     } else {
-      throw new Error('WHERE clause is required for DELETE operations for safety');
+      throw new Error(
+        'WHERE clause is required for DELETE operations for safety',
+      );
     }
 
     const affectedRows = Math.floor(Math.random() * 3) + 1;
@@ -467,7 +500,7 @@ export class MySQLNodeExecutor implements INodeExecutor {
     const columns = Object.entries(schema)
       .map(([name, definition]) => `${name} ${definition}`)
       .join(', ');
-    
+
     const query = `CREATE TABLE ${table} (${columns})`;
 
     return {
@@ -500,13 +533,7 @@ export class MySQLNodeExecutor implements INodeExecutor {
 
   private async showTables(): Promise<any> {
     // Mock table list
-    const tables = [
-      'users',
-      'products',
-      'orders',
-      'categories',
-      'settings',
-    ];
+    const tables = ['users', 'products', 'orders', 'categories', 'settings'];
 
     return {
       success: true,
@@ -579,8 +606,7 @@ export class MySQLNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

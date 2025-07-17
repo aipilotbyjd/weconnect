@@ -15,12 +15,7 @@ import { QueueMonitoringModule } from './infrastructure/queue-monitoring.module'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      ExecutionMetric,
-      SystemMetric,
-      Alert,
-      AuditLog,
-    ]),
+    TypeOrmModule.forFeature([ExecutionMetric, SystemMetric, Alert, AuditLog]),
     WorkflowsModule,
     WorkflowQueueModule,
     QueueMonitoringModule,

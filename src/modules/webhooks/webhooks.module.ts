@@ -16,16 +16,9 @@ import { Webhook } from './domain/entities/webhook.entity';
 import { ExecutionsModule } from '../executions/executions.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Webhook]),
-    ExecutionsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Webhook]), ExecutionsModule],
   controllers: [WebhooksController],
-  providers: [
-    WebhooksService,
-    CreateWebhookUseCase,
-    TriggerWebhookUseCase,
-  ],
+  providers: [WebhooksService, CreateWebhookUseCase, TriggerWebhookUseCase],
   exports: [WebhooksService],
 })
 export class WebhooksModule {}

@@ -6,7 +6,18 @@ import { NodeExecutor } from '../node-executor.interface';
 import { CredentialIntegrationService } from '../../../../credentials/application/services/credential-integration.service';
 
 export interface TrelloConfig {
-  operation: 'createCard' | 'updateCard' | 'deleteCard' | 'moveCard' | 'addComment' | 'getCards' | 'getBoards' | 'getLists' | 'createList' | 'addMember' | 'addLabel';
+  operation:
+    | 'createCard'
+    | 'updateCard'
+    | 'deleteCard'
+    | 'moveCard'
+    | 'addComment'
+    | 'getCards'
+    | 'getBoards'
+    | 'getLists'
+    | 'createList'
+    | 'addMember'
+    | 'addLabel';
   credentialId?: string;
   apiKey?: string;
   token?: string;
@@ -102,7 +113,7 @@ export class TrelloNodeExecutor implements NodeExecutor {
       };
     } catch (error) {
       this.logger.error(`Trello operation failed: ${error.message}`);
-      
+
       return {
         ...inputData,
         trello: null,
@@ -120,7 +131,7 @@ export class TrelloNodeExecutor implements NodeExecutor {
 
   async validate(configuration: Record<string, any>): Promise<boolean> {
     const config = configuration as TrelloConfig;
-    
+
     if (!config.operation) return false;
     if (!config.apiKey && !config.credentialId) return false;
     if (!config.token && !config.credentialId) return false;
@@ -150,7 +161,10 @@ export class TrelloNodeExecutor implements NodeExecutor {
     }
   }
 
-  private async getCredentials(config: TrelloConfig, inputData: Record<string, any>): Promise<{ apiKey: string; token: string }> {
+  private async getCredentials(
+    config: TrelloConfig,
+    inputData: Record<string, any>,
+  ): Promise<{ apiKey: string; token: string }> {
     let apiKey = config.apiKey;
     let token = config.token;
 
@@ -164,10 +178,11 @@ export class TrelloNodeExecutor implements NodeExecutor {
 
     if (config.credentialId) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialById(
-          config.credentialId,
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialById(
+            config.credentialId,
+            inputData._credentialContext,
+          );
         if (!credential.data.apiKey || !credential.data.token) {
           throw new Error('Trello credential is missing apiKey or token');
         }
@@ -177,17 +192,20 @@ export class TrelloNodeExecutor implements NodeExecutor {
         };
       } catch (error) {
         this.logger.error(`Failed to get Trello credential: ${error.message}`);
-        throw new Error(`Failed to retrieve Trello credentials: ${error.message}`);
+        throw new Error(
+          `Failed to retrieve Trello credentials: ${error.message}`,
+        );
       }
     }
 
     // Try to get credential by service name
     if (inputData._credentialContext && (!apiKey || !token)) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialByService(
-          'trello',
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialByService(
+            'trello',
+            inputData._credentialContext,
+          );
         if (!credential.data.apiKey || !credential.data.token) {
           throw new Error('Trello credential is missing apiKey or token');
         }
@@ -196,7 +214,9 @@ export class TrelloNodeExecutor implements NodeExecutor {
           token: credential.data.token,
         };
       } catch (error) {
-        this.logger.error(`Failed to get Trello credential by service: ${error.message}`);
+        this.logger.error(
+          `Failed to get Trello credential by service: ${error.message}`,
+        );
       }
     }
 
@@ -219,7 +239,9 @@ export class TrelloNodeExecutor implements NodeExecutor {
   ): Promise<any> {
     const listId = this.replaceVariables(config.listId!, inputData);
     const name = this.replaceVariables(config.name!, inputData);
-    const description = config.description ? this.replaceVariables(config.description, inputData) : '';
+    const description = config.description
+      ? this.replaceVariables(config.description, inputData)
+      : '';
 
     const payload: any = {
       idList: listId,
@@ -410,7 +432,7 @@ export class TrelloNodeExecutor implements NodeExecutor {
     token: string,
   ): Promise<any> {
     let url: string;
-    
+
     if (config.listId) {
       const listId = this.replaceVariables(config.listId, inputData);
       url = `https://api.trello.com/1/lists/${listId}/cards`;
@@ -597,7 +619,7 @@ export class TrelloNodeExecutor implements NodeExecutor {
     if (config.labelId) {
       // Add existing label
       const labelId = this.replaceVariables(config.labelId, inputData);
-      
+
       const response = await lastValueFrom(
         this.httpService.post(
           `https://api.trello.com/1/cards/${cardId}/idLabels?${this.buildAuthParams(apiKey, token)}`,
@@ -618,8 +640,10 @@ export class TrelloNodeExecutor implements NodeExecutor {
       };
     } else if (config.labelColor && config.labelName) {
       // Create and add new label
-      const boardId = config.boardId ? this.replaceVariables(config.boardId, inputData) : null;
-      
+      const boardId = config.boardId
+        ? this.replaceVariables(config.boardId, inputData)
+        : null;
+
       if (!boardId) {
         throw new Error('boardId is required when creating a new label');
       }
@@ -664,7 +688,9 @@ export class TrelloNodeExecutor implements NodeExecutor {
         status: 'created_and_added',
       };
     } else {
-      throw new Error('Either labelId or both labelColor and labelName must be provided');
+      throw new Error(
+        'Either labelId or both labelColor and labelName must be provided',
+      );
     }
   }
 

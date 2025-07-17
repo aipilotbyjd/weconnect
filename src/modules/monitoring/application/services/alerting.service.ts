@@ -1,7 +1,12 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Alert, AlertType, AlertSeverity, AlertStatus } from '../../domain/entities/alert.entity';
+import {
+  Alert,
+  AlertType,
+  AlertSeverity,
+  AlertStatus,
+} from '../../domain/entities/alert.entity';
 import { ConfigService } from '@nestjs/config';
 
 // Define a simple interface for email sending
@@ -49,7 +54,8 @@ export class AlertingService {
       type: config.type as AlertType,
       title: config.title,
       message: config.message,
-      severity: config.severity || this.determineSeverity(config.type as AlertType),
+      severity:
+        config.severity || this.determineSeverity(config.type as AlertType),
       metadata: config.metadata,
       status: AlertStatus.PENDING as AlertStatus,
       channelsNotified: [],
@@ -58,8 +64,10 @@ export class AlertingService {
     const alert = await this.alertRepository.save(alertEntity);
 
     // Get enabled channels from config
-    const enabledChannels = this.configService.get<string[]>('alerts.channels') || ['email'];
-    
+    const enabledChannels = this.configService.get<string[]>(
+      'alerts.channels',
+    ) || ['email'];
+
     // Send to all enabled channels
     for (const channel of enabledChannels) {
       try {
@@ -79,7 +87,7 @@ export class AlertingService {
     } else {
       alert.status = AlertStatus.PENDING;
     }
-    
+
     return this.alertRepository.save(alert);
   }
 
@@ -105,8 +113,9 @@ export class AlertingService {
       return;
     }
 
-    const recipients = this.configService.get<string[]>('alerts.emailRecipients') || [];
-    
+    const recipients =
+      this.configService.get<string[]>('alerts.emailRecipients') || [];
+
     if (recipients.length === 0) {
       this.logger.warn('No email recipients configured for alerts');
       return;
@@ -123,10 +132,14 @@ export class AlertingService {
           <p><strong>Time:</strong> ${alert.createdAt}</p>
           <p><strong>Message:</strong></p>
           <p>${alert.message}</p>
-          ${alert.metadata ? `
+          ${
+            alert.metadata
+              ? `
             <p><strong>Details:</strong></p>
             <pre>${JSON.stringify(alert.metadata, null, 2)}</pre>
-          ` : ''}
+          `
+              : ''
+          }
         `,
       });
     } catch (error) {
@@ -137,7 +150,7 @@ export class AlertingService {
 
   private async sendSlackAlert(alert: Alert): Promise<void> {
     const webhookUrl = this.configService.get<string>('alerts.slackWebhook');
-    
+
     if (!webhookUrl) {
       this.logger.warn('No Slack webhook configured for alerts');
       return;
@@ -149,7 +162,7 @@ export class AlertingService {
 
   private async sendWebhookAlert(alert: Alert): Promise<void> {
     const webhookUrl = this.configService.get<string>('alerts.webhookUrl');
-    
+
     if (!webhookUrl) {
       return;
     }
@@ -159,8 +172,10 @@ export class AlertingService {
   }
 
   async acknowledgeAlert(alertId: string, userId: string): Promise<Alert> {
-    const alert = await this.alertRepository.findOne({ where: { id: alertId } });
-    
+    const alert = await this.alertRepository.findOne({
+      where: { id: alertId },
+    });
+
     if (!alert) {
       throw new Error('Alert not found');
     }
@@ -177,8 +192,10 @@ export class AlertingService {
     userId: string,
     resolutionNotes?: string,
   ): Promise<Alert> {
-    const alert = await this.alertRepository.findOne({ where: { id: alertId } });
-    
+    const alert = await this.alertRepository.findOne({
+      where: { id: alertId },
+    });
+
     if (!alert) {
       throw new Error('Alert not found');
     }
@@ -192,9 +209,14 @@ export class AlertingService {
   }
 
   async getActiveAlerts(severity?: AlertSeverity): Promise<Alert[]> {
-    const query = this.alertRepository.createQueryBuilder('alert')
+    const query = this.alertRepository
+      .createQueryBuilder('alert')
       .where('alert.status IN (:...statuses)', {
-        statuses: [AlertStatus.PENDING, AlertStatus.SENT, AlertStatus.ACKNOWLEDGED],
+        statuses: [
+          AlertStatus.PENDING,
+          AlertStatus.SENT,
+          AlertStatus.ACKNOWLEDGED,
+        ],
       });
 
     if (severity) {

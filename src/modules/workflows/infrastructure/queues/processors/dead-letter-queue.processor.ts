@@ -3,7 +3,10 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { WorkflowExecutionLog, LogLevel } from '../../../domain/entities/workflow-execution-log.entity';
+import {
+  WorkflowExecutionLog,
+  LogLevel,
+} from '../../../domain/entities/workflow-execution-log.entity';
 import { AlertingService } from '../../../../monitoring/application/services/alerting.service';
 
 export const DEAD_LETTER_QUEUE = 'dead-letter-queue';
@@ -30,7 +33,7 @@ export class DeadLetterQueueProcessor {
   @Process()
   async handleDeadLetterJob(job: Job<DeadLetterJobData>) {
     const { originalQueue, originalJobId, error, data, attempts } = job.data;
-    
+
     this.logger.error(
       `Processing dead letter job from queue ${originalQueue}, job ${originalJobId}`,
       error,
@@ -85,21 +88,25 @@ export class DeadLetterQueueProcessor {
   private async storeForAnalysis(data: DeadLetterJobData): Promise<void> {
     // In a real implementation, this would store to a persistent store
     // for later analysis and potential reprocessing
-    this.logger.log(`Stored dead letter job for analysis: ${data.originalJobId}`);
+    this.logger.log(
+      `Stored dead letter job for analysis: ${data.originalJobId}`,
+    );
   }
 
   async reprocessDeadLetterJob(jobId: string): Promise<void> {
     const job = await this.getJob(jobId);
-    
+
     if (!job) {
       throw new Error(`Dead letter job ${jobId} not found`);
     }
 
     // Re-queue to original queue with modified options
     const { originalQueue, data } = job.data;
-    
+
     // This would need the queue service to re-queue
-    this.logger.log(`Reprocessing dead letter job ${jobId} to queue ${originalQueue}`);
+    this.logger.log(
+      `Reprocessing dead letter job ${jobId} to queue ${originalQueue}`,
+    );
   }
 
   private async getJob(jobId: string): Promise<Job<DeadLetterJobData> | null> {

@@ -86,5 +86,4 @@ export class Alert extends BaseEntity {
   @ApiProperty({ description: 'Resolution notes' })
   @Column({ type: 'text', nullable: true })
   resolutionNotes?: string;
-
 }

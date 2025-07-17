@@ -23,11 +23,11 @@ export class GetWorkflowsUseCase {
       where: { id },
       relations: ['nodes', 'user'],
     });
-    
+
     if (!workflow) {
       throw new Error('Workflow not found');
     }
-    
+
     return workflow;
   }
 }

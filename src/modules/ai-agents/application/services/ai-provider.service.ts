@@ -9,7 +9,7 @@ export enum AIProvider {
   OPENAI = 'openai',
   ANTHROPIC = 'anthropic',
   GOOGLE = 'google',
-  AZURE = 'azure'
+  AZURE = 'azure',
 }
 
 export interface AIProviderConfig {
@@ -40,7 +40,8 @@ export class AIProviderService {
             modelName: model,
             temperature,
             maxTokens,
-            openAIApiKey: config.apiKey || this.configService.get('OPENAI_API_KEY'),
+            openAIApiKey:
+              config.apiKey || this.configService.get('OPENAI_API_KEY'),
           });
 
         case AIProvider.ANTHROPIC:
@@ -48,7 +49,8 @@ export class AIProviderService {
             modelName: model,
             temperature,
             maxTokens,
-            anthropicApiKey: config.apiKey || this.configService.get('ANTHROPIC_API_KEY'),
+            anthropicApiKey:
+              config.apiKey || this.configService.get('ANTHROPIC_API_KEY'),
           });
 
         case AIProvider.GOOGLE:
@@ -56,15 +58,21 @@ export class AIProviderService {
             model,
             temperature,
             maxOutputTokens: maxTokens,
-            apiKey: config.apiKey || this.configService.get('GOOGLE_AI_API_KEY'),
+            apiKey:
+              config.apiKey || this.configService.get('GOOGLE_AI_API_KEY'),
           });
 
         default:
           throw new BadRequestException(`Unsupported AI provider: ${provider}`);
       }
     } catch (error) {
-      this.logger.error(`Failed to create language model for provider ${provider}:`, error);
-      throw new BadRequestException(`Failed to initialize ${provider} model: ${error.message}`);
+      this.logger.error(
+        `Failed to create language model for provider ${provider}:`,
+        error,
+      );
+      throw new BadRequestException(
+        `Failed to initialize ${provider} model: ${error.message}`,
+      );
     }
   }
 
@@ -100,12 +108,7 @@ export class AIProviderService {
         ];
 
       case AIProvider.AZURE:
-        return [
-          'gpt-4',
-          'gpt-4-32k',
-          'gpt-35-turbo',
-          'gpt-35-turbo-16k',
-        ];
+        return ['gpt-4', 'gpt-4-32k', 'gpt-35-turbo', 'gpt-35-turbo-16k'];
 
       default:
         return [];
@@ -127,7 +130,7 @@ export class AIProviderService {
     const availableModels = this.getAvailableModels(provider);
     if (!availableModels.includes(model)) {
       throw new BadRequestException(
-        `Model ${model} is not available for provider ${provider}. Available models: ${availableModels.join(', ')}`
+        `Model ${model} is not available for provider ${provider}. Available models: ${availableModels.join(', ')}`,
       );
     }
 
@@ -142,7 +145,7 @@ export class AIProviderService {
     const envKey = apiKeyEnvMap[provider];
     if (!config.apiKey && !this.configService.get(envKey)) {
       throw new BadRequestException(
-        `API key not provided for ${provider}. Set ${envKey} environment variable or provide apiKey in configuration.`
+        `API key not provided for ${provider}. Set ${envKey} environment variable or provide apiKey in configuration.`,
       );
     }
 
@@ -178,7 +181,8 @@ export class AIProviderService {
       [AIProvider.AZURE]: {
         name: 'Azure OpenAI',
         description: 'OpenAI models hosted on Microsoft Azure',
-        website: 'https://azure.microsoft.com/en-us/products/cognitive-services/openai-service',
+        website:
+          'https://azure.microsoft.com/en-us/products/cognitive-services/openai-service',
         supportsStreaming: true,
         supportsFunctions: true,
       },
@@ -191,7 +195,7 @@ export class AIProviderService {
    * Get all supported providers
    */
   getAllProviders() {
-    return Object.values(AIProvider).map(provider => ({
+    return Object.values(AIProvider).map((provider) => ({
       id: provider,
       ...this.getProviderInfo(provider),
       models: this.getAvailableModels(provider),

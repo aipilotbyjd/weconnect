@@ -19,9 +19,7 @@ import { TemplateReview } from '../../domain/entities';
 @ApiTags('Template Reviews')
 @Controller('api/v1/workflow-templates/:templateId/reviews')
 export class TemplateReviewController {
-  constructor(
-    private readonly reviewService: TemplateReviewService,
-  ) {}
+  constructor(private readonly reviewService: TemplateReviewService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -51,10 +49,7 @@ export class TemplateReviewController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a review' })
-  async delete(
-    @Param('id') id: string,
-    @Request() req,
-  ): Promise<void> {
+  async delete(@Param('id') id: string, @Request() req): Promise<void> {
     await this.reviewService.delete(id, req.user);
   }
 

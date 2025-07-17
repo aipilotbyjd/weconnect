@@ -17,9 +17,7 @@ import { TemplateCategory } from '../../domain/entities';
 @ApiTags('Template Categories')
 @Controller('api/v1/template-categories')
 export class TemplateCategoryController {
-  constructor(
-    private readonly categoryService: TemplateCategoryService,
-  ) {}
+  constructor(private readonly categoryService: TemplateCategoryService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)

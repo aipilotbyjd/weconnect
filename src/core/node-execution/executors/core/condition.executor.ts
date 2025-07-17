@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { 
-  BaseUnifiedNodeExecutor, 
-  NodeExecutionContext, 
-  NodeExecutionResult, 
-  NodeSchema 
+import {
+  BaseUnifiedNodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+  NodeSchema,
 } from '../../interfaces/unified-node-executor.interface';
 
 @Injectable()
@@ -70,18 +70,18 @@ export class ConditionNodeExecutor extends BaseUnifiedNodeExecutor {
       for (const condition of conditions) {
         const result = this.evaluateCondition(condition, inputData, context);
         results.push(result);
-        
+
         this.logger.debug(
-          `Condition evaluated: ${condition.field} ${condition.operator} ${condition.value} = ${result}`
+          `Condition evaluated: ${condition.field} ${condition.operator} ${condition.value} = ${result}`,
         );
       }
 
       let finalResult: boolean;
-      
+
       if (combineOperation === 'AND') {
-        finalResult = results.every(r => r === true);
+        finalResult = results.every((r) => r === true);
       } else {
-        finalResult = results.some(r => r === true);
+        finalResult = results.some((r) => r === true);
       }
 
       this.logger.log(`Condition node result: ${finalResult}`);
@@ -119,10 +119,10 @@ export class ConditionNodeExecutor extends BaseUnifiedNodeExecutor {
   private evaluateCondition(
     condition: any,
     inputData: any,
-    context: NodeExecutionContext
+    context: NodeExecutionContext,
   ): boolean {
     const { field, operator, value } = condition;
-    
+
     // Get the actual value from input data
     const actualValue = this.getFieldValue(field, inputData, context);
     const expectedValue = this.replaceVariables(String(value), context);
@@ -133,13 +133,21 @@ export class ConditionNodeExecutor extends BaseUnifiedNodeExecutor {
       case 'notEquals':
         return this.compareValues(actualValue, expectedValue, '!==');
       case 'contains':
-        return String(actualValue).toLowerCase().includes(String(expectedValue).toLowerCase());
+        return String(actualValue)
+          .toLowerCase()
+          .includes(String(expectedValue).toLowerCase());
       case 'notContains':
-        return !String(actualValue).toLowerCase().includes(String(expectedValue).toLowerCase());
+        return !String(actualValue)
+          .toLowerCase()
+          .includes(String(expectedValue).toLowerCase());
       case 'startsWith':
-        return String(actualValue).toLowerCase().startsWith(String(expectedValue).toLowerCase());
+        return String(actualValue)
+          .toLowerCase()
+          .startsWith(String(expectedValue).toLowerCase());
       case 'endsWith':
-        return String(actualValue).toLowerCase().endsWith(String(expectedValue).toLowerCase());
+        return String(actualValue)
+          .toLowerCase()
+          .endsWith(String(expectedValue).toLowerCase());
       case 'greaterThan':
         return this.compareNumbers(actualValue, expectedValue, '>');
       case 'greaterThanOrEqual':
@@ -169,14 +177,20 @@ export class ConditionNodeExecutor extends BaseUnifiedNodeExecutor {
           const arrayValue = JSON.parse(expectedValue);
           return Array.isArray(arrayValue) && arrayValue.includes(actualValue);
         } catch (error) {
-          return String(expectedValue).split(',').map(v => v.trim()).includes(String(actualValue));
+          return String(expectedValue)
+            .split(',')
+            .map((v) => v.trim())
+            .includes(String(actualValue));
         }
       case 'notIn':
         try {
           const arrayValue = JSON.parse(expectedValue);
           return Array.isArray(arrayValue) && !arrayValue.includes(actualValue);
         } catch (error) {
-          return !String(expectedValue).split(',').map(v => v.trim()).includes(String(actualValue));
+          return !String(expectedValue)
+            .split(',')
+            .map((v) => v.trim())
+            .includes(String(actualValue));
         }
       default:
         this.logger.warn(`Unknown operator: ${operator}`);
@@ -184,25 +198,29 @@ export class ConditionNodeExecutor extends BaseUnifiedNodeExecutor {
     }
   }
 
-  private getFieldValue(field: string, inputData: any, context: NodeExecutionContext): any {
+  private getFieldValue(
+    field: string,
+    inputData: any,
+    context: NodeExecutionContext,
+  ): any {
     if (!field) return inputData;
-    
+
     // Handle special field references
     if (field.startsWith('$input.')) {
       const path = field.substring(7);
       return this.getNestedValue(inputData, path);
     }
-    
+
     if (field.startsWith('$node.')) {
       const path = field.substring(6);
       return this.getNestedValue(context.previousNodeOutputs, path);
     }
-    
+
     if (field.startsWith('$vars.')) {
       const path = field.substring(6);
       return this.getNestedValue(context.workflowVariables, path);
     }
-    
+
     // Direct field access
     return this.getNestedValue(inputData, field);
   }
@@ -216,37 +234,52 @@ export class ConditionNodeExecutor extends BaseUnifiedNodeExecutor {
     // Try to convert to numbers if both look like numbers
     const actualNum = Number(actual);
     const expectedNum = Number(expected);
-    
+
     if (!isNaN(actualNum) && !isNaN(expectedNum)) {
       switch (operator) {
-        case '===': return actualNum === expectedNum;
-        case '!==': return actualNum !== expectedNum;
-        default: return false;
+        case '===':
+          return actualNum === expectedNum;
+        case '!==':
+          return actualNum !== expectedNum;
+        default:
+          return false;
       }
     }
-    
+
     // String comparison
     switch (operator) {
-      case '===': return String(actual) === String(expected);
-      case '!==': return String(actual) !== String(expected);
-      default: return false;
+      case '===':
+        return String(actual) === String(expected);
+      case '!==':
+        return String(actual) !== String(expected);
+      default:
+        return false;
     }
   }
 
-  private compareNumbers(actual: any, expected: any, operator: string): boolean {
+  private compareNumbers(
+    actual: any,
+    expected: any,
+    operator: string,
+  ): boolean {
     const actualNum = Number(actual);
     const expectedNum = Number(expected);
-    
+
     if (isNaN(actualNum) || isNaN(expectedNum)) {
       return false;
     }
-    
+
     switch (operator) {
-      case '>': return actualNum > expectedNum;
-      case '>=': return actualNum >= expectedNum;
-      case '<': return actualNum < expectedNum;
-      case '<=': return actualNum <= expectedNum;
-      default: return false;
+      case '>':
+        return actualNum > expectedNum;
+      case '>=':
+        return actualNum >= expectedNum;
+      case '<':
+        return actualNum < expectedNum;
+      case '<=':
+        return actualNum <= expectedNum;
+      default:
+        return false;
     }
   }
 

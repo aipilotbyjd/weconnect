@@ -4,7 +4,10 @@ import { Job } from 'bull';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WORKFLOW_EXECUTION_QUEUE, WorkflowJobType } from '../constants';
-import { WorkflowExecution, ExecutionStatus } from '../../../domain/entities/workflow-execution.entity';
+import {
+  WorkflowExecution,
+  ExecutionStatus,
+} from '../../../domain/entities/workflow-execution.entity';
 import { Workflow } from '../../../domain/entities/workflow.entity';
 import { WorkflowExecutionService } from '../../../application/services/workflow-execution.service';
 
@@ -43,7 +46,11 @@ export class WorkflowExecutionProcessor {
       // Get workflow with nodes
       const workflow = await this.workflowRepository.findOne({
         where: { id: workflowId },
-        relations: ['nodes', 'nodes.outgoingConnections', 'nodes.incomingConnections'],
+        relations: [
+          'nodes',
+          'nodes.outgoingConnections',
+          'nodes.incomingConnections',
+        ],
       });
 
       if (!workflow) {
@@ -65,11 +72,13 @@ export class WorkflowExecutionProcessor {
         data: result,
       });
 
-      this.logger.log(`Workflow execution ${executionId} completed successfully`);
+      this.logger.log(
+        `Workflow execution ${executionId} completed successfully`,
+      );
       return result;
     } catch (error) {
       this.logger.error(`Workflow execution ${executionId} failed:`, error);
-      
+
       // Update execution status to failed
       await this.executionRepository.update(executionId, {
         status: ExecutionStatus.FAILED,

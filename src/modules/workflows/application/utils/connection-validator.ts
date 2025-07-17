@@ -13,13 +13,13 @@ export class ConnectionValidator {
    */
   static validateConnections(
     nodes: WorkflowNode[],
-    connections: WorkflowNodeConnection[]
+    connections: WorkflowNodeConnection[],
   ): ConnectionValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     // Create node ID set for quick lookup
-    const nodeIds = new Set(nodes.map(node => node.id));
+    const nodeIds = new Set(nodes.map((node) => node.id));
 
     // Validate each connection
     for (const connection of connections) {
@@ -46,13 +46,15 @@ export class ConnectionValidator {
 
     // Check for isolated nodes (nodes with no connections)
     const connectedNodes = new Set([
-      ...connections.map(c => c.sourceNodeId),
-      ...connections.map(c => c.targetNodeId),
+      ...connections.map((c) => c.sourceNodeId),
+      ...connections.map((c) => c.targetNodeId),
     ]);
 
-    const isolatedNodes = nodes.filter(node => !connectedNodes.has(node.id));
+    const isolatedNodes = nodes.filter((node) => !connectedNodes.has(node.id));
     if (isolatedNodes.length > 0) {
-      warnings.push(`Isolated nodes detected: ${isolatedNodes.map(n => n.name).join(', ')}`);
+      warnings.push(
+        `Isolated nodes detected: ${isolatedNodes.map((n) => n.name).join(', ')}`,
+      );
     }
 
     return {
@@ -67,19 +69,20 @@ export class ConnectionValidator {
    */
   static detectCycles(
     nodes: WorkflowNode[],
-    connections: WorkflowNodeConnection[]
+    connections: WorkflowNodeConnection[],
   ): { hasCycle: boolean; cyclePath?: string[] } {
     // Build adjacency list
     const adjacencyList = new Map<string, string[]>();
-    
+
     // Initialize adjacency list
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       adjacencyList.set(node.id, []);
     });
 
     // Populate adjacency list with connections
-    connections.forEach(connection => {
-      const sourceConnections = adjacencyList.get(connection.sourceNodeId) || [];
+    connections.forEach((connection) => {
+      const sourceConnections =
+        adjacencyList.get(connection.sourceNodeId) || [];
       sourceConnections.push(connection.targetNodeId);
       adjacencyList.set(connection.sourceNodeId, sourceConnections);
     });
@@ -89,7 +92,7 @@ export class ConnectionValidator {
     const path: string[] = [];
 
     // Initialize all nodes as WHITE
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       colors.set(node.id, 0);
     });
 
@@ -99,16 +102,16 @@ export class ConnectionValidator {
       path.push(nodeId);
 
       const neighbors = adjacencyList.get(nodeId) || [];
-      
+
       for (const neighbor of neighbors) {
         const neighborColor = colors.get(neighbor);
-        
+
         if (neighborColor === 1) {
           // Back edge found - cycle detected
           const cycleStart = path.indexOf(neighbor);
           return true;
         }
-        
+
         if (neighborColor === 0 && dfs(neighbor)) {
           return true;
         }
@@ -136,21 +139,22 @@ export class ConnectionValidator {
    */
   static getExecutionOrder(
     nodes: WorkflowNode[],
-    connections: WorkflowNodeConnection[]
+    connections: WorkflowNodeConnection[],
   ): string[] {
     // Build adjacency list and in-degree count
     const adjacencyList = new Map<string, string[]>();
     const inDegree = new Map<string, number>();
 
     // Initialize
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       adjacencyList.set(node.id, []);
       inDegree.set(node.id, 0);
     });
 
     // Build graph
-    connections.forEach(connection => {
-      const sourceConnections = adjacencyList.get(connection.sourceNodeId) || [];
+    connections.forEach((connection) => {
+      const sourceConnections =
+        adjacencyList.get(connection.sourceNodeId) || [];
       sourceConnections.push(connection.targetNodeId);
       adjacencyList.set(connection.sourceNodeId, sourceConnections);
 
@@ -163,7 +167,7 @@ export class ConnectionValidator {
     const result: string[] = [];
 
     // Find all nodes with no incoming edges
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (inDegree.get(node.id) === 0) {
         queue.push(node.id);
       }
@@ -175,7 +179,7 @@ export class ConnectionValidator {
 
       // Remove this node from the graph
       const neighbors = adjacencyList.get(current) || [];
-      neighbors.forEach(neighbor => {
+      neighbors.forEach((neighbor) => {
         const neighborInDegree = inDegree.get(neighbor)! - 1;
         inDegree.set(neighbor, neighborInDegree);
 
@@ -194,13 +198,14 @@ export class ConnectionValidator {
   static findPaths(
     sourceNodeId: string,
     targetNodeId: string,
-    connections: WorkflowNodeConnection[]
+    connections: WorkflowNodeConnection[],
   ): string[][] {
     const adjacencyList = new Map<string, string[]>();
-    
+
     // Build adjacency list
-    connections.forEach(connection => {
-      const sourceConnections = adjacencyList.get(connection.sourceNodeId) || [];
+    connections.forEach((connection) => {
+      const sourceConnections =
+        adjacencyList.get(connection.sourceNodeId) || [];
       sourceConnections.push(connection.targetNodeId);
       adjacencyList.set(connection.sourceNodeId, sourceConnections);
     });

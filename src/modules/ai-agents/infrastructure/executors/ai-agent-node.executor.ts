@@ -1,6 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../core/abstracts/base-node.interface';
-import { AIAgentExecutorService, AIAgentExecutionContext } from '../../application/services/ai-agent-executor.service';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../core/abstracts/base-node.interface';
+import {
+  AIAgentExecutorService,
+  AIAgentExecutionContext,
+} from '../../application/services/ai-agent-executor.service';
 import { AIAgentService } from '../../application/services/ai-agent.service';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -18,7 +25,7 @@ export class AIAgentNodeExecutor implements INodeExecutor {
 
     try {
       const { parameters } = context;
-      
+
       // Extract AI agent configuration from node parameters
       const {
         agentId,
@@ -53,8 +60,10 @@ export class AIAgentNodeExecutor implements INodeExecutor {
       }
 
       // Prepare input data
-      let inputData = Array.isArray(context.inputData) ? context.inputData[0] || {} : context.inputData;
-      
+      let inputData = Array.isArray(context.inputData)
+        ? context.inputData[0] || {}
+        : context.inputData;
+
       // If a custom prompt is provided, use it as input
       if (prompt) {
         inputData = {
@@ -70,7 +79,9 @@ export class AIAgentNodeExecutor implements INodeExecutor {
         nodeId: context.nodeId,
         sessionId,
         inputData,
-        previousNodeOutputs: includeWorkflowContext ? this.extractPreviousOutputs(context) : undefined,
+        previousNodeOutputs: includeWorkflowContext
+          ? this.extractPreviousOutputs(context)
+          : undefined,
         parameters: customParameters,
       };
 
@@ -102,10 +113,9 @@ export class AIAgentNodeExecutor implements INodeExecutor {
           },
         };
       }
-
     } catch (error) {
       this.logger.error('AI Agent node execution failed:', error);
-      
+
       return {
         success: false,
         error: error.message,
@@ -119,10 +129,12 @@ export class AIAgentNodeExecutor implements INodeExecutor {
   /**
    * Extract previous node outputs from workflow context
    */
-  private extractPreviousOutputs(context: NodeExecutionContext): Record<string, any> {
+  private extractPreviousOutputs(
+    context: NodeExecutionContext,
+  ): Record<string, any> {
     // This method extracts data from previous nodes in the workflow
     // The exact implementation depends on how your workflow system stores previous node outputs
-    
+
     // For now, we'll try to extract from the workflow object if available
     if (context.workflow && context.workflow.previousOutputs) {
       return context.workflow.previousOutputs;
@@ -148,26 +160,27 @@ export class AIAgentNodeExecutor implements INodeExecutor {
       properties: {
         agentId: {
           type: 'string',
-          description: 'ID of the AI agent to execute'
+          description: 'ID of the AI agent to execute',
         },
         prompt: {
           type: 'string',
-          description: 'Custom prompt for the AI agent'
+          description: 'Custom prompt for the AI agent',
         },
         sessionId: {
           type: 'string',
-          description: 'Session ID for conversation continuity'
+          description: 'Session ID for conversation continuity',
         },
         includeWorkflowContext: {
           type: 'boolean',
-          description: 'Whether to include previous workflow outputs as context'
+          description:
+            'Whether to include previous workflow outputs as context',
         },
         customParameters: {
           type: 'object',
-          description: 'Additional parameters to pass to the agent'
-        }
+          description: 'Additional parameters to pass to the agent',
+        },
       },
-      required: ['agentId']
+      required: ['agentId'],
     };
   }
 }

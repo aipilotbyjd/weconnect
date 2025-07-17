@@ -28,7 +28,10 @@ export class EmailNodeExecutor implements NodeExecutor {
       const to = this.replaceVariables(config.to, inputData);
       const subject = this.replaceVariables(config.subject, inputData);
       const template = config.template;
-      const context = this.replaceVariablesInObject(config.context || {}, inputData);
+      const context = this.replaceVariablesInObject(
+        config.context || {},
+        inputData,
+      );
 
       // Simulate email sending (replace with actual mailer service)
       this.logger.log(`Simulating email send:
@@ -37,7 +40,7 @@ export class EmailNodeExecutor implements NodeExecutor {
         Subject: ${subject}
         Template: ${template}
       `);
-      
+
       // In production, you would use:
       // await this.mailerService.sendMail({ to, from, subject, template, context });
 

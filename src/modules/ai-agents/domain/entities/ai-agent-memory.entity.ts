@@ -6,7 +6,7 @@ export enum MemoryType {
   CONVERSATION = 'conversation',
   ENTITY = 'entity',
   SUMMARY = 'summary',
-  VECTOR = 'vector'
+  VECTOR = 'vector',
 }
 
 @Entity('ai_agent_memory')
@@ -23,7 +23,7 @@ export class AIAgentMemory extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: MemoryType
+    enum: MemoryType,
   })
   type: MemoryType;
 

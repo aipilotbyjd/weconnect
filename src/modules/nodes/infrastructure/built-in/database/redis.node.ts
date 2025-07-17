@@ -1,25 +1,30 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import { Injectable, Logger } from '@nestjs/common';
 
 export const RedisNodeDefinition = new NodeDefinition({
   name: 'Redis',
   displayName: 'Redis',
-  description: 'Perform Redis cache and key-value operations including strings, hashes, lists, sets',
+  description:
+    'Perform Redis cache and key-value operations including strings, hashes, lists, sets',
   version: 1,
   group: ['Database'],
   icon: 'database',
   defaults: {
     name: 'Redis',
-    color: '#DC382D'
+    color: '#DC382D',
   },
   inputs: ['default'],
   outputs: ['default'],
   credentials: [
     {
       name: 'redisCredentials',
-      required: true
-    }
+      required: true,
+    },
   ],
   properties: [
     {
@@ -40,8 +45,8 @@ export const RedisNodeDefinition = new NodeDefinition({
         { name: 'Decrement', value: 'decr' },
         { name: 'Hash Get', value: 'hget' },
         { name: 'Hash Set', value: 'hset' },
-        { name: 'Hash Get All', value: 'hgetall' }
-      ]
+        { name: 'Hash Get All', value: 'hgetall' },
+      ],
     },
     {
       name: 'database',
@@ -49,7 +54,7 @@ export const RedisNodeDefinition = new NodeDefinition({
       displayName: 'Database',
       description: 'Redis database number (0-15)',
       required: false,
-      default: 0
+      default: 0,
     },
     {
       name: 'key',
@@ -57,7 +62,7 @@ export const RedisNodeDefinition = new NodeDefinition({
       displayName: 'Key',
       description: 'Redis key name',
       required: true,
-      default: ''
+      default: '',
     },
     {
       name: 'value',
@@ -65,7 +70,7 @@ export const RedisNodeDefinition = new NodeDefinition({
       displayName: 'Value',
       description: 'Value to set',
       required: false,
-      default: ''
+      default: '',
     },
     {
       name: 'field',
@@ -73,11 +78,11 @@ export const RedisNodeDefinition = new NodeDefinition({
       displayName: 'Field',
       description: 'Hash field name',
       required: false,
-      default: ''
-    }
+      default: '',
+    },
   ],
   isCustom: false,
-  isActive: true
+  isActive: true,
 });
 
 @Injectable()
@@ -87,11 +92,11 @@ export class RedisNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const { parameters, credentials } = context;
-    
+
     try {
       // Import Redis dynamically to avoid dependency issues
       const Redis = require('ioredis');
-      
+
       const host = credentials?.host || parameters.host || 'localhost';
       const port = parseInt(credentials?.port || parameters.port || '6379');
       const password = credentials?.password || parameters.password;
@@ -103,7 +108,7 @@ export class RedisNodeExecutor implements INodeExecutor {
         port,
         password,
         db: database,
-        maxRetriesPerRequest: 3
+        maxRetriesPerRequest: 3,
       });
 
       let result: any;
@@ -127,7 +132,10 @@ export class RedisNodeExecutor implements INodeExecutor {
             result = await redis.keys(pattern);
             break;
           case 'expire':
-            result = await redis.expire(parameters.key, parseInt(parameters.seconds || '3600'));
+            result = await redis.expire(
+              parameters.key,
+              parseInt(parameters.seconds || '3600'),
+            );
             break;
           case 'incr':
             result = await redis.incr(parameters.key);
@@ -139,7 +147,11 @@ export class RedisNodeExecutor implements INodeExecutor {
             result = await redis.hget(parameters.key, parameters.field);
             break;
           case 'hset':
-            result = await redis.hset(parameters.key, parameters.field, parameters.value);
+            result = await redis.hset(
+              parameters.key,
+              parameters.field,
+              parameters.value,
+            );
             break;
           case 'hgetall':
             result = await redis.hgetall(parameters.key);
@@ -155,21 +167,19 @@ export class RedisNodeExecutor implements INodeExecutor {
           metadata: {
             executionTime: Date.now() - startTime,
             operation,
-            key: parameters.key
-          }
+            key: parameters.key,
+          },
         };
-
       } finally {
         redis.disconnect();
       }
-
     } catch (error) {
       return {
         success: false,
         error: error.message,
         metadata: {
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -184,11 +194,17 @@ export class RedisNodeExecutor implements INodeExecutor {
       return false;
     }
 
-    if (['set', 'hset'].includes(configuration.operation) && !configuration.value) {
+    if (
+      ['set', 'hset'].includes(configuration.operation) &&
+      !configuration.value
+    ) {
       return false;
     }
 
-    if (['hget', 'hset'].includes(configuration.operation) && !configuration.field) {
+    if (
+      ['hget', 'hset'].includes(configuration.operation) &&
+      !configuration.field
+    ) {
       return false;
     }
 
@@ -201,24 +217,36 @@ export class RedisNodeExecutor implements INodeExecutor {
       properties: {
         operation: {
           type: 'string',
-          enum: ['get', 'set', 'del', 'exists', 'keys', 'expire', 'incr', 'decr', 'hget', 'hset', 'hgetall']
+          enum: [
+            'get',
+            'set',
+            'del',
+            'exists',
+            'keys',
+            'expire',
+            'incr',
+            'decr',
+            'hget',
+            'hset',
+            'hgetall',
+          ],
         },
         key: {
-          type: 'string'
+          type: 'string',
         },
         value: {
-          type: 'string'
+          type: 'string',
         },
         field: {
-          type: 'string'
+          type: 'string',
         },
         database: {
           type: 'number',
           minimum: 0,
-          maximum: 15
-        }
+          maximum: 15,
+        },
       },
-      required: ['operation', 'key']
+      required: ['operation', 'key'],
     };
   }
 }

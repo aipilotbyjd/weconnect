@@ -26,13 +26,13 @@ import { SlackNodeExecutor } from './executors/integrations/slack.executor';
     UnifiedNodeRegistryService,
     UnifiedNodeExecutionService,
     NodeExecutorMigrationService,
-    
+
     // Core executors
     HttpRequestNodeExecutor,
     ConditionNodeExecutor,
     TriggerNodeExecutor,
     DelayNodeExecutor,
-    
+
     // Integration executors
     SlackNodeExecutor,
   ],
@@ -45,13 +45,13 @@ import { SlackNodeExecutor } from './executors/integrations/slack.executor';
 export class UnifiedNodeExecutionModule implements OnModuleInit {
   constructor(
     private readonly nodeRegistry: UnifiedNodeRegistryService,
-    
+
     // Core executors
     private readonly httpRequestExecutor: HttpRequestNodeExecutor,
     private readonly conditionExecutor: ConditionNodeExecutor,
     private readonly triggerExecutor: TriggerNodeExecutor,
     private readonly delayExecutor: DelayNodeExecutor,
-    
+
     // Integration executors
     private readonly slackExecutor: SlackNodeExecutor,
   ) {}
@@ -66,14 +66,17 @@ export class UnifiedNodeExecutionModule implements OnModuleInit {
     this.nodeRegistry.registerExecutor('condition', this.conditionExecutor);
     this.nodeRegistry.registerExecutor('trigger', this.triggerExecutor);
     this.nodeRegistry.registerExecutor('delay', this.delayExecutor);
-    
+
     // Register integration executors
     this.nodeRegistry.registerExecutor('slack', this.slackExecutor);
-    
+
     // Log registration summary
     const registeredTypes = this.nodeRegistry.getAvailableNodeTypes();
-    console.log(`🔧 Registered ${registeredTypes.length} node executors:`, registeredTypes);
-    
+    console.log(
+      `🔧 Registered ${registeredTypes.length} node executors:`,
+      registeredTypes,
+    );
+
     // Validate all executors
     const validation = this.nodeRegistry.validateRegistry();
     if (validation.invalid.length > 0) {

@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import axios, { AxiosInstance } from 'axios';
 
 export const TelegramNodeDefinition = new NodeDefinition({
@@ -97,18 +101,26 @@ export const TelegramNodeDefinition = new NodeDefinition({
 export class TelegramNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { operation, chatId, text, parseMode, disableWebPagePreview, photoUrl, caption } = context.parameters;
-      
+      const {
+        operation,
+        chatId,
+        text,
+        parseMode,
+        disableWebPagePreview,
+        photoUrl,
+        caption,
+      } = context.parameters;
+
       // Simulate Telegram Bot API integration
       // In a real implementation, you would use Telegram Bot API
-      
+
       if (operation === 'sendMessage') {
         if (!text) {
           throw new Error('Message text is required');
         }
-        
+
         const messageData = {
           ok: true,
           result: {
@@ -127,7 +139,7 @@ export class TelegramNodeExecutor implements INodeExecutor {
             text,
           },
         };
-        
+
         return {
           success: true,
           data: [messageData],
@@ -141,7 +153,7 @@ export class TelegramNodeExecutor implements INodeExecutor {
         if (!photoUrl) {
           throw new Error('Photo URL is required for sending photo');
         }
-        
+
         const photoData = {
           ok: true,
           result: {
@@ -169,7 +181,7 @@ export class TelegramNodeExecutor implements INodeExecutor {
             caption: caption || '',
           },
         };
-        
+
         return {
           success: true,
           data: [photoData],
@@ -205,7 +217,7 @@ export class TelegramNodeExecutor implements INodeExecutor {
             caption: caption || '',
           },
         };
-        
+
         return {
           success: true,
           data: [documentData],
@@ -216,7 +228,7 @@ export class TelegramNodeExecutor implements INodeExecutor {
           },
         };
       }
-      
+
       throw new Error(`Unknown operation: ${operation}`);
     } catch (error) {
       return {
@@ -238,8 +250,7 @@ export class TelegramNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

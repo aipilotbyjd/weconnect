@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, TreeRepository } from 'typeorm';
 import { TemplateCategory } from '../../domain/entities/template-category.entity';
@@ -82,7 +86,7 @@ export class TemplateCategoryService {
 
         // Check for circular reference
         const ancestors = await this.categoryRepository.findAncestors(parent);
-        if (ancestors.some(a => a.id === id)) {
+        if (ancestors.some((a) => a.id === id)) {
           throw new BadRequestException('Circular reference detected');
         }
 
@@ -152,7 +156,7 @@ export class TemplateCategoryService {
   async findActive(): Promise<TemplateCategory[]> {
     const roots = await this.categoryRepository.findRoots();
     const trees = await Promise.all(
-      roots.map(root =>
+      roots.map((root) =>
         this.categoryRepository.findDescendantsTree(root, {
           relations: ['parent', 'children'],
         }),
@@ -165,8 +169,8 @@ export class TemplateCategoryService {
 
   private filterActive(categories: TemplateCategory[]): TemplateCategory[] {
     return categories
-      .filter(cat => cat.isActive)
-      .map(cat => ({
+      .filter((cat) => cat.isActive)
+      .map((cat) => ({
         ...cat,
         children: cat.children ? this.filterActive(cat.children) : [],
       }));

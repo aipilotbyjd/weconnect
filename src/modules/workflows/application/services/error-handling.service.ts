@@ -3,9 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { WorkflowExecutionLog, LogLevel } from '../../domain/entities/workflow-execution-log.entity';
-import { RetryConfiguration, ErrorHandlingConfiguration } from '../../domain/interfaces/retry-configuration.interface';
-import { WORKFLOW_NODE_QUEUE, NodeJobType } from '../../infrastructure/queues/constants';
+import {
+  WorkflowExecutionLog,
+  LogLevel,
+} from '../../domain/entities/workflow-execution-log.entity';
+import {
+  RetryConfiguration,
+  ErrorHandlingConfiguration,
+} from '../../domain/interfaces/retry-configuration.interface';
+import {
+  WORKFLOW_NODE_QUEUE,
+  NodeJobType,
+} from '../../infrastructure/queues/constants';
 
 @Injectable()
 export class ErrorHandlingService {
@@ -19,10 +28,7 @@ export class ErrorHandlingService {
     private nodeQueue: Queue,
   ) {}
 
-  calculateRetryDelay(
-    attempt: number,
-    config: RetryConfiguration,
-  ): number {
+  calculateRetryDelay(attempt: number, config: RetryConfiguration): number {
     let delay = config.initialDelay;
 
     switch (config.backoffType) {
@@ -90,7 +96,7 @@ export class ErrorHandlingService {
       'EAI_AGAIN',
     ];
 
-    return transientErrors.some(e => errorMessage.includes(e));
+    return transientErrors.some((e) => errorMessage.includes(e));
   }
 
   async handleError(
@@ -131,15 +137,13 @@ export class ErrorHandlingService {
     return config.onError;
   }
 
-  async logRetry(
-    context: {
-      executionId: string;
-      nodeId: string;
-      nodeName: string;
-      attempt: number;
-      nextAttemptIn: number;
-    },
-  ): Promise<void> {
+  async logRetry(context: {
+    executionId: string;
+    nodeId: string;
+    nodeName: string;
+    attempt: number;
+    nextAttemptIn: number;
+  }): Promise<void> {
     await this.logRepository.save({
       executionId: context.executionId,
       nodeId: context.nodeId,
@@ -182,10 +186,12 @@ export class ErrorHandlingService {
         inputData,
         retryCount,
       },
-      { delay }
+      { delay },
     );
 
-    this.logger.log(`Scheduled retry ${retryCount} for node ${nodeId} in ${delay}ms`);
+    this.logger.log(
+      `Scheduled retry ${retryCount} for node ${nodeId} in ${delay}ms`,
+    );
   }
 }
 
@@ -209,15 +215,18 @@ class CircuitBreaker {
     switch (this.state) {
       case 'closed':
         return true;
-      
+
       case 'open':
-        if (this.lastFailureTime && now - this.lastFailureTime > this.config.resetTimeout) {
+        if (
+          this.lastFailureTime &&
+          now - this.lastFailureTime > this.config.resetTimeout
+        ) {
           this.state = 'half-open';
           this.halfOpenAttempts = 0;
           return true;
         }
         return false;
-      
+
       case 'half-open':
         if (this.halfOpenAttempts < this.config.halfOpenRequests) {
           this.halfOpenAttempts++;

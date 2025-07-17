@@ -6,7 +6,7 @@ export class AIAgent extends BaseEntity {
   @Column()
   name: string;
 
-  @Column("text")
+  @Column('text')
   description: string;
 
   @Column()
@@ -18,4 +18,3 @@ export class AIAgent extends BaseEntity {
   @Column({ type: 'json', default: {} })
   configuration: Record<string, any>;
 }
-

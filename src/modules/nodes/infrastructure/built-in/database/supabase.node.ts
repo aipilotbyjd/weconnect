@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 export const SupabaseNodeDefinition = new NodeDefinition({
@@ -97,7 +101,8 @@ export const SupabaseNodeDefinition = new NodeDefinition({
           operation: ['select'],
         },
       },
-      description: 'Column to order by (e.g., "created_at" or "created_at.desc")',
+      description:
+        'Column to order by (e.g., "created_at" or "created_at.desc")',
     },
     {
       name: 'limit',
@@ -180,7 +185,7 @@ export class SupabaseNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.supabase;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -194,7 +199,7 @@ export class SupabaseNodeExecutor implements INodeExecutor {
     try {
       const supabase: SupabaseClient = createClient(
         credentials.url,
-        credentials.anonKey
+        credentials.anonKey,
       );
 
       const { operation } = context.parameters;
@@ -236,7 +241,6 @@ export class SupabaseNodeExecutor implements INodeExecutor {
           count: result.count,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -248,9 +252,13 @@ export class SupabaseNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async executeSelect(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
-    const { table, columns, filters, orderBy, limit, range } = context.parameters;
-    
+  private async executeSelect(
+    supabase: SupabaseClient,
+    context: NodeExecutionContext,
+  ): Promise<any> {
+    const { table, columns, filters, orderBy, limit, range } =
+      context.parameters;
+
     let query = supabase.from(table).select(columns || '*') as any;
 
     // Apply filters
@@ -278,31 +286,37 @@ export class SupabaseNodeExecutor implements INodeExecutor {
     }
 
     const { data, error, count } = await query;
-    
+
     if (error) throw error;
-    
+
     return { data, count };
   }
 
-  private async executeInsert(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
+  private async executeInsert(
+    supabase: SupabaseClient,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { table, data, returnData } = context.parameters;
-    
+
     let query = supabase.from(table).insert(data) as any;
-    
+
     if (returnData) {
       query = query.select();
     }
 
     const { data: result, error } = await query;
-    
+
     if (error) throw error;
-    
+
     return { data: result };
   }
 
-  private async executeUpdate(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
+  private async executeUpdate(
+    supabase: SupabaseClient,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { table, data, filters, returnData } = context.parameters;
-    
+
     let query = supabase.from(table).update(data) as any;
 
     // Apply filters
@@ -311,21 +325,24 @@ export class SupabaseNodeExecutor implements INodeExecutor {
         query = query.eq(key, value);
       });
     }
-    
+
     if (returnData) {
       query = query.select();
     }
 
     const { data: result, error } = await query;
-    
+
     if (error) throw error;
-    
+
     return { data: result };
   }
 
-  private async executeDelete(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
+  private async executeDelete(
+    supabase: SupabaseClient,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { table, filters, returnData } = context.parameters;
-    
+
     let query = supabase.from(table).delete() as any;
 
     // Apply filters
@@ -334,51 +351,63 @@ export class SupabaseNodeExecutor implements INodeExecutor {
         query = query.eq(key, value);
       });
     }
-    
+
     if (returnData) {
       query = query.select();
     }
 
     const { data: result, error } = await query;
-    
+
     if (error) throw error;
-    
+
     return { data: result };
   }
 
-  private async executeUpsert(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
+  private async executeUpsert(
+    supabase: SupabaseClient,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { table, data, returnData } = context.parameters;
-    
+
     let query = supabase.from(table).upsert(data) as any;
-    
+
     if (returnData) {
       query = query.select();
     }
 
     const { data: result, error } = await query;
-    
+
     if (error) throw error;
-    
+
     return { data: result };
   }
 
-  private async executeRPC(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
+  private async executeRPC(
+    supabase: SupabaseClient,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { functionName, functionParams } = context.parameters;
-    
-    const { data, error } = await supabase.rpc(functionName, functionParams || {});
-    
+
+    const { data, error } = await supabase.rpc(
+      functionName,
+      functionParams || {},
+    );
+
     if (error) throw error;
-    
+
     return { data };
   }
 
-  private async executeSQL(supabase: SupabaseClient, context: NodeExecutionContext): Promise<any> {
+  private async executeSQL(
+    supabase: SupabaseClient,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { sql } = context.parameters;
-    
+
     const { data, error } = await supabase.from('').select(sql);
-    
+
     if (error) throw error;
-    
+
     return { data };
   }
 
@@ -391,8 +420,7 @@ export class SupabaseNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

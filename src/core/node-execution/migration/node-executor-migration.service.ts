@@ -21,7 +21,7 @@ export class NodeExecutorMigrationService {
     recommendations: string[];
   } {
     const unifiedExecutors = this.nodeRegistry.getAvailableNodeTypes();
-    
+
     // These are the legacy executors that should be removed
     const legacyExecutors = [
       'TriggerNodeExecutor',
@@ -77,8 +77,8 @@ export class NodeExecutorMigrationService {
       'src/modules/workflows/application/services/workflow-execution.service.ts - Use UnifiedNodeExecutionService',
       '',
       '// Database migration needed:',
-      'UPDATE workflow_nodes SET type = \'httpRequest\' WHERE type = \'http-request\';',
-      'UPDATE workflow_nodes SET type = \'slack\' WHERE type = \'SLACK\';',
+      "UPDATE workflow_nodes SET type = 'httpRequest' WHERE type = 'http-request';",
+      "UPDATE workflow_nodes SET type = 'slack' WHERE type = 'SLACK';",
       '-- Add more type mappings as needed',
     ];
   }
@@ -128,19 +128,19 @@ export class NodeExecutorMigrationService {
   private getTypeMappings(): Record<string, string> {
     return {
       'http-request': 'httpRequest',
-      'HTTP_REQUEST': 'httpRequest',
-      'SLACK': 'slack',
-      'CONDITION': 'condition',
-      'TRIGGER': 'trigger', // When implemented
-      'EMAIL': 'email', // When implemented
-      'DELAY': 'delay', // When implemented
-      'WEBHOOK': 'webhook', // When implemented
-      'GMAIL': 'gmail', // When implemented
-      'DISCORD': 'discord', // When implemented
-      'TELEGRAM': 'telegram', // When implemented
-      'GITHUB': 'github', // When implemented
-      'GOOGLE_SHEETS': 'googleSheets', // When implemented
-      'TRELLO': 'trello', // When implemented
+      HTTP_REQUEST: 'httpRequest',
+      SLACK: 'slack',
+      CONDITION: 'condition',
+      TRIGGER: 'trigger', // When implemented
+      EMAIL: 'email', // When implemented
+      DELAY: 'delay', // When implemented
+      WEBHOOK: 'webhook', // When implemented
+      GMAIL: 'gmail', // When implemented
+      DISCORD: 'discord', // When implemented
+      TELEGRAM: 'telegram', // When implemented
+      GITHUB: 'github', // When implemented
+      GOOGLE_SHEETS: 'googleSheets', // When implemented
+      TRELLO: 'trello', // When implemented
     };
   }
 
@@ -157,7 +157,7 @@ export class NodeExecutorMigrationService {
 
     for (const [oldType, newType] of Object.entries(mappings)) {
       sqlStatements.push(
-        `UPDATE workflow_nodes SET type = '${newType}' WHERE type = '${oldType}';`
+        `UPDATE workflow_nodes SET type = '${newType}' WHERE type = '${oldType}';`,
       );
     }
 
@@ -200,7 +200,9 @@ export class NodeExecutorMigrationService {
         this.logger.log(`✅ ${nodeType} executor test passed`);
       } catch (error) {
         failed.push({ executor: nodeType, error: error.message });
-        this.logger.error(`❌ ${nodeType} executor test failed: ${error.message}`);
+        this.logger.error(
+          `❌ ${nodeType} executor test failed: ${error.message}`,
+        );
       }
     }
 

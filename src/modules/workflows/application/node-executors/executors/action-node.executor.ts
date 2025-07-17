@@ -18,7 +18,9 @@ export class ActionNodeExecutor implements NodeExecutor {
     executionId: string,
   ): Promise<Record<string, any>> {
     const config = node.configuration as ActionConfig;
-    this.logger.log(`Executing action node: ${node.name} (${config.actionType})`);
+    this.logger.log(
+      `Executing action node: ${node.name} (${config.actionType})`,
+    );
 
     try {
       let result: any;
@@ -27,23 +29,23 @@ export class ActionNodeExecutor implements NodeExecutor {
         case 'transform':
           result = this.transformData(inputData, config.parameters);
           break;
-        
+
         case 'filter':
           result = this.filterData(inputData, config.parameters);
           break;
-        
+
         case 'aggregate':
           result = this.aggregateData(inputData, config.parameters);
           break;
-        
+
         case 'merge':
           result = this.mergeData(inputData, config.parameters);
           break;
-        
+
         case 'split':
           result = this.splitData(inputData, config.parameters);
           break;
-        
+
         default:
           result = inputData;
       }
@@ -84,7 +86,9 @@ export class ActionNodeExecutor implements NodeExecutor {
     if (!params || !params.condition) return data;
 
     if (Array.isArray(data)) {
-      return data.filter(item => this.evaluateCondition(item, params.condition));
+      return data.filter((item) =>
+        this.evaluateCondition(item, params.condition),
+      );
     }
 
     return this.evaluateCondition(data, params.condition) ? data : null;
@@ -96,20 +100,30 @@ export class ActionNodeExecutor implements NodeExecutor {
     switch (params.operation) {
       case 'count':
         return data.length;
-      
+
       case 'sum':
-        return data.reduce((sum, item) => sum + (this.getValueByPath(item, params.field) || 0), 0);
-      
+        return data.reduce(
+          (sum, item) => sum + (this.getValueByPath(item, params.field) || 0),
+          0,
+        );
+
       case 'average':
-        const total = data.reduce((sum, item) => sum + (this.getValueByPath(item, params.field) || 0), 0);
+        const total = data.reduce(
+          (sum, item) => sum + (this.getValueByPath(item, params.field) || 0),
+          0,
+        );
         return data.length > 0 ? total / data.length : 0;
-      
+
       case 'min':
-        return Math.min(...data.map(item => this.getValueByPath(item, params.field) || 0));
-      
+        return Math.min(
+          ...data.map((item) => this.getValueByPath(item, params.field) || 0),
+        );
+
       case 'max':
-        return Math.max(...data.map(item => this.getValueByPath(item, params.field) || 0));
-      
+        return Math.max(
+          ...data.map((item) => this.getValueByPath(item, params.field) || 0),
+        );
+
       default:
         return data;
     }
@@ -135,7 +149,10 @@ export class ActionNodeExecutor implements NodeExecutor {
       return data.split(params.delimiter);
     }
 
-    if (params.field && typeof this.getValueByPath(data, params.field) === 'string') {
+    if (
+      params.field &&
+      typeof this.getValueByPath(data, params.field) === 'string'
+    ) {
       return this.getValueByPath(data, params.field).split(params.delimiter);
     }
 
@@ -174,14 +191,14 @@ export class ActionNodeExecutor implements NodeExecutor {
 
   private getValueByPath(obj: any, path: string): any {
     if (!path) return obj;
-    
+
     const keys = path.split('.');
     let value = obj;
-    
+
     for (const key of keys) {
       value = value?.[key];
     }
-    
+
     return value;
   }
 }

@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import { S3Client, S3ClientConfig } from '@aws-sdk/client-s3';
 import {
   GetObjectCommand,
@@ -62,7 +66,17 @@ export const AWSS3NodeDefinition = new NodeDefinition({
       default: '',
       displayOptions: {
         show: {
-          operation: ['uploadFile', 'downloadFile', 'deleteFile', 'listFiles', 'copyFile', 'getFileInfo', 'generatePresignedUrl', 'deleteBucket', 'getBucketLocation'],
+          operation: [
+            'uploadFile',
+            'downloadFile',
+            'deleteFile',
+            'listFiles',
+            'copyFile',
+            'getFileInfo',
+            'generatePresignedUrl',
+            'deleteBucket',
+            'getBucketLocation',
+          ],
         },
       },
       required: true,
@@ -75,7 +89,13 @@ export const AWSS3NodeDefinition = new NodeDefinition({
       default: '',
       displayOptions: {
         show: {
-          operation: ['uploadFile', 'downloadFile', 'deleteFile', 'getFileInfo', 'generatePresignedUrl'],
+          operation: [
+            'uploadFile',
+            'downloadFile',
+            'deleteFile',
+            'getFileInfo',
+            'generatePresignedUrl',
+          ],
         },
       },
       required: true,
@@ -264,7 +284,7 @@ export class AWSS3NodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.aws;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -337,7 +357,6 @@ export class AWSS3NodeExecutor implements INodeExecutor {
           bucketName: context.parameters.bucketName,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -350,10 +369,18 @@ export class AWSS3NodeExecutor implements INodeExecutor {
   }
 
   private async uploadFile(context: NodeExecutionContext): Promise<any> {
-    const { bucketName, key, fileContent, filePath, contentType, metadata, tags } = context.parameters;
+    const {
+      bucketName,
+      key,
+      fileContent,
+      filePath,
+      contentType,
+      metadata,
+      tags,
+    } = context.parameters;
 
     let body: string | Buffer;
-    
+
     if (fileContent) {
       body = fileContent;
     } else if (filePath) {
@@ -391,7 +418,7 @@ export class AWSS3NodeExecutor implements INodeExecutor {
     });
 
     const response = await this.s3Client!.send(command);
-    
+
     const content = await response.Body?.transformToString();
 
     return {
@@ -435,14 +462,15 @@ export class AWSS3NodeExecutor implements INodeExecutor {
     const response = await this.s3Client!.send(command);
 
     return {
-      objects: response.Contents?.map(obj => ({
-        key: obj.Key,
-        size: obj.Size,
-        lastModified: obj.LastModified,
-        etag: obj.ETag,
-        storageClass: obj.StorageClass,
-      })) || [],
-      commonPrefixes: response.CommonPrefixes?.map(cp => cp.Prefix) || [],
+      objects:
+        response.Contents?.map((obj) => ({
+          key: obj.Key,
+          size: obj.Size,
+          lastModified: obj.LastModified,
+          etag: obj.ETag,
+          storageClass: obj.StorageClass,
+        })) || [],
+      commonPrefixes: response.CommonPrefixes?.map((cp) => cp.Prefix) || [],
       isTruncated: response.IsTruncated,
       nextContinuationToken: response.NextContinuationToken,
       keyCount: response.KeyCount,
@@ -450,7 +478,8 @@ export class AWSS3NodeExecutor implements INodeExecutor {
   }
 
   private async copyFile(context: NodeExecutionContext): Promise<any> {
-    const { bucketName, sourceKey, destinationKey, destinationBucket } = context.parameters;
+    const { bucketName, sourceKey, destinationKey, destinationBucket } =
+      context.parameters;
 
     const copySource = `${bucketName}/${sourceKey}`;
     const destBucket = destinationBucket || bucketName;
@@ -495,7 +524,9 @@ export class AWSS3NodeExecutor implements INodeExecutor {
     };
   }
 
-  private async generatePresignedUrl(context: NodeExecutionContext): Promise<any> {
+  private async generatePresignedUrl(
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { bucketName, key, urlExpiration, urlOperation } = context.parameters;
 
     let command;
@@ -529,9 +560,12 @@ export class AWSS3NodeExecutor implements INodeExecutor {
 
     const command = new CreateBucketCommand({
       Bucket: bucketName,
-      CreateBucketConfiguration: region !== 'us-east-1' ? {
-        LocationConstraint: region,
-      } : undefined,
+      CreateBucketConfiguration:
+        region !== 'us-east-1'
+          ? {
+              LocationConstraint: region,
+            }
+          : undefined,
     });
 
     const response = await this.s3Client!.send(command);
@@ -564,10 +598,11 @@ export class AWSS3NodeExecutor implements INodeExecutor {
     const response = await this.s3Client!.send(command);
 
     return {
-      buckets: response.Buckets?.map(bucket => ({
-        name: bucket.Name,
-        creationDate: bucket.CreationDate,
-      })) || [],
+      buckets:
+        response.Buckets?.map((bucket) => ({
+          name: bucket.Name,
+          creationDate: bucket.CreationDate,
+        })) || [],
       owner: response.Owner,
     };
   }
@@ -596,8 +631,7 @@ export class AWSS3NodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

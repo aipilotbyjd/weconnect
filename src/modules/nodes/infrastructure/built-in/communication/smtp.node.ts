@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import * as nodemailer from 'nodemailer';
 
 export const SMTPNodeDefinition = new NodeDefinition({
@@ -136,7 +140,7 @@ export class SMTPNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.smtp;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -192,7 +196,9 @@ export class SMTPNodeExecutor implements INodeExecutor {
 
         // Build mail options
         const mailOptions: any = {
-          from: fromName ? `"${fromName}" <${fromEmail || credentials.user}>` : (fromEmail || credentials.user),
+          from: fromName
+            ? `"${fromName}" <${fromEmail || credentials.user}>`
+            : fromEmail || credentials.user,
           to: resolvedTo,
           subject: resolvedSubject,
         };
@@ -279,8 +285,7 @@ export class SMTPNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

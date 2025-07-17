@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import { Client } from '@notionhq/client';
 
 export const NotionNodeDefinition = new NodeDefinition({
@@ -59,7 +63,13 @@ export const NotionNodeDefinition = new NodeDefinition({
       default: '',
       displayOptions: {
         show: {
-          operation: ['updatePage', 'getPage', 'archivePage', 'getBlockChildren', 'appendBlockChildren'],
+          operation: [
+            'updatePage',
+            'getPage',
+            'archivePage',
+            'getBlockChildren',
+            'appendBlockChildren',
+          ],
         },
       },
       required: true,
@@ -180,7 +190,7 @@ export class NotionNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.notion;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -238,7 +248,6 @@ export class NotionNodeExecutor implements INodeExecutor {
           pageId: context.parameters.pageId,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -250,8 +259,12 @@ export class NotionNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async queryDatabase(notion: Client, context: NodeExecutionContext): Promise<any> {
-    const { databaseId, filter, sorts, pageSize, startCursor } = context.parameters;
+  private async queryDatabase(
+    notion: Client,
+    context: NodeExecutionContext,
+  ): Promise<any> {
+    const { databaseId, filter, sorts, pageSize, startCursor } =
+      context.parameters;
 
     const options: any = {
       database_id: databaseId,
@@ -284,7 +297,10 @@ export class NotionNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async getDatabase(notion: Client, context: NodeExecutionContext): Promise<any> {
+  private async getDatabase(
+    notion: Client,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { databaseId } = context.parameters;
 
     const response = await notion.databases.retrieve({
@@ -294,8 +310,12 @@ export class NotionNodeExecutor implements INodeExecutor {
     return response;
   }
 
-  private async createPage(notion: Client, context: NodeExecutionContext): Promise<any> {
-    const { databaseId, properties, children, icon, cover } = context.parameters;
+  private async createPage(
+    notion: Client,
+    context: NodeExecutionContext,
+  ): Promise<any> {
+    const { databaseId, properties, children, icon, cover } =
+      context.parameters;
 
     const options: any = {
       parent: {
@@ -321,7 +341,10 @@ export class NotionNodeExecutor implements INodeExecutor {
     return response;
   }
 
-  private async updatePage(notion: Client, context: NodeExecutionContext): Promise<any> {
+  private async updatePage(
+    notion: Client,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { pageId, properties, icon, cover, archived } = context.parameters;
 
     const options: any = {
@@ -349,7 +372,10 @@ export class NotionNodeExecutor implements INodeExecutor {
     return response;
   }
 
-  private async getPage(notion: Client, context: NodeExecutionContext): Promise<any> {
+  private async getPage(
+    notion: Client,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { pageId } = context.parameters;
 
     const response = await notion.pages.retrieve({
@@ -359,7 +385,10 @@ export class NotionNodeExecutor implements INodeExecutor {
     return response;
   }
 
-  private async archivePage(notion: Client, context: NodeExecutionContext): Promise<any> {
+  private async archivePage(
+    notion: Client,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { pageId } = context.parameters;
 
     const response = await notion.pages.update({
@@ -370,7 +399,10 @@ export class NotionNodeExecutor implements INodeExecutor {
     return response;
   }
 
-  private async getBlockChildren(notion: Client, context: NodeExecutionContext): Promise<any> {
+  private async getBlockChildren(
+    notion: Client,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { pageId, pageSize, startCursor } = context.parameters;
 
     const options: any = {
@@ -396,7 +428,10 @@ export class NotionNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async appendBlockChildren(notion: Client, context: NodeExecutionContext): Promise<any> {
+  private async appendBlockChildren(
+    notion: Client,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { pageId, children } = context.parameters;
 
     if (!children || children.length === 0) {
@@ -420,8 +455,7 @@ export class NotionNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

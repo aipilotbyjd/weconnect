@@ -7,8 +7,16 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { Organization, OrganizationPlan, PlanLimits } from '../../domain/entities/organization.entity';
-import { OrganizationMember, OrganizationRole, RolePermissions } from '../../domain/entities/organization-member.entity';
+import {
+  Organization,
+  OrganizationPlan,
+  PlanLimits,
+} from '../../domain/entities/organization.entity';
+import {
+  OrganizationMember,
+  OrganizationRole,
+  RolePermissions,
+} from '../../domain/entities/organization-member.entity';
 import { User } from '../../../auth/domain/entities/user.entity';
 import { CreateOrganizationDto } from '../../presentation/dto/create-organization.dto';
 import { UpdateOrganizationDto } from '../../presentation/dto/update-organization.dto';
@@ -28,7 +36,10 @@ export class OrganizationsService {
     private dataSource: DataSource,
   ) {}
 
-  async create(userId: string, dto: CreateOrganizationDto): Promise<Organization> {
+  async create(
+    userId: string,
+    dto: CreateOrganizationDto,
+  ): Promise<Organization> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();

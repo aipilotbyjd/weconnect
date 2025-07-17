@@ -6,7 +6,17 @@ import { NodeExecutor } from '../node-executor.interface';
 import { CredentialIntegrationService } from '../../../../credentials/application/services/credential-integration.service';
 
 export interface GitHubConfig {
-  operation: 'createIssue' | 'updateIssue' | 'closeIssue' | 'createPullRequest' | 'createRepository' | 'getIssues' | 'getRepositories' | 'createComment' | 'starRepository' | 'forkRepository';
+  operation:
+    | 'createIssue'
+    | 'updateIssue'
+    | 'closeIssue'
+    | 'createPullRequest'
+    | 'createRepository'
+    | 'getIssues'
+    | 'getRepositories'
+    | 'createComment'
+    | 'starRepository'
+    | 'forkRepository';
   credentialId?: string;
   accessToken?: string;
   owner?: string;
@@ -109,7 +119,7 @@ export class GitHubNodeExecutor implements NodeExecutor {
       };
     } catch (error) {
       this.logger.error(`GitHub operation failed: ${error.message}`);
-      
+
       return {
         ...inputData,
         github: null,
@@ -127,7 +137,7 @@ export class GitHubNodeExecutor implements NodeExecutor {
 
   async validate(configuration: Record<string, any>): Promise<boolean> {
     const config = configuration as GitHubConfig;
-    
+
     if (!config.operation) return false;
     if (!config.accessToken && !config.credentialId) return false;
 
@@ -138,7 +148,13 @@ export class GitHubNodeExecutor implements NodeExecutor {
       case 'closeIssue':
         return !!(config.owner && config.repo && config.issueNumber);
       case 'createPullRequest':
-        return !!(config.owner && config.repo && config.title && config.head && config.base);
+        return !!(
+          config.owner &&
+          config.repo &&
+          config.title &&
+          config.head &&
+          config.base
+        );
       case 'createRepository':
         return !!config.repositoryName;
       case 'getIssues':
@@ -146,7 +162,12 @@ export class GitHubNodeExecutor implements NodeExecutor {
       case 'getRepositories':
         return true; // No specific validation needed
       case 'createComment':
-        return !!(config.owner && config.repo && config.issueNumber && config.commentBody);
+        return !!(
+          config.owner &&
+          config.repo &&
+          config.issueNumber &&
+          config.commentBody
+        );
       case 'starRepository':
       case 'forkRepository':
         return !!(config.owner && config.repo);
@@ -155,17 +176,21 @@ export class GitHubNodeExecutor implements NodeExecutor {
     }
   }
 
-  private async getAccessToken(config: GitHubConfig, inputData: Record<string, any>): Promise<string> {
+  private async getAccessToken(
+    config: GitHubConfig,
+    inputData: Record<string, any>,
+  ): Promise<string> {
     if (config.accessToken) {
       return this.replaceVariables(config.accessToken, inputData);
     }
 
     if (config.credentialId) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialById(
-          config.credentialId,
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialById(
+            config.credentialId,
+            inputData._credentialContext,
+          );
         const accessToken = credential.data.access_token;
         if (!accessToken) {
           throw new Error('GitHub credential is missing access_token');
@@ -173,24 +198,29 @@ export class GitHubNodeExecutor implements NodeExecutor {
         return accessToken;
       } catch (error) {
         this.logger.error(`Failed to get GitHub credential: ${error.message}`);
-        throw new Error(`Failed to retrieve GitHub credentials: ${error.message}`);
+        throw new Error(
+          `Failed to retrieve GitHub credentials: ${error.message}`,
+        );
       }
     }
 
     // Try to get credential by service name
     if (inputData._credentialContext) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialByService(
-          'github',
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialByService(
+            'github',
+            inputData._credentialContext,
+          );
         const accessToken = credential.data.access_token;
         if (!accessToken) {
           throw new Error('GitHub credential is missing access_token');
         }
         return accessToken;
       } catch (error) {
-        this.logger.error(`Failed to get GitHub credential by service: ${error.message}`);
+        this.logger.error(
+          `Failed to get GitHub credential by service: ${error.message}`,
+        );
       }
     }
 
@@ -205,7 +235,9 @@ export class GitHubNodeExecutor implements NodeExecutor {
     const owner = this.replaceVariables(config.owner!, inputData);
     const repo = this.replaceVariables(config.repo!, inputData);
     const title = this.replaceVariables(config.title!, inputData);
-    const body = config.body ? this.replaceVariables(config.body, inputData) : '';
+    const body = config.body
+      ? this.replaceVariables(config.body, inputData)
+      : '';
 
     const payload: any = {
       title,
@@ -260,7 +292,10 @@ export class GitHubNodeExecutor implements NodeExecutor {
   ): Promise<any> {
     const owner = this.replaceVariables(config.owner!, inputData);
     const repo = this.replaceVariables(config.repo!, inputData);
-    const issueNumber = this.replaceVariables(config.issueNumber!.toString(), inputData);
+    const issueNumber = this.replaceVariables(
+      config.issueNumber!.toString(),
+      inputData,
+    );
 
     const payload: any = {};
 
@@ -316,7 +351,10 @@ export class GitHubNodeExecutor implements NodeExecutor {
   ): Promise<any> {
     const owner = this.replaceVariables(config.owner!, inputData);
     const repo = this.replaceVariables(config.repo!, inputData);
-    const issueNumber = this.replaceVariables(config.issueNumber!.toString(), inputData);
+    const issueNumber = this.replaceVariables(
+      config.issueNumber!.toString(),
+      inputData,
+    );
 
     const response = await lastValueFrom(
       this.httpService.patch(
@@ -352,7 +390,9 @@ export class GitHubNodeExecutor implements NodeExecutor {
     const title = this.replaceVariables(config.title!, inputData);
     const head = this.replaceVariables(config.head!, inputData);
     const base = this.replaceVariables(config.base!, inputData);
-    const body = config.body ? this.replaceVariables(config.body, inputData) : '';
+    const body = config.body
+      ? this.replaceVariables(config.body, inputData)
+      : '';
 
     const payload: any = {
       title,
@@ -399,8 +439,13 @@ export class GitHubNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
     accessToken: string,
   ): Promise<any> {
-    const repositoryName = this.replaceVariables(config.repositoryName!, inputData);
-    const description = config.description ? this.replaceVariables(config.description, inputData) : '';
+    const repositoryName = this.replaceVariables(
+      config.repositoryName!,
+      inputData,
+    );
+    const description = config.description
+      ? this.replaceVariables(config.description, inputData)
+      : '';
 
     const payload: any = {
       name: repositoryName,
@@ -412,17 +457,13 @@ export class GitHubNodeExecutor implements NodeExecutor {
     };
 
     const response = await lastValueFrom(
-      this.httpService.post(
-        'https://api.github.com/user/repos',
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json',
-          },
+      this.httpService.post('https://api.github.com/user/repos', payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
         },
-      ),
+      }),
     );
 
     return {
@@ -446,12 +487,13 @@ export class GitHubNodeExecutor implements NodeExecutor {
   ): Promise<any> {
     const owner = this.replaceVariables(config.owner!, inputData);
     const repo = this.replaceVariables(config.repo!, inputData);
-    
+
     const queryParams = new URLSearchParams();
     if (config.state) queryParams.append('state', config.state);
     if (config.sort) queryParams.append('sort', config.sort);
     if (config.direction) queryParams.append('direction', config.direction);
-    if (config.per_page) queryParams.append('per_page', config.per_page.toString());
+    if (config.per_page)
+      queryParams.append('per_page', config.per_page.toString());
     if (config.page) queryParams.append('page', config.page.toString());
 
     const response = await lastValueFrom(
@@ -492,7 +534,8 @@ export class GitHubNodeExecutor implements NodeExecutor {
     const queryParams = new URLSearchParams();
     if (config.sort) queryParams.append('sort', config.sort);
     if (config.direction) queryParams.append('direction', config.direction);
-    if (config.per_page) queryParams.append('per_page', config.per_page.toString());
+    if (config.per_page)
+      queryParams.append('per_page', config.per_page.toString());
     if (config.page) queryParams.append('page', config.page.toString());
 
     const response = await lastValueFrom(
@@ -535,7 +578,10 @@ export class GitHubNodeExecutor implements NodeExecutor {
   ): Promise<any> {
     const owner = this.replaceVariables(config.owner!, inputData);
     const repo = this.replaceVariables(config.repo!, inputData);
-    const issueNumber = this.replaceVariables(config.issueNumber!.toString(), inputData);
+    const issueNumber = this.replaceVariables(
+      config.issueNumber!.toString(),
+      inputData,
+    );
     const body = this.replaceVariables(config.commentBody!, inputData);
 
     const response = await lastValueFrom(

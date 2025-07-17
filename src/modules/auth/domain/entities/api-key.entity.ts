@@ -1,4 +1,11 @@
-import { Entity, Column, ManyToOne, JoinColumn, Index, BeforeInsert } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  Index,
+  BeforeInsert,
+} from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from './user.entity';
@@ -64,12 +71,17 @@ export class ApiKey extends BaseEntity {
   organizationId?: string;
 
   // Methods
-  static generateKey(): { key: string; hashedKey: string; prefix: string; lastFour: string } {
+  static generateKey(): {
+    key: string;
+    hashedKey: string;
+    prefix: string;
+    lastFour: string;
+  } {
     const key = `wc_${crypto.randomBytes(32).toString('hex')}`;
     const hashedKey = crypto.createHash('sha256').update(key).digest('hex');
     const prefix = key.substring(0, 7);
     const lastFour = key.substring(key.length - 4);
-    
+
     return { key, hashedKey, prefix, lastFour };
   }
 

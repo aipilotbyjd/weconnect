@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const DiscordNodeDefinition = new NodeDefinition({
   name: 'Discord',
@@ -77,7 +81,14 @@ export class DiscordNodeExecutor implements INodeExecutor {
     const startTime = Date.now();
 
     try {
-      const { operation, content, username, embedTitle, embedDescription, embedColor } = context.parameters;
+      const {
+        operation,
+        content,
+        username,
+        embedTitle,
+        embedDescription,
+        embedColor,
+      } = context.parameters;
 
       // Simulate Discord webhook integration
       // In a real implementation, you would use Discord webhook API
@@ -112,12 +123,14 @@ export class DiscordNodeExecutor implements INodeExecutor {
 
         const embedData = {
           id: `discord_embed_${Date.now()}`,
-          embeds: [{
-            title: embedTitle,
-            description: embedDescription,
-            color: parseInt(embedColor.replace('#', ''), 16) || 0x5865F2,
-            timestamp: new Date().toISOString(),
-          }],
+          embeds: [
+            {
+              title: embedTitle,
+              description: embedDescription,
+              color: parseInt(embedColor.replace('#', ''), 16) || 0x5865f2,
+              timestamp: new Date().toISOString(),
+            },
+          ],
           username: username || 'WeConnect Bot',
           timestamp: new Date().toISOString(),
           webhook_id: 'webhook_123456789',
@@ -156,8 +169,7 @@ export class DiscordNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

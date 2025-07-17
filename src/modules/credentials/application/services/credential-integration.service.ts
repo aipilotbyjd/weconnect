@@ -5,20 +5,20 @@ export interface ServiceCredentials {
   // Common fields
   service: string;
   type: string;
-  
+
   // API Key based
   apiKey?: string;
   apiSecret?: string;
-  
+
   // OAuth2 based
   access_token?: string;
   refresh_token?: string;
-  
+
   // Service specific
   token?: string;
   botToken?: string;
   webhookUrl?: string;
-  
+
   // Additional metadata
   scopes?: string[];
   expiresAt?: Date;
@@ -36,21 +36,22 @@ export class CredentialIntegrationService {
    * This is the main method used by node executors
    */
   async getServiceCredentials(
-    service: string, 
+    service: string,
     userId: string,
     options: {
       autoRefresh?: boolean;
       required?: boolean;
-    } = {}
+    } = {},
   ): Promise<ServiceCredentials | null> {
     const { autoRefresh = true, required = true } = options;
 
     try {
-      const credentials = await this.credentialsService.getCredentialsForService(
-        service,
-        userId,
-        autoRefresh
-      );
+      const credentials =
+        await this.credentialsService.getCredentialsForService(
+          service,
+          userId,
+          autoRefresh,
+        );
 
       return {
         service,
@@ -59,8 +60,13 @@ export class CredentialIntegrationService {
       };
     } catch (error) {
       if (required) {
-        this.logger.error(`Failed to get credentials for service ${service}:`, error.message);
-        throw new NotFoundException(`No valid credentials found for service: ${service}`);
+        this.logger.error(
+          `Failed to get credentials for service ${service}:`,
+          error.message,
+        );
+        throw new NotFoundException(
+          `No valid credentials found for service: ${service}`,
+        );
       }
       return null;
     }
@@ -71,17 +77,20 @@ export class CredentialIntegrationService {
    */
   async getCredentialById(
     credentialId: string,
-    context?: any
+    context?: any,
   ): Promise<{ data: ServiceCredentials }> {
     const userId = context?.userId || 'unknown';
-    const credentials = await this.credentialsService.getDecryptedData(credentialId, userId);
-    
+    const credentials = await this.credentialsService.getDecryptedData(
+      credentialId,
+      userId,
+    );
+
     return {
       data: {
         service: 'unknown',
         type: 'retrieved',
         ...credentials,
-      }
+      },
     };
   }
 
@@ -90,29 +99,37 @@ export class CredentialIntegrationService {
    */
   async getCredentialByService(
     service: string,
-    context?: any
+    context?: any,
   ): Promise<{ data: ServiceCredentials }> {
     const userId = context?.userId || 'unknown';
     const credentials = await this.getServiceCredentials(service, userId, {
       autoRefresh: true,
       required: true,
     });
-    
+
     if (!credentials) {
-      throw new NotFoundException(`No credentials found for service: ${service}`);
+      throw new NotFoundException(
+        `No credentials found for service: ${service}`,
+      );
     }
 
     return {
-      data: credentials
+      data: credentials,
     };
   }
 
   /**
    * Validate if credentials exist for a service
    */
-  async hasCredentialsForService(service: string, userId: string): Promise<boolean> {
+  async hasCredentialsForService(
+    service: string,
+    userId: string,
+  ): Promise<boolean> {
     try {
-      const credential = await this.credentialsService.findByServiceAndUser(service, userId);
+      const credential = await this.credentialsService.findByServiceAndUser(
+        service,
+        userId,
+      );
       return !!credential && credential.isActive;
     } catch {
       return false;
@@ -125,7 +142,7 @@ export class CredentialIntegrationService {
   async getOAuth2Credentials(
     service: string,
     userId: string,
-    requiredScopes?: string[]
+    requiredScopes?: string[],
   ): Promise<ServiceCredentials> {
     const credentials = await this.getServiceCredentials(service, userId, {
       autoRefresh: true,
@@ -133,17 +150,21 @@ export class CredentialIntegrationService {
     });
 
     if (!credentials?.access_token) {
-      throw new NotFoundException(`No OAuth2 access token found for service: ${service}`);
+      throw new NotFoundException(
+        `No OAuth2 access token found for service: ${service}`,
+      );
     }
 
     // Validate scopes if provided
     if (requiredScopes && credentials.scopes) {
-      const hasAllScopes = requiredScopes.every(scope => 
-        credentials.scopes!.includes(scope)
+      const hasAllScopes = requiredScopes.every((scope) =>
+        credentials.scopes!.includes(scope),
       );
-      
+
       if (!hasAllScopes) {
-        this.logger.warn(`Missing required scopes for ${service}. Required: ${requiredScopes}, Available: ${credentials.scopes}`);
+        this.logger.warn(
+          `Missing required scopes for ${service}. Required: ${requiredScopes}, Available: ${credentials.scopes}`,
+        );
       }
     }
 
@@ -155,7 +176,7 @@ export class CredentialIntegrationService {
    */
   async getApiKeyCredentials(
     service: string,
-    userId: string
+    userId: string,
   ): Promise<ServiceCredentials> {
     const credentials = await this.getServiceCredentials(service, userId, {
       required: true,
@@ -173,7 +194,7 @@ export class CredentialIntegrationService {
    */
   async getBotCredentials(
     service: string,
-    userId: string
+    userId: string,
   ): Promise<ServiceCredentials> {
     const credentials = await this.getServiceCredentials(service, userId, {
       required: true,
@@ -194,7 +215,10 @@ export class CredentialIntegrationService {
       await this.credentialsService.updateLastUsed(credentialId);
     } catch (error) {
       // Don't fail the main operation if this fails
-      this.logger.warn(`Failed to update last used timestamp for credential ${credentialId}:`, error.message);
+      this.logger.warn(
+        `Failed to update last used timestamp for credential ${credentialId}:`,
+        error.message,
+      );
     }
   }
 
@@ -204,31 +228,37 @@ export class CredentialIntegrationService {
   async getCredentialsWithFallback(
     primaryService: string,
     fallbackServices: string[],
-    userId: string
+    userId: string,
   ): Promise<ServiceCredentials> {
     // Try primary service first
     const primary = await this.getServiceCredentials(primaryService, userId, {
       required: false,
     });
-    
+
     if (primary) {
       return primary;
     }
 
     // Try fallback services
     for (const fallbackService of fallbackServices) {
-      const fallback = await this.getServiceCredentials(fallbackService, userId, {
-        required: false,
-      });
-      
+      const fallback = await this.getServiceCredentials(
+        fallbackService,
+        userId,
+        {
+          required: false,
+        },
+      );
+
       if (fallback) {
-        this.logger.log(`Using fallback service ${fallbackService} instead of ${primaryService}`);
+        this.logger.log(
+          `Using fallback service ${fallbackService} instead of ${primaryService}`,
+        );
         return fallback;
       }
     }
 
     throw new NotFoundException(
-      `No credentials found for ${primaryService} or fallback services: ${fallbackServices.join(', ')}`
+      `No credentials found for ${primaryService} or fallback services: ${fallbackServices.join(', ')}`,
     );
   }
 
@@ -237,15 +267,18 @@ export class CredentialIntegrationService {
    */
   async validateServiceCredentials(
     service: string,
-    userId: string
+    userId: string,
   ): Promise<{
     isValid: boolean;
     error?: string;
     details?: any;
   }> {
     try {
-      const credential = await this.credentialsService.findByServiceAndUser(service, userId);
-      
+      const credential = await this.credentialsService.findByServiceAndUser(
+        service,
+        userId,
+      );
+
       if (!credential) {
         return {
           isValid: false,
@@ -253,7 +286,10 @@ export class CredentialIntegrationService {
         };
       }
 
-      return await this.credentialsService.testCredential(credential.id, userId);
+      return await this.credentialsService.testCredential(
+        credential.id,
+        userId,
+      );
     } catch (error) {
       return {
         isValid: false,
@@ -267,7 +303,7 @@ export class CredentialIntegrationService {
    */
   async getMultipleServiceCredentials(
     services: string[],
-    userId: string
+    userId: string,
   ): Promise<Record<string, ServiceCredentials | null>> {
     const results: Record<string, ServiceCredentials | null> = {};
 
@@ -279,9 +315,12 @@ export class CredentialIntegrationService {
           });
         } catch (error) {
           results[service] = null;
-          this.logger.warn(`Failed to get credentials for ${service}:`, error.message);
+          this.logger.warn(
+            `Failed to get credentials for ${service}:`,
+            error.message,
+          );
         }
-      })
+      }),
     );
 
     return results;
@@ -292,7 +331,7 @@ export class CredentialIntegrationService {
    */
   extractCredentialPattern(
     credentials: ServiceCredentials,
-    pattern: 'oauth2' | 'api_key' | 'bot_token' | 'basic_auth'
+    pattern: 'oauth2' | 'api_key' | 'bot_token' | 'basic_auth',
   ): any {
     switch (pattern) {
       case 'oauth2':
@@ -302,24 +341,24 @@ export class CredentialIntegrationService {
           expiresAt: credentials.expiresAt,
           scopes: credentials.scopes,
         };
-      
+
       case 'api_key':
         return {
           apiKey: credentials.apiKey || credentials.token,
           apiSecret: credentials.apiSecret,
         };
-      
+
       case 'bot_token':
         return {
           token: credentials.botToken || credentials.token,
         };
-      
+
       case 'basic_auth':
         return {
           username: credentials.username,
           password: credentials.password,
         };
-      
+
       default:
         return credentials;
     }

@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { IUnifiedNodeExecutor, NodeSchema } from '../interfaces/unified-node-executor.interface';
+import {
+  IUnifiedNodeExecutor,
+  NodeSchema,
+} from '../interfaces/unified-node-executor.interface';
 import { NodeType } from '../../../modules/workflows/domain/entities/workflow-node.entity';
 
 @Injectable()
@@ -43,7 +46,7 @@ export class UnifiedNodeRegistryService {
    */
   getAllSchemas(): Record<string, NodeSchema[]> {
     const grouped: Record<string, NodeSchema[]> = {};
-    
+
     for (const [nodeType, schema] of this.schemas) {
       for (const group of schema.group) {
         if (!grouped[group]) {
@@ -52,7 +55,7 @@ export class UnifiedNodeRegistryService {
         grouped[group].push(schema);
       }
     }
-    
+
     return grouped;
   }
 
@@ -76,7 +79,7 @@ export class UnifiedNodeRegistryService {
   searchNodes(query: string): NodeSchema[] {
     const results: NodeSchema[] = [];
     const lowerQuery = query.toLowerCase();
-    
+
     for (const schema of this.schemas.values()) {
       if (
         schema.name.toLowerCase().includes(lowerQuery) ||
@@ -86,7 +89,7 @@ export class UnifiedNodeRegistryService {
         results.push(schema);
       }
     }
-    
+
     return results;
   }
 
@@ -96,7 +99,7 @@ export class UnifiedNodeRegistryService {
   validateRegistry(): { valid: string[]; invalid: string[] } {
     const valid: string[] = [];
     const invalid: string[] = [];
-    
+
     for (const [nodeType, executor] of this.executors) {
       try {
         const schema = executor.getSchema();
@@ -110,7 +113,7 @@ export class UnifiedNodeRegistryService {
         invalid.push(nodeType);
       }
     }
-    
+
     return { valid, invalid };
   }
 }

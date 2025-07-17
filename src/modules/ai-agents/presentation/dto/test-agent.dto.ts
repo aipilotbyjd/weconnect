@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional } from 'class-validator';
 
 export class TestAgentRequestDto {
-  @ApiProperty({ 
-    description: 'Test prompt for the agent', 
+  @ApiProperty({
+    description: 'Test prompt for the agent',
     example: 'Hello, how are you?',
-    required: false 
+    required: false,
   })
   @IsOptional()
   @IsString()

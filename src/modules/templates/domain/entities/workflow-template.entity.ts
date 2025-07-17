@@ -203,6 +203,7 @@ export class WorkflowTemplate extends BaseEntity {
   updateRating(newRating: number, newCount: number): void {
     const totalRating = this.averageRating * this.reviewCount + newRating;
     this.reviewCount = newCount;
-    this.averageRating = this.reviewCount > 0 ? totalRating / this.reviewCount : 0;
+    this.averageRating =
+      this.reviewCount > 0 ? totalRating / this.reviewCount : 0;
   }
 }

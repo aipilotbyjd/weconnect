@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AIAgent } from '../../domain/entities/ai-agent.entity';
@@ -65,11 +70,14 @@ export class AIAgentService {
       const configuration = {
         provider: createDto.provider,
         model: createDto.model,
-        systemPrompt: createDto.systemPrompt || 'You are a helpful AI assistant.',
+        systemPrompt:
+          createDto.systemPrompt || 'You are a helpful AI assistant.',
         temperature: createDto.temperature || 0.7,
         maxTokens: createDto.maxTokens || 1000,
         memoryType: createDto.memoryType || MemoryType.CONVERSATION,
-        memoryConfig: createDto.memoryConfig || { type: MemoryType.CONVERSATION },
+        memoryConfig: createDto.memoryConfig || {
+          type: MemoryType.CONVERSATION,
+        },
       };
 
       // Create the agent
@@ -88,11 +96,15 @@ export class AIAgentService {
         await this.addToolsToAgent(savedAgent.id, createDto.tools);
       }
 
-      this.logger.log(`Created AI agent: ${savedAgent.name} (${savedAgent.id})`);
+      this.logger.log(
+        `Created AI agent: ${savedAgent.name} (${savedAgent.id})`,
+      );
       return savedAgent;
     } catch (error) {
       this.logger.error('Failed to create AI agent:', error);
-      throw new BadRequestException(`Failed to create AI agent: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to create AI agent: ${error.message}`,
+      );
     }
   }
 
@@ -118,8 +130,12 @@ export class AIAgentService {
       ...(updateDto.provider && { provider: updateDto.provider }),
       ...(updateDto.model && { model: updateDto.model }),
       ...(updateDto.systemPrompt && { systemPrompt: updateDto.systemPrompt }),
-      ...(updateDto.temperature !== undefined && { temperature: updateDto.temperature }),
-      ...(updateDto.maxTokens !== undefined && { maxTokens: updateDto.maxTokens }),
+      ...(updateDto.temperature !== undefined && {
+        temperature: updateDto.temperature,
+      }),
+      ...(updateDto.maxTokens !== undefined && {
+        maxTokens: updateDto.maxTokens,
+      }),
       ...(updateDto.memoryType && { memoryType: updateDto.memoryType }),
       ...(updateDto.memoryConfig && { memoryConfig: updateDto.memoryConfig }),
     };
@@ -173,10 +189,10 @@ export class AIAgentService {
    */
   async deleteAgent(id: string): Promise<void> {
     const agent = await this.findAgentById(id);
-    
+
     // Clear all memory for this agent
     await this.memoryService.clearMemory(id, '*');
-    
+
     await this.agentRepository.remove(agent);
     this.logger.log(`Deleted AI agent: ${agent.name} (${id})`);
   }
@@ -189,7 +205,7 @@ export class AIAgentService {
     const availableTools = this.toolService.getAvailableTools();
 
     for (const toolName of toolNames) {
-      const toolConfig = availableTools.find(t => t.name === toolName);
+      const toolConfig = availableTools.find((t) => t.name === toolName);
       if (!toolConfig) {
         this.logger.warn(`Tool ${toolName} not found, skipping`);
         continue;
@@ -237,7 +253,9 @@ export class AIAgentService {
   /**
    * Get agent with tools
    */
-  async getAgentWithTools(id: string): Promise<AIAgent & { tools: AIAgentTool[] }> {
+  async getAgentWithTools(
+    id: string,
+  ): Promise<AIAgent & { tools: AIAgentTool[] }> {
     const agent = await this.findAgentById(id);
     const tools = await this.getAgentTools(id);
 
@@ -247,10 +265,13 @@ export class AIAgentService {
   /**
    * Test agent configuration
    */
-  async testAgent(id: string, testPrompt: string = 'Hello, how are you?'): Promise<any> {
+  async testAgent(
+    id: string,
+    testPrompt: string = 'Hello, how are you?',
+  ): Promise<any> {
     try {
       const agent = await this.findAgentById(id);
-      
+
       // Create language model
       const llm = this.providerService.createLanguageModel({
         provider: agent.provider as AIProvider,
@@ -287,7 +308,7 @@ export class AIAgentService {
   async getAgentStats(): Promise<any> {
     try {
       const totalAgents = await this.agentRepository.count();
-      
+
       const providerStats = await this.agentRepository
         .createQueryBuilder('agent')
         .select('agent.provider', 'provider')

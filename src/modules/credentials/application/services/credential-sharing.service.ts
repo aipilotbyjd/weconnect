@@ -1,9 +1,17 @@
-import { Injectable, Logger, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 import { Credential } from '../../domain/entities/credential.entity';
 import { CredentialShare } from '../../domain/entities/credential-share.entity';
-import { SharePermission, ShareStatus } from '../../domain/enums/credential-share.enum';
+import {
+  SharePermission,
+  ShareStatus,
+} from '../../domain/enums/credential-share.enum';
 
 export interface CreateShareDto {
   credentialId: string;
@@ -62,7 +70,9 @@ export class CredentialSharingService {
     });
 
     if (existingShare) {
-      throw new ForbiddenException('Credential is already shared with this user');
+      throw new ForbiddenException(
+        'Credential is already shared with this user',
+      );
     }
 
     // Create new share
@@ -80,7 +90,7 @@ export class CredentialSharingService {
     const savedShare = await this.shareRepository.save(share);
 
     this.logger.log(
-      `Credential ${createShareDto.credentialId} shared by ${ownerId} with ${createShareDto.sharedWithUserId}`
+      `Credential ${createShareDto.credentialId} shared by ${ownerId} with ${createShareDto.sharedWithUserId}`,
     );
 
     return savedShare;
@@ -139,7 +149,10 @@ export class CredentialSharingService {
     }
 
     // Allow both owner and recipient to revoke
-    if (share.sharedByUserId !== ownerId && share.sharedWithUserId !== ownerId) {
+    if (
+      share.sharedByUserId !== ownerId &&
+      share.sharedWithUserId !== ownerId
+    ) {
       throw new ForbiddenException('Not authorized to revoke this share');
     }
 
@@ -152,7 +165,10 @@ export class CredentialSharingService {
     this.logger.log(`Share ${shareId} revoked by ${ownerId}`);
   }
 
-  async getSharedCredentials(userId: string, filters?: ShareListFilters): Promise<CredentialShare[]> {
+  async getSharedCredentials(
+    userId: string,
+    filters?: ShareListFilters,
+  ): Promise<CredentialShare[]> {
     const queryBuilder = this.shareRepository
       .createQueryBuilder('share')
       .leftJoinAndSelect('share.credential', 'credential')
@@ -175,7 +191,7 @@ export class CredentialSharingService {
     // Check expiration
     queryBuilder.andWhere(
       '(share.expiresAt IS NULL OR share.expiresAt > :now)',
-      { now: new Date() }
+      { now: new Date() },
     );
 
     const shares = await queryBuilder.getMany();
@@ -183,7 +199,10 @@ export class CredentialSharingService {
     return shares;
   }
 
-  async getCredentialShares(credentialId: string, ownerId: string): Promise<CredentialShare[]> {
+  async getCredentialShares(
+    credentialId: string,
+    ownerId: string,
+  ): Promise<CredentialShare[]> {
     // Verify credential ownership
     const credential = await this.credentialRepository.findOne({
       where: { id: credentialId, userId: ownerId },
@@ -249,14 +268,16 @@ export class CredentialSharingService {
       .innerJoin('credential.shares', 'share')
       .where('share.sharedWithUserId = :userId', { userId })
       .andWhere('share.status = :status', { status: ShareStatus.ACTIVE })
-      .andWhere('(share.expiresAt IS NULL OR share.expiresAt > :now)', { now: new Date() })
+      .andWhere('(share.expiresAt IS NULL OR share.expiresAt > :now)', {
+        now: new Date(),
+      })
       .getMany();
 
     // Combine and deduplicate
     const allCredentials = [...ownedCredentials, ...sharedCredentials];
     const uniqueCredentials = allCredentials.filter(
       (credential, index, self) =>
-        index === self.findIndex(c => c.id === credential.id)
+        index === self.findIndex((c) => c.id === credential.id),
     );
 
     return uniqueCredentials;
@@ -270,7 +291,7 @@ export class CredentialSharingService {
       },
       {
         status: ShareStatus.EXPIRED,
-      }
+      },
     );
 
     const affectedRows = result.affected || 0;
@@ -285,22 +306,23 @@ export class CredentialSharingService {
     activeShares: number;
     expiredShares: number;
   }> {
-    const [sharesGiven, sharesReceived, activeShares, expiredShares] = await Promise.all([
-      this.shareRepository.count({ where: { sharedByUserId: userId } }),
-      this.shareRepository.count({ where: { sharedWithUserId: userId } }),
-      this.shareRepository.count({ 
-        where: { 
-          sharedByUserId: userId, 
-          status: ShareStatus.ACTIVE 
-        } 
-      }),
-      this.shareRepository.count({ 
-        where: { 
-          sharedByUserId: userId, 
-          status: ShareStatus.EXPIRED 
-        } 
-      }),
-    ]);
+    const [sharesGiven, sharesReceived, activeShares, expiredShares] =
+      await Promise.all([
+        this.shareRepository.count({ where: { sharedByUserId: userId } }),
+        this.shareRepository.count({ where: { sharedWithUserId: userId } }),
+        this.shareRepository.count({
+          where: {
+            sharedByUserId: userId,
+            status: ShareStatus.ACTIVE,
+          },
+        }),
+        this.shareRepository.count({
+          where: {
+            sharedByUserId: userId,
+            status: ShareStatus.EXPIRED,
+          },
+        }),
+      ]);
 
     return {
       sharesGiven,

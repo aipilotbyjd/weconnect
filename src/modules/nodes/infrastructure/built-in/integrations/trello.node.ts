@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const TrelloNodeDefinition = new NodeDefinition({
   name: 'Trello',
@@ -67,18 +71,21 @@ export const TrelloNodeDefinition = new NodeDefinition({
 export class TrelloNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { operation, boardId, listId, cardName, cardDesc } = context.parameters;
-      
+      const { operation, boardId, listId, cardName, cardDesc } =
+        context.parameters;
+
       // Simulate Trello API integration
       // In a real implementation, you would use Trello API client
-      
+
       if (operation === 'createCard') {
         if (!boardId || !listId || !cardName) {
-          throw new Error('Board ID, List ID, and Card Name are required for creating card');
+          throw new Error(
+            'Board ID, List ID, and Card Name are required for creating card',
+          );
         }
-        
+
         const cardData = {
           id: `card_${Date.now()}`,
           name: cardName,
@@ -88,7 +95,7 @@ export class TrelloNodeExecutor implements INodeExecutor {
           createdAt: new Date().toISOString(),
           status: 'created',
         };
-        
+
         return {
           success: true,
           data: [cardData],
@@ -106,7 +113,7 @@ export class TrelloNodeExecutor implements INodeExecutor {
           description: 'A sample Trello board',
           createdAt: new Date().toISOString(),
         };
-        
+
         return {
           success: true,
           data: [boardData],
@@ -132,7 +139,7 @@ export class TrelloNodeExecutor implements INodeExecutor {
             createdAt: new Date().toISOString(),
           },
         ];
-        
+
         return {
           success: true,
           data: boardsList,
@@ -143,7 +150,7 @@ export class TrelloNodeExecutor implements INodeExecutor {
           },
         };
       }
-      
+
       throw new Error(`Unknown operation: ${operation}`);
     } catch (error) {
       return {
@@ -165,8 +172,7 @@ export class TrelloNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

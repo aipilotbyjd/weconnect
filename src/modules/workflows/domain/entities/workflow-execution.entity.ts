@@ -68,13 +68,15 @@ export class WorkflowExecution extends BaseEntity {
   currentNodeId?: string;
 
   // Relations
-  @ManyToOne(() => Workflow, workflow => workflow.executions)
+  @ManyToOne(() => Workflow, (workflow) => workflow.executions)
   @JoinColumn({ name: 'workflowId' })
   workflow: Workflow;
 
   @Column()
   workflowId: string;
 
-  @OneToMany(() => WorkflowExecutionLog, log => log.execution, { cascade: true })
+  @OneToMany(() => WorkflowExecutionLog, (log) => log.execution, {
+    cascade: true,
+  })
   logs: WorkflowExecutionLog[];
 }

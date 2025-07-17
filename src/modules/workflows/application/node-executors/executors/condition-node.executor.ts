@@ -16,7 +16,7 @@ export interface ConditionConfig {
 export class ConditionNodeExecutor implements NodeExecutor {
   private readonly logger = new Logger(ConditionNodeExecutor.name);
 
-  constructor() { }
+  constructor() {}
 
   async execute(
     node: WorkflowNode,
@@ -37,7 +37,7 @@ export class ConditionNodeExecutor implements NodeExecutor {
           nodeName: node.name,
           result,
           timestamp: new Date().toISOString(),
-          evaluatedConditions: config.conditions.map(cond => ({
+          evaluatedConditions: config.conditions.map((cond) => ({
             ...cond,
             fieldValue: this.getValueByPath(inputData, cond.field),
             result: this.evaluateSingleCondition(inputData, cond),
@@ -55,10 +55,17 @@ export class ConditionNodeExecutor implements NodeExecutor {
 
   async validate(configuration: Record<string, any>): Promise<boolean> {
     const config = configuration as ConditionConfig;
-    return !!(config.conditions && Array.isArray(config.conditions) && config.conditions.length > 0);
+    return !!(
+      config.conditions &&
+      Array.isArray(config.conditions) &&
+      config.conditions.length > 0
+    );
   }
 
-  private evaluateConditions(data: any, conditions: ConditionConfig['conditions']): boolean {
+  private evaluateConditions(
+    data: any,
+    conditions: ConditionConfig['conditions'],
+  ): boolean {
     if (!conditions || conditions.length === 0) return true;
 
     let result = this.evaluateSingleCondition(data, conditions[0]);
@@ -116,10 +123,14 @@ export class ConditionNodeExecutor implements NodeExecutor {
         return Number(fieldValue) <= Number(value);
 
       case 'contains':
-        return String(fieldValue).toLowerCase().includes(String(value).toLowerCase());
+        return String(fieldValue)
+          .toLowerCase()
+          .includes(String(value).toLowerCase());
 
       case 'notContains':
-        return !String(fieldValue).toLowerCase().includes(String(value).toLowerCase());
+        return !String(fieldValue)
+          .toLowerCase()
+          .includes(String(value).toLowerCase());
 
       case 'startsWith':
         return String(fieldValue).startsWith(String(value));
@@ -150,23 +161,45 @@ export class ConditionNodeExecutor implements NodeExecutor {
         return fieldValue === undefined || fieldValue === null;
 
       case 'isEmpty':
-        return fieldValue === '' || fieldValue === null || fieldValue === undefined ||
+        return (
+          fieldValue === '' ||
+          fieldValue === null ||
+          fieldValue === undefined ||
           (Array.isArray(fieldValue) && fieldValue.length === 0) ||
-          (typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0);
+          (typeof fieldValue === 'object' &&
+            Object.keys(fieldValue).length === 0)
+        );
 
       case 'isNotEmpty':
-        return !(fieldValue === '' || fieldValue === null || fieldValue === undefined ||
+        return !(
+          fieldValue === '' ||
+          fieldValue === null ||
+          fieldValue === undefined ||
           (Array.isArray(fieldValue) && fieldValue.length === 0) ||
-          (typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0));
+          (typeof fieldValue === 'object' &&
+            Object.keys(fieldValue).length === 0)
+        );
 
       case 'isTrue':
-        return fieldValue === true || fieldValue === 'true' || fieldValue === 1 || fieldValue === '1';
+        return (
+          fieldValue === true ||
+          fieldValue === 'true' ||
+          fieldValue === 1 ||
+          fieldValue === '1'
+        );
 
       case 'isFalse':
-        return fieldValue === false || fieldValue === 'false' || fieldValue === 0 || fieldValue === '0';
+        return (
+          fieldValue === false ||
+          fieldValue === 'false' ||
+          fieldValue === 0 ||
+          fieldValue === '0'
+        );
 
       case 'isNumber':
-        return !isNaN(Number(fieldValue)) && fieldValue !== null && fieldValue !== '';
+        return (
+          !isNaN(Number(fieldValue)) && fieldValue !== null && fieldValue !== ''
+        );
 
       case 'isString':
         return typeof fieldValue === 'string';
@@ -175,7 +208,11 @@ export class ConditionNodeExecutor implements NodeExecutor {
         return Array.isArray(fieldValue);
 
       case 'isObject':
-        return typeof fieldValue === 'object' && fieldValue !== null && !Array.isArray(fieldValue);
+        return (
+          typeof fieldValue === 'object' &&
+          fieldValue !== null &&
+          !Array.isArray(fieldValue)
+        );
 
       default:
         this.logger.warn(`Unknown operator: ${operator}`);

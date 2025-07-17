@@ -1,10 +1,15 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const GmailAdvancedNodeDefinition = new NodeDefinition({
   name: 'GmailAdvanced',
   displayName: 'Gmail (Advanced)',
-  description: 'Send emails, manage drafts, labels, and perform advanced Gmail operations',
+  description:
+    'Send emails, manage drafts, labels, and perform advanced Gmail operations',
   version: 1,
   group: ['communication', 'google'],
   icon: 'fa:envelope',
@@ -192,9 +197,9 @@ export const GmailAdvancedNodeDefinition = new NodeDefinition({
 export class GmailAdvancedNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { 
+      const {
         operation,
         messageId,
         to,
@@ -211,20 +216,20 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
         threadId,
         importance,
       } = context.parameters;
-      
+
       switch (operation) {
         case 'send': {
           if (!to || !subject) {
             throw new Error('To and Subject are required for sending email');
           }
-          
+
           const sendResult = {
             id: `msg_${Date.now()}`,
             threadId: threadId || `thread_${Date.now()}`,
             labelIds: ['SENT'],
-            to: to.split(',').map(e => e.trim()),
-            cc: cc ? cc.split(',').map(e => e.trim()) : [],
-            bcc: bcc ? bcc.split(',').map(e => e.trim()) : [],
+            to: to.split(',').map((e) => e.trim()),
+            cc: cc ? cc.split(',').map((e) => e.trim()) : [],
+            bcc: bcc ? bcc.split(',').map((e) => e.trim()) : [],
             subject,
             body,
             bodyType,
@@ -232,7 +237,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             importance,
             attachmentCount: attachments ? attachments.length : 0,
           };
-          
+
           return {
             success: true,
             data: [sendResult],
@@ -243,12 +248,12 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'get': {
           if (!messageId) {
             throw new Error('Message ID is required');
           }
-          
+
           const message = {
             id: messageId,
             threadId: 'thread_123',
@@ -270,7 +275,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             historyId: '12345',
             internalDate: Date.now().toString(),
           };
-          
+
           return {
             success: true,
             data: [message],
@@ -281,7 +286,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'list': {
           const messages = [
             {
@@ -312,9 +317,9 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
               labelIds: ['INBOX', 'CATEGORY_UPDATES'],
             },
           ];
-          
+
           const filteredMessages = messages.slice(0, maxResults || 10);
-          
+
           return {
             success: true,
             data: filteredMessages,
@@ -326,12 +331,12 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'delete': {
           if (!messageId) {
             throw new Error('Message ID is required for delete');
           }
-          
+
           return {
             success: true,
             data: [{ deleted: true, messageId }],
@@ -342,12 +347,12 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'reply': {
           if (!messageId || !body) {
             throw new Error('Message ID and body are required for reply');
           }
-          
+
           const replyResult = {
             id: `reply_${Date.now()}`,
             threadId: threadId || 'thread_original',
@@ -357,7 +362,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             sentTime: new Date().toISOString(),
             labelIds: ['SENT'],
           };
-          
+
           return {
             success: true,
             data: [replyResult],
@@ -368,23 +373,25 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'forward': {
           if (!messageId || !to) {
-            throw new Error('Message ID and To address are required for forward');
+            throw new Error(
+              'Message ID and To address are required for forward',
+            );
           }
-          
+
           const forwardResult = {
             id: `fwd_${Date.now()}`,
             threadId: `thread_fwd_${Date.now()}`,
             forwardedFrom: messageId,
-            to: to.split(',').map(e => e.trim()),
+            to: to.split(',').map((e) => e.trim()),
             subject: `Fwd: ${subject || 'Original Subject'}`,
             body: body || 'Forwarded message attached below',
             sentTime: new Date().toISOString(),
             labelIds: ['SENT'],
           };
-          
+
           return {
             success: true,
             data: [forwardResult],
@@ -395,14 +402,14 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'createDraft': {
           const draftResult = {
             id: `draft_${Date.now()}`,
             message: {
               id: `draft_msg_${Date.now()}`,
               threadId: threadId || `thread_draft_${Date.now()}`,
-              to: to ? to.split(',').map(e => e.trim()) : [],
+              to: to ? to.split(',').map((e) => e.trim()) : [],
               subject: subject || '',
               body: body || '',
               bodyType,
@@ -410,7 +417,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
               labelIds: ['DRAFT'],
             },
           };
-          
+
           return {
             success: true,
             data: [draftResult],
@@ -421,12 +428,12 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'sendDraft': {
           if (!messageId) {
             throw new Error('Draft ID is required');
           }
-          
+
           const sentDraftResult = {
             id: `sent_draft_${Date.now()}`,
             draftId: messageId,
@@ -434,7 +441,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             labelIds: ['SENT'],
             status: 'sent',
           };
-          
+
           return {
             success: true,
             data: [sentDraftResult],
@@ -445,21 +452,23 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'addLabel': {
           if (!messageId || !labelIds) {
             throw new Error('Message ID and Label IDs are required');
           }
-          
-          const labels = labelIds.split(',').map(l => l.trim());
-          
+
+          const labels = labelIds.split(',').map((l) => l.trim());
+
           return {
             success: true,
-            data: [{
-              messageId,
-              labelsAdded: labels,
-              updatedLabelIds: ['INBOX', ...labels],
-            }],
+            data: [
+              {
+                messageId,
+                labelsAdded: labels,
+                updatedLabelIds: ['INBOX', ...labels],
+              },
+            ],
             metadata: {
               executionTime: Date.now() - startTime,
               itemsProcessed: 1,
@@ -467,21 +476,23 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'removeLabel': {
           if (!messageId || !labelIds) {
             throw new Error('Message ID and Label IDs are required');
           }
-          
-          const labels = labelIds.split(',').map(l => l.trim());
-          
+
+          const labels = labelIds.split(',').map((l) => l.trim());
+
           return {
             success: true,
-            data: [{
-              messageId,
-              labelsRemoved: labels,
-              updatedLabelIds: ['INBOX'],
-            }],
+            data: [
+              {
+                messageId,
+                labelsRemoved: labels,
+                updatedLabelIds: ['INBOX'],
+              },
+            ],
             metadata: {
               executionTime: Date.now() - startTime,
               itemsProcessed: 1,
@@ -489,19 +500,21 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'markAsRead': {
           if (!messageId) {
             throw new Error('Message ID is required');
           }
-          
+
           return {
             success: true,
-            data: [{
-              messageId,
-              markedAsRead: true,
-              updatedLabelIds: ['INBOX'],
-            }],
+            data: [
+              {
+                messageId,
+                markedAsRead: true,
+                updatedLabelIds: ['INBOX'],
+              },
+            ],
             metadata: {
               executionTime: Date.now() - startTime,
               itemsProcessed: 1,
@@ -509,19 +522,21 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'markAsUnread': {
           if (!messageId) {
             throw new Error('Message ID is required');
           }
-          
+
           return {
             success: true,
-            data: [{
-              messageId,
-              markedAsUnread: true,
-              updatedLabelIds: ['INBOX', 'UNREAD'],
-            }],
+            data: [
+              {
+                messageId,
+                markedAsUnread: true,
+                updatedLabelIds: ['INBOX', 'UNREAD'],
+              },
+            ],
             metadata: {
               executionTime: Date.now() - startTime,
               itemsProcessed: 1,
@@ -529,19 +544,21 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'trash': {
           if (!messageId) {
             throw new Error('Message ID is required');
           }
-          
+
           return {
             success: true,
-            data: [{
-              messageId,
-              movedToTrash: true,
-              updatedLabelIds: ['TRASH'],
-            }],
+            data: [
+              {
+                messageId,
+                movedToTrash: true,
+                updatedLabelIds: ['TRASH'],
+              },
+            ],
             metadata: {
               executionTime: Date.now() - startTime,
               itemsProcessed: 1,
@@ -549,12 +566,12 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'search': {
           if (!query) {
             throw new Error('Search query is required');
           }
-          
+
           const searchResults = [
             {
               id: 'search_1',
@@ -573,7 +590,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
               date: '2024-01-08T11:00:00Z',
             },
           ];
-          
+
           return {
             success: true,
             data: searchResults.slice(0, maxResults || 10),
@@ -585,12 +602,12 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'getAttachments': {
           if (!messageId) {
             throw new Error('Message ID is required');
           }
-          
+
           const attachments = [
             {
               id: 'att_1',
@@ -609,7 +626,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
               data: 'base64_encoded_image_data',
             },
           ];
-          
+
           return {
             success: true,
             data: attachments,
@@ -620,7 +637,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         default:
           throw new Error(`Unknown operation: ${operation}`);
       }
@@ -644,8 +661,7 @@ export class GmailAdvancedNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

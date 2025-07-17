@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
-import { 
-  BaseUnifiedNodeExecutor, 
-  NodeExecutionContext, 
-  NodeExecutionResult, 
-  NodeSchema 
+import {
+  BaseUnifiedNodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+  NodeSchema,
 } from '../../interfaces/unified-node-executor.interface';
 
 @Injectable()
@@ -96,7 +96,8 @@ export class HttpRequestNodeExecutor extends BaseUnifiedNodeExecutor {
           displayName: 'Ignore SSL Issues',
           type: 'boolean',
           default: false,
-          description: 'Ignore SSL certificate issues (not recommended for production)',
+          description:
+            'Ignore SSL certificate issues (not recommended for production)',
         },
         {
           name: 'responseFormat',
@@ -135,7 +136,9 @@ export class HttpRequestNodeExecutor extends BaseUnifiedNodeExecutor {
       // Replace variables in URL and other parameters
       const processedUrl = this.replaceVariables(url, context);
       const processedHeaders = this.processObject(headers, context);
-      const processedBody = body ? this.processObject(body, context) : undefined;
+      const processedBody = body
+        ? this.processObject(body, context)
+        : undefined;
       const processedQuery = this.processObject(queryParameters, context);
 
       // Build URL with query parameters
@@ -154,7 +157,10 @@ export class HttpRequestNodeExecutor extends BaseUnifiedNodeExecutor {
         maxRedirects: followRedirects ? 5 : 0,
       };
 
-      if (processedBody && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+      if (
+        processedBody &&
+        ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())
+      ) {
         requestConfig.data = processedBody;
       }
 
@@ -171,19 +177,20 @@ export class HttpRequestNodeExecutor extends BaseUnifiedNodeExecutor {
       this.logger.log(`Making ${method} request to: ${urlObj.toString()}`);
 
       const response = await lastValueFrom(
-        this.httpService.request(requestConfig)
+        this.httpService.request(requestConfig),
       );
 
       let responseData: any;
-      
+
       switch (responseFormat) {
         case 'json':
           responseData = response.data;
           break;
         case 'text':
-          responseData = typeof response.data === 'string' 
-            ? response.data 
-            : JSON.stringify(response.data);
+          responseData =
+            typeof response.data === 'string'
+              ? response.data
+              : JSON.stringify(response.data);
           break;
         case 'binary':
           responseData = {
@@ -212,7 +219,7 @@ export class HttpRequestNodeExecutor extends BaseUnifiedNodeExecutor {
       });
     } catch (error) {
       this.logger.error(`HTTP request failed: ${error.message}`);
-      
+
       // Handle HTTP errors with response data
       if (error.response) {
         const errorResult = {
@@ -222,12 +229,12 @@ export class HttpRequestNodeExecutor extends BaseUnifiedNodeExecutor {
           data: error.response.data,
           error: error.message,
         };
-        
+
         return this.createErrorResult(
-          `HTTP ${error.response.status}: ${error.response.statusText}`
+          `HTTP ${error.response.status}: ${error.response.statusText}`,
         );
       }
-      
+
       return this.createErrorResult(error.message);
     }
   }
@@ -236,11 +243,11 @@ export class HttpRequestNodeExecutor extends BaseUnifiedNodeExecutor {
     if (typeof obj === 'string') {
       return this.replaceVariables(obj, context);
     }
-    
+
     if (Array.isArray(obj)) {
-      return obj.map(item => this.processObject(item, context));
+      return obj.map((item) => this.processObject(item, context));
     }
-    
+
     if (obj && typeof obj === 'object') {
       const processed: any = {};
       for (const [key, value] of Object.entries(obj)) {
@@ -248,7 +255,7 @@ export class HttpRequestNodeExecutor extends BaseUnifiedNodeExecutor {
       }
       return processed;
     }
-    
+
     return obj;
   }
 }

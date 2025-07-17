@@ -7,7 +7,7 @@ export enum ExecutionStatus {
   RUNNING = 'running',
   COMPLETED = 'completed',
   FAILED = 'failed',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
 }
 
 @Entity('ai_agent_executions')
@@ -34,7 +34,7 @@ export class AIAgentExecution extends BaseEntity {
   @Column({
     type: 'enum',
     enum: ExecutionStatus,
-    default: ExecutionStatus.PENDING
+    default: ExecutionStatus.PENDING,
   })
   status: ExecutionStatus;
 

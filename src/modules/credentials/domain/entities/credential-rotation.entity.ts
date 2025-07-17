@@ -9,7 +9,10 @@ import {
   Index,
 } from 'typeorm';
 import { Credential } from './credential.entity';
-import { RotationStatus, RotationType } from '../enums/credential-rotation.enum';
+import {
+  RotationStatus,
+  RotationType,
+} from '../enums/credential-rotation.enum';
 
 export interface RotationPolicy {
   enabled: boolean;
@@ -84,7 +87,7 @@ export class CredentialRotation {
   updatedAt: Date;
 
   // Relations
-  @ManyToOne(() => Credential, credential => credential.rotations, {
+  @ManyToOne(() => Credential, (credential) => credential.rotations, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'credentialId' })
@@ -126,7 +129,9 @@ export class CredentialRotation {
   }
 
   getExecutionTimeSeconds(): number | null {
-    return this.executionTimeMs ? Math.round(this.executionTimeMs / 1000) : null;
+    return this.executionTimeMs
+      ? Math.round(this.executionTimeMs / 1000)
+      : null;
   }
 
   getDaysUntilRotation(): number | null {
@@ -186,7 +191,9 @@ export class CredentialRotation {
 
     const baseDate = this.completedAt || new Date();
     const nextRotation = new Date(baseDate);
-    nextRotation.setDate(nextRotation.getDate() + this.policy.rotationIntervalDays);
+    nextRotation.setDate(
+      nextRotation.getDate() + this.policy.rotationIntervalDays,
+    );
 
     return nextRotation;
   }

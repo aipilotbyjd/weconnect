@@ -3,5 +3,5 @@ export {
   NodeExecutionContext,
   NodeExecutionResult,
   INodeExecutor,
-  BaseNodeExecutor
+  BaseNodeExecutor,
 } from '../../../../core/abstracts/base-node.interface';

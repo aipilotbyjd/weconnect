@@ -86,17 +86,26 @@ export class Organization {
   executionResetDate?: Date;
 
   // Relations
-  @ApiProperty({ type: () => [OrganizationMember], description: 'Organization members' })
+  @ApiProperty({
+    type: () => [OrganizationMember],
+    description: 'Organization members',
+  })
   @OneToMany(() => OrganizationMember, (member) => member.organization, {
     cascade: true,
   })
   members: OrganizationMember[];
 
-  @ApiProperty({ type: () => [Workflow], description: 'Organization workflows' })
+  @ApiProperty({
+    type: () => [Workflow],
+    description: 'Organization workflows',
+  })
   @OneToMany(() => Workflow, (workflow) => workflow.organization)
   workflows: Workflow[];
 
-  @ApiProperty({ type: () => [Credential], description: 'Organization credentials' })
+  @ApiProperty({
+    type: () => [Credential],
+    description: 'Organization credentials',
+  })
   @OneToMany(() => Credential, (credential) => credential.organization)
   credentials: Credential[];
 
@@ -171,11 +180,11 @@ export class Organization {
   isWithinLimit(resource: keyof PlanLimits, current: number): boolean {
     const limits = this.getPlanLimits();
     const limit = limits[resource];
-    
+
     if (typeof limit === 'number') {
       return limit === -1 || current < limit;
     }
-    
+
     return true;
   }
 }

@@ -23,42 +23,44 @@ const users = [
 
 async function seedUsers() {
   await dataSource.initialize();
-  
+
   try {
     const userRepo = dataSource.getRepository('User');
     const orgRepo = dataSource.getRepository('Organization');
     const orgMemberRepo = dataSource.getRepository('OrganizationMember');
-    
+
     // Get the default organization
     const defaultOrg = await orgRepo.findOne({
       where: { slug: 'default-org' },
     });
-    
+
     if (!defaultOrg) {
-      console.error('Default organization not found! Please run migrations first.');
+      console.error(
+        'Default organization not found! Please run migrations first.',
+      );
       return;
     }
-    
+
     for (const userData of users) {
       // Check if user already exists
       const existingUser = await userRepo.findOne({
         where: { email: userData.email },
       });
-      
+
       if (!existingUser) {
         // Hash password
         const hashedPassword = await bcrypt.hash(userData.password, 10);
-        
+
         // Create user
         const user = userRepo.create({
           ...userData,
           password: hashedPassword,
           currentOrganizationId: defaultOrg.id,
         });
-        
+
         await userRepo.save(user);
         console.log(`Created user: ${user.email}`);
-        
+
         // Add user to default organization
         const orgMember = orgMemberRepo.create({
           organizationId: defaultOrg.id,
@@ -67,14 +69,14 @@ async function seedUsers() {
           inviteAccepted: true,
           acceptedAt: new Date(),
         });
-        
+
         await orgMemberRepo.save(orgMember);
         console.log(`Added ${user.email} to default organization`);
       } else {
         console.log(`User ${userData.email} already exists`);
       }
     }
-    
+
     console.log('\nUser seeding completed successfully!');
     console.log('\nYou can now login with:');
     console.log('- Email: admin@weconnect.com, Password: Admin123!');

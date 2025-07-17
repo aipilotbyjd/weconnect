@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const GoogleSheetsNodeDefinition = new NodeDefinition({
   name: 'GoogleSheets',
@@ -71,13 +75,14 @@ export const GoogleSheetsNodeDefinition = new NodeDefinition({
 export class GoogleSheetsNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { operation, spreadsheetId, sheetName, range, values } = context.parameters;
-      
+      const { operation, spreadsheetId, sheetName, range, values } =
+        context.parameters;
+
       // Simulate Google Sheets API integration
       // In a real implementation, you would use Google Sheets API client
-      
+
       if (operation === 'readRows') {
         // Simulate reading rows
         const rowsData = {
@@ -91,7 +96,7 @@ export class GoogleSheetsNodeExecutor implements INodeExecutor {
             ['Bob Johnson', 'bob@example.com', '35'],
           ],
         };
-        
+
         return {
           success: true,
           data: [rowsData],
@@ -105,7 +110,7 @@ export class GoogleSheetsNodeExecutor implements INodeExecutor {
         if (!values || !Array.isArray(values)) {
           throw new Error('Values array is required for appending row');
         }
-        
+
         const appendResult = {
           spreadsheetId,
           tableRange: `${sheetName}!A1:Z1000`,
@@ -117,7 +122,7 @@ export class GoogleSheetsNodeExecutor implements INodeExecutor {
             updatedCells: values.length,
           },
         };
-        
+
         return {
           success: true,
           data: [appendResult],
@@ -131,7 +136,7 @@ export class GoogleSheetsNodeExecutor implements INodeExecutor {
         if (!values || !Array.isArray(values)) {
           throw new Error('Values array is required for updating row');
         }
-        
+
         const updateResult = {
           spreadsheetId,
           updatedRange: `${sheetName}!${range}`,
@@ -139,7 +144,7 @@ export class GoogleSheetsNodeExecutor implements INodeExecutor {
           updatedColumns: values.length,
           updatedCells: values.length,
         };
-        
+
         return {
           success: true,
           data: [updateResult],
@@ -156,7 +161,7 @@ export class GoogleSheetsNodeExecutor implements INodeExecutor {
           clearedRows: 100,
           clearedColumns: 26,
         };
-        
+
         return {
           success: true,
           data: [clearResult],
@@ -167,7 +172,7 @@ export class GoogleSheetsNodeExecutor implements INodeExecutor {
           },
         };
       }
-      
+
       throw new Error(`Unknown operation: ${operation}`);
     } catch (error) {
       return {
@@ -189,8 +194,7 @@ export class GoogleSheetsNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

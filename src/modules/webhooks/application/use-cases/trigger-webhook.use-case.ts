@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Webhook } from '../../domain/entities/webhook.entity';
@@ -13,7 +17,12 @@ export class TriggerWebhookUseCase {
     private readonly executionsService: ExecutionsService,
   ) {}
 
-  async execute(path: string, method: string, headers: any, body: any): Promise<any> {
+  async execute(
+    path: string,
+    method: string,
+    headers: any,
+    body: any,
+  ): Promise<any> {
     const webhook = await this.webhookRepository.findOne({
       where: { path, isActive: true },
       relations: ['workflow', 'user'],
@@ -24,7 +33,9 @@ export class TriggerWebhookUseCase {
     }
 
     if (webhook.method !== method.toUpperCase()) {
-      throw new BadRequestException(`Method ${method} not allowed for this webhook`);
+      throw new BadRequestException(
+        `Method ${method} not allowed for this webhook`,
+      );
     }
 
     if (!webhook.workflow.isActive) {

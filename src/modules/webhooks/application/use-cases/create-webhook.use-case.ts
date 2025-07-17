@@ -12,10 +12,14 @@ export class CreateWebhookUseCase {
     private readonly webhookRepository: Repository<Webhook>,
   ) {}
 
-  async execute(workflowId: string, createWebhookDto: CreateWebhookDto, userId: string): Promise<Webhook> {
+  async execute(
+    workflowId: string,
+    createWebhookDto: CreateWebhookDto,
+    userId: string,
+  ): Promise<Webhook> {
     // Generate unique path
     const path = `${createWebhookDto.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${uuidv4().substring(0, 8)}`;
-    
+
     const webhook = this.webhookRepository.create({
       ...createWebhookDto,
       path,

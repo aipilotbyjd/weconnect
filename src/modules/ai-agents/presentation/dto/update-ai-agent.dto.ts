@@ -1,20 +1,41 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEnum, IsOptional, IsNumber, IsArray, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  IsArray,
+  Min,
+  Max,
+} from 'class-validator';
 import { AIProvider } from '../../application/services/ai-provider.service';
 import { MemoryType } from '../../domain/entities/ai-agent-memory.entity';
 
 export class UpdateAIAgentRequestDto {
-  @ApiProperty({ description: 'Agent name', example: 'Customer Support Assistant', required: false })
+  @ApiProperty({
+    description: 'Agent name',
+    example: 'Customer Support Assistant',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   name?: string;
 
-  @ApiProperty({ description: 'Agent description', example: 'Helps customers with their inquiries', required: false })
+  @ApiProperty({
+    description: 'Agent description',
+    example: 'Helps customers with their inquiries',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiProperty({ description: 'AI provider', enum: AIProvider, example: AIProvider.OPENAI, required: false })
+  @ApiProperty({
+    description: 'AI provider',
+    enum: AIProvider,
+    example: AIProvider.OPENAI,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(AIProvider)
   provider?: AIProvider;
@@ -24,19 +45,19 @@ export class UpdateAIAgentRequestDto {
   @IsString()
   model?: string;
 
-  @ApiProperty({ 
-    description: 'System prompt for the agent', 
+  @ApiProperty({
+    description: 'System prompt for the agent',
     example: 'You are a helpful customer support assistant.',
-    required: false 
+    required: false,
   })
   @IsOptional()
   @IsString()
   systemPrompt?: string;
 
-  @ApiProperty({ 
-    description: 'Temperature for model randomness (0-2)', 
+  @ApiProperty({
+    description: 'Temperature for model randomness (0-2)',
     example: 0.7,
-    required: false 
+    required: false,
   })
   @IsOptional()
   @IsNumber()
@@ -44,10 +65,10 @@ export class UpdateAIAgentRequestDto {
   @Max(2)
   temperature?: number;
 
-  @ApiProperty({ 
-    description: 'Maximum tokens for response', 
+  @ApiProperty({
+    description: 'Maximum tokens for response',
     example: 1000,
-    required: false 
+    required: false,
   })
   @IsOptional()
   @IsNumber()
@@ -55,21 +76,21 @@ export class UpdateAIAgentRequestDto {
   @Max(4000)
   maxTokens?: number;
 
-  @ApiProperty({ 
-    description: 'List of tool names to enable', 
+  @ApiProperty({
+    description: 'List of tool names to enable',
     example: ['http_request', 'text_processor'],
-    required: false 
+    required: false,
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   tools?: string[];
 
-  @ApiProperty({ 
-    description: 'Memory type for the agent', 
+  @ApiProperty({
+    description: 'Memory type for the agent',
     enum: MemoryType,
     example: MemoryType.CONVERSATION,
-    required: false 
+    required: false,
   })
   @IsOptional()
   @IsEnum(MemoryType)

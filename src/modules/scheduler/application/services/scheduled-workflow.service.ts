@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ScheduledWorkflow, ScheduleStatus } from '../../domain/entities/scheduled-workflow.entity';
+import {
+  ScheduledWorkflow,
+  ScheduleStatus,
+} from '../../domain/entities/scheduled-workflow.entity';
 import { Workflow } from '../../../workflows/domain/entities/workflow.entity';
 import { SchedulerService } from './scheduler.service';
 import { CreateScheduledWorkflowDto } from '../../presentation/dto/create-scheduled-workflow.dto';
@@ -104,7 +111,9 @@ export class ScheduledWorkflowService {
       if (updated.status === ScheduleStatus.ACTIVE) {
         await this.schedulerService.scheduleWorkflow(updated);
       } else {
-        await this.schedulerService.removeSchedule(`scheduled-workflow-${updated.id}`);
+        await this.schedulerService.removeSchedule(
+          `scheduled-workflow-${updated.id}`,
+        );
       }
     }
 
@@ -125,10 +134,10 @@ export class ScheduledWorkflowService {
 
   async delete(id: string, userId: string): Promise<void> {
     const schedule = await this.findOne(id, userId);
-    
+
     // Remove from scheduler
     await this.schedulerService.removeSchedule(`scheduled-workflow-${id}`);
-    
+
     // Mark as deleted (soft delete)
     await this.scheduledWorkflowRepository.update(id, {
       status: ScheduleStatus.DELETED,
@@ -141,16 +150,19 @@ export class ScheduledWorkflowService {
     count: number = 5,
   ): Promise<Date[]> {
     const schedule = await this.findOne(id, userId);
-    
+
     try {
       const options = schedule.timezone ? { tz: schedule.timezone } : {};
-      const interval = cronParser.parseExpression(schedule.cronExpression, options);
-      
+      const interval = cronParser.parseExpression(
+        schedule.cronExpression,
+        options,
+      );
+
       const executions: Date[] = [];
       for (let i = 0; i < count; i++) {
         executions.push(interval.next().toDate());
       }
-      
+
       return executions;
     } catch (error) {
       throw new BadRequestException('Invalid cron expression');

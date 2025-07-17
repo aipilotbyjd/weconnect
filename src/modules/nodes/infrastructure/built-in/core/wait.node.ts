@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const WaitNodeDefinition = new NodeDefinition({
   name: 'Wait',
@@ -42,7 +46,8 @@ export const WaitNodeDefinition = new NodeDefinition({
       type: 'string',
       default: '',
       placeholder: '2024-12-31T23:59:59Z',
-      description: 'Wait until specific date/time (ISO format). If set, overrides unit and amount.',
+      description:
+        'Wait until specific date/time (ISO format). If set, overrides unit and amount.',
     },
   ],
 });
@@ -51,7 +56,7 @@ export class WaitNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const { unit, amount, waitUntil } = context.parameters;
-    
+
     try {
       let waitMs: number;
 
@@ -68,7 +73,7 @@ export class WaitNodeExecutor implements INodeExecutor {
           hours: 60 * 60 * 1000,
           days: 24 * 60 * 60 * 1000,
         };
-        
+
         waitMs = amount * multipliers[unit as keyof typeof multipliers];
       }
 
@@ -86,11 +91,12 @@ export class WaitNodeExecutor implements INodeExecutor {
 
       // For long waits, we should implement this as a scheduled job instead
       // For now, we'll just simulate the wait without blocking
-      if (waitMs > 30000) { // More than 30 seconds
+      if (waitMs > 30000) {
+        // More than 30 seconds
         // In a real implementation, this would schedule a continuation
         return {
           success: true,
-          data: context.inputData.map(item => ({
+          data: context.inputData.map((item) => ({
             ...item,
             waitScheduled: true,
             waitUntil: new Date(Date.now() + waitMs).toISOString(),
@@ -105,11 +111,11 @@ export class WaitNodeExecutor implements INodeExecutor {
       }
 
       // For short waits, actually wait
-      await new Promise(resolve => setTimeout(resolve, waitMs));
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
 
       return {
         success: true,
-        data: context.inputData.map(item => ({
+        data: context.inputData.map((item) => ({
           ...item,
           waitCompleted: true,
           waitDuration: waitMs,
@@ -140,8 +146,7 @@ export class WaitNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsOptional, IsObject, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsObject,
+  IsBoolean,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CredentialType } from '../../domain/entities/credential.entity';
 

@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const GoogleCalendarNodeDefinition = new NodeDefinition({
   name: 'GoogleCalendar',
@@ -331,9 +335,9 @@ export const GoogleCalendarNodeDefinition = new NodeDefinition({
 export class GoogleCalendarNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { 
+      const {
         operation,
         calendarId,
         eventId,
@@ -355,13 +359,13 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
         timeMax,
         maxResults,
       } = context.parameters;
-      
+
       switch (operation) {
         case 'create': {
           if (!summary || !startDateTime || !endDateTime) {
             throw new Error('Summary, start time, and end time are required');
           }
-          
+
           const event = {
             id: `evt_${Date.now()}`,
             status: 'confirmed',
@@ -379,32 +383,38 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
               email: 'user@example.com',
               self: true,
             },
-            start: allDay ? {
-              date: startDateTime.split('T')[0],
-            } : {
-              dateTime: startDateTime,
-              timeZone: timeZone || 'UTC',
-            },
-            end: allDay ? {
-              date: endDateTime.split('T')[0],
-            } : {
-              dateTime: endDateTime,
-              timeZone: timeZone || 'UTC',
-            },
+            start: allDay
+              ? {
+                  date: startDateTime.split('T')[0],
+                }
+              : {
+                  dateTime: startDateTime,
+                  timeZone: timeZone || 'UTC',
+                },
+            end: allDay
+              ? {
+                  date: endDateTime.split('T')[0],
+                }
+              : {
+                  dateTime: endDateTime,
+                  timeZone: timeZone || 'UTC',
+                },
             attendees: attendees || [],
             reminders: reminders || { useDefault: true },
             visibility: visibility || 'default',
             colorId: colorId || undefined,
-            conferenceData: conferenceData?.createRequest ? {
-              createRequest: {
-                requestId: `req_${Date.now()}`,
-                conferenceSolutionKey: {
-                  type: conferenceData.conferenceSolution || 'hangoutsMeet',
-                },
-              },
-            } : undefined,
+            conferenceData: conferenceData?.createRequest
+              ? {
+                  createRequest: {
+                    requestId: `req_${Date.now()}`,
+                    conferenceSolutionKey: {
+                      type: conferenceData.conferenceSolution || 'hangoutsMeet',
+                    },
+                  },
+                }
+              : undefined,
           };
-          
+
           return {
             success: true,
             data: [event],
@@ -415,30 +425,34 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'update': {
           if (!eventId) {
             throw new Error('Event ID is required for update');
           }
-          
+
           const updatedEvent = {
             id: eventId,
             updated: new Date().toISOString(),
             summary: summary || 'Updated Event',
             description: description || 'Updated description',
             location: location || '',
-            start: startDateTime ? {
-              dateTime: startDateTime,
-              timeZone: timeZone || 'UTC',
-            } : undefined,
-            end: endDateTime ? {
-              dateTime: endDateTime,
-              timeZone: timeZone || 'UTC',
-            } : undefined,
+            start: startDateTime
+              ? {
+                  dateTime: startDateTime,
+                  timeZone: timeZone || 'UTC',
+                }
+              : undefined,
+            end: endDateTime
+              ? {
+                  dateTime: endDateTime,
+                  timeZone: timeZone || 'UTC',
+                }
+              : undefined,
             attendees: attendees || [],
             colorId: colorId || undefined,
           };
-          
+
           return {
             success: true,
             data: [updatedEvent],
@@ -449,12 +463,12 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'delete': {
           if (!eventId) {
             throw new Error('Event ID is required for delete');
           }
-          
+
           return {
             success: true,
             data: [{ deleted: true, eventId }],
@@ -465,12 +479,12 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'get': {
           if (!eventId) {
             throw new Error('Event ID is required');
           }
-          
+
           const event = {
             id: eventId,
             status: 'confirmed',
@@ -516,7 +530,7 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
               ],
             },
           };
-          
+
           return {
             success: true,
             data: [event],
@@ -527,7 +541,7 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'list': {
           const events = [
             {
@@ -552,9 +566,9 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
               status: 'confirmed',
             },
           ];
-          
+
           const filteredEvents = events.slice(0, maxResults || 10);
-          
+
           return {
             success: true,
             data: filteredEvents,
@@ -566,12 +580,12 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'search': {
           if (!query) {
             throw new Error('Search query is required');
           }
-          
+
           const searchResults = [
             {
               id: 'search_evt_1',
@@ -588,7 +602,7 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
               description: 'Quarterly review meeting',
             },
           ];
-          
+
           return {
             success: true,
             data: searchResults,
@@ -600,12 +614,12 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'createCalendar': {
           if (!summary) {
             throw new Error('Calendar name (summary) is required');
           }
-          
+
           const newCalendar = {
             id: `cal_${Date.now()}`,
             summary,
@@ -618,7 +632,7 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             accessRole: 'owner',
             defaultReminders: [],
           };
-          
+
           return {
             success: true,
             data: [newCalendar],
@@ -629,7 +643,7 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'listCalendars': {
           const calendars = [
             {
@@ -667,7 +681,7 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
               accessRole: 'owner',
             },
           ];
-          
+
           return {
             success: true,
             data: calendars,
@@ -678,25 +692,27 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'addAttendee': {
           if (!eventId || !attendees || attendees.length === 0) {
             throw new Error('Event ID and at least one attendee are required');
           }
-          
-          const addedAttendees = attendees.map(att => ({
+
+          const addedAttendees = attendees.map((att) => ({
             ...att,
             added: true,
             responseStatus: att.responseStatus || 'needsAction',
           }));
-          
+
           return {
             success: true,
-            data: [{
-              eventId,
-              attendeesAdded: addedAttendees,
-              totalAttendees: 5 + attendees.length,
-            }],
+            data: [
+              {
+                eventId,
+                attendeesAdded: addedAttendees,
+                totalAttendees: 5 + attendees.length,
+              },
+            ],
             metadata: {
               executionTime: Date.now() - startTime,
               itemsProcessed: attendees.length,
@@ -704,21 +720,23 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'removeAttendee': {
           if (!eventId || !attendees || attendees.length === 0) {
             throw new Error('Event ID and attendee email(s) are required');
           }
-          
-          const removedEmails = attendees.map(att => att.email);
-          
+
+          const removedEmails = attendees.map((att) => att.email);
+
           return {
             success: true,
-            data: [{
-              eventId,
-              attendeesRemoved: removedEmails,
-              remainingAttendees: 3,
-            }],
+            data: [
+              {
+                eventId,
+                attendeesRemoved: removedEmails,
+                remainingAttendees: 3,
+              },
+            ],
             metadata: {
               executionTime: Date.now() - startTime,
               itemsProcessed: removedEmails.length,
@@ -726,12 +744,12 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         case 'getFreeBusy': {
           if (!timeMin || !timeMax) {
             throw new Error('Time min and time max are required');
           }
-          
+
           const freeBusyInfo = {
             timeMin,
             timeMax,
@@ -750,7 +768,7 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
               },
             },
           };
-          
+
           return {
             success: true,
             data: [freeBusyInfo],
@@ -761,7 +779,7 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
             },
           };
         }
-        
+
         default:
           throw new Error(`Unknown operation: ${operation}`);
       }
@@ -785,8 +803,7 @@ export class GoogleCalendarNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

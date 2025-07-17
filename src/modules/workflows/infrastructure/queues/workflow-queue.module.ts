@@ -87,4 +87,4 @@ import { TrelloNodeExecutor } from '../../application/node-executors/executors/t
   ],
   exports: [BullModule],
 })
-export class WorkflowQueueModule { }
+export class WorkflowQueueModule {}

@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const SetNodeDefinition = new NodeDefinition({
   name: 'Set',
@@ -20,7 +24,8 @@ export const SetNodeDefinition = new NodeDefinition({
       displayName: 'Keep Only Set',
       type: 'boolean',
       default: false,
-      description: 'If true, only the values set on this node are kept and all others are removed',
+      description:
+        'If true, only the values set on this node are kept and all others are removed',
     },
     {
       name: 'values',
@@ -39,24 +44,24 @@ export const SetNodeDefinition = new NodeDefinition({
 export class SetNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const { keepOnlySet, values } = context.parameters;
       const items = context.inputData || [{}];
-      
-      const returnData = items.map(item => {
+
+      const returnData = items.map((item) => {
         let newItem = keepOnlySet ? {} : { ...item };
-        
+
         // Apply values to each item
         if (values && typeof values === 'object') {
-          Object.keys(values).forEach(key => {
+          Object.keys(values).forEach((key) => {
             newItem[key] = values[key];
           });
         }
-        
+
         return newItem;
       });
-      
+
       return {
         success: true,
         data: returnData,
@@ -85,8 +90,7 @@ export class SetNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

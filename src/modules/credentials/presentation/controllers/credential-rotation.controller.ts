@@ -74,7 +74,9 @@ class CredentialsNeedingRotationDto {
 @UseGuards(JwtAuthGuard)
 @Controller('credential-rotation')
 export class CredentialRotationController {
-  constructor(private readonly credentialRotationService: CredentialRotationService) {}
+  constructor(
+    private readonly credentialRotationService: CredentialRotationService,
+  ) {}
 
   @Post(':credentialId/policy')
   @ApiOperation({ summary: 'Create rotation policy for credential' })
@@ -175,7 +177,10 @@ export class CredentialRotationController {
     @CurrentUser() user: User,
     @Param('credentialId', ParseUUIDPipe) credentialId: string,
   ): Promise<CredentialRotation[]> {
-    return this.credentialRotationService.getRotationHistory(credentialId, user.id);
+    return this.credentialRotationService.getRotationHistory(
+      credentialId,
+      user.id,
+    );
   }
 
   @Get('needing-rotation')
@@ -188,7 +193,9 @@ export class CredentialRotationController {
   async getCredentialsNeedingRotation(
     @CurrentUser() user: User,
   ): Promise<CredentialsNeedingRotationDto> {
-    return this.credentialRotationService.getCredentialsNeedingRotation(user.id);
+    return this.credentialRotationService.getCredentialsNeedingRotation(
+      user.id,
+    );
   }
 
   @Post('process-scheduled')
@@ -220,11 +227,12 @@ export class CredentialRotationController {
     description: 'Rotation dashboard data',
   })
   async getRotationDashboard(@CurrentUser() user: User) {
-    const needingRotation = await this.credentialRotationService.getCredentialsNeedingRotation(
-      user.id,
-    );
+    const needingRotation =
+      await this.credentialRotationService.getCredentialsNeedingRotation(
+        user.id,
+      );
 
-    const totalCredentials = 
+    const totalCredentials =
       needingRotation.immediate.length +
       needingRotation.warning.length +
       needingRotation.overdue.length;

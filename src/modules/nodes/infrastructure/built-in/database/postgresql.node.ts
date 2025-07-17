@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import { Pool } from 'pg';
 
 export const PostgreSQLNodeDefinition = new NodeDefinition({
@@ -47,7 +51,8 @@ export const PostgreSQLNodeDefinition = new NodeDefinition({
           operation: ['executeQuery'],
         },
       },
-      description: 'The SQL query to execute. You can use $1, $2, etc. for parameters.',
+      description:
+        'The SQL query to execute. You can use $1, $2, etc. for parameters.',
     },
     {
       name: 'queryParameters',
@@ -155,7 +160,7 @@ export class PostgreSQLNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.postgresDb;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -232,10 +237,10 @@ export class PostgreSQLNodeExecutor implements INodeExecutor {
 
   private async executeSelect(context: NodeExecutionContext): Promise<any[]> {
     const { table, columns, where, limit } = context.parameters;
-    
+
     let query = `SELECT ${columns || '*'} FROM ${table}`;
     const params: any[] = [];
-    
+
     // Build WHERE clause
     if (where && Object.keys(where).length > 0) {
       const conditions = Object.entries(where).map(([key, value], index) => {
@@ -244,29 +249,30 @@ export class PostgreSQLNodeExecutor implements INodeExecutor {
       });
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
-    
+
     // Add LIMIT
     if (limit) {
       query += ` LIMIT ${limit}`;
     }
-    
+
     const result = await this.pool!.query(query, params);
     return result.rows;
   }
 
   private async executeInsert(context: NodeExecutionContext): Promise<any[]> {
     const { table, dataToInsert, returnFields } = context.parameters;
-    const inputData = context.inputData.length > 0 ? context.inputData : [dataToInsert];
+    const inputData =
+      context.inputData.length > 0 ? context.inputData : [dataToInsert];
     const results: any[] = [];
 
     for (const item of inputData) {
       const data = item.dataToInsert || item;
       const keys = Object.keys(data);
       const values = Object.values(data);
-      
+
       const placeholders = keys.map((_, index) => `$${index + 1}`).join(', ');
       const query = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders}) RETURNING ${returnFields || '*'}`;
-      
+
       const result = await this.pool!.query(query, values);
       results.push(...result.rows);
     }
@@ -276,39 +282,48 @@ export class PostgreSQLNodeExecutor implements INodeExecutor {
 
   private async executeUpdate(context: NodeExecutionContext): Promise<any[]> {
     const { table, dataToUpdate, where, returnFields } = context.parameters;
-    
+
     const setKeys = Object.keys(dataToUpdate);
     const setValues = Object.values(dataToUpdate);
     const whereKeys = Object.keys(where || {});
     const whereValues = Object.values(where || {});
-    
-    const setClause = setKeys.map((key, index) => `${key} = $${index + 1}`).join(', ');
-    const whereClause = whereKeys.map((key, index) => `${key} = $${setKeys.length + index + 1}`).join(' AND ');
-    
+
+    const setClause = setKeys
+      .map((key, index) => `${key} = $${index + 1}`)
+      .join(', ');
+    const whereClause = whereKeys
+      .map((key, index) => `${key} = $${setKeys.length + index + 1}`)
+      .join(' AND ');
+
     let query = `UPDATE ${table} SET ${setClause}`;
     if (whereClause) {
       query += ` WHERE ${whereClause}`;
     }
     query += ` RETURNING ${returnFields || '*'}`;
-    
-    const result = await this.pool!.query(query, [...setValues, ...whereValues]);
+
+    const result = await this.pool!.query(query, [
+      ...setValues,
+      ...whereValues,
+    ]);
     return result.rows;
   }
 
   private async executeDelete(context: NodeExecutionContext): Promise<any[]> {
     const { table, where, returnFields } = context.parameters;
-    
+
     const whereKeys = Object.keys(where || {});
     const whereValues = Object.values(where || {});
-    
-    const whereClause = whereKeys.map((key, index) => `${key} = $${index + 1}`).join(' AND ');
-    
+
+    const whereClause = whereKeys
+      .map((key, index) => `${key} = $${index + 1}`)
+      .join(' AND ');
+
     let query = `DELETE FROM ${table}`;
     if (whereClause) {
       query += ` WHERE ${whereClause}`;
     }
     query += ` RETURNING ${returnFields || '*'}`;
-    
+
     const result = await this.pool!.query(query, whereValues);
     return result.rows;
   }
@@ -322,8 +337,7 @@ export class PostgreSQLNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

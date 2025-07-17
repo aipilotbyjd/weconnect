@@ -1,6 +1,20 @@
-import { IsString, IsEnum, IsOptional, IsArray, IsNumber, Min, Max, IsBoolean, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  IsNumber,
+  Min,
+  Max,
+  IsBoolean,
+  IsUUID,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { TemplateVisibility, TemplateTier, TemplateStatus } from '../../domain/entities/workflow-template.entity';
+import {
+  TemplateVisibility,
+  TemplateTier,
+  TemplateStatus,
+} from '../../domain/entities/workflow-template.entity';
 
 export enum TemplateSortBy {
   NEWEST = 'newest',

@@ -30,7 +30,7 @@ export interface WebhookConfig {
 export class WebhookNodeExecutor implements NodeExecutor {
   private readonly logger = new Logger(WebhookNodeExecutor.name);
 
-  constructor(private httpService: HttpService) { }
+  constructor(private httpService: HttpService) {}
 
   async execute(
     node: WorkflowNode,
@@ -96,10 +96,15 @@ export class WebhookNodeExecutor implements NodeExecutor {
           method,
           url,
           headers,
-          data: ['GET', 'HEAD'].includes(method.toUpperCase()) ? undefined : data,
-          params: ['GET', 'HEAD'].includes(method.toUpperCase()) ? data : undefined,
+          data: ['GET', 'HEAD'].includes(method.toUpperCase())
+            ? undefined
+            : data,
+          params: ['GET', 'HEAD'].includes(method.toUpperCase())
+            ? data
+            : undefined,
           timeout: config.timeout || 30000,
-          responseType: config.responseType === 'binary' ? 'arraybuffer' : 'json',
+          responseType:
+            config.responseType === 'binary' ? 'arraybuffer' : 'json',
         }),
       );
 
@@ -127,7 +132,10 @@ export class WebhookNodeExecutor implements NodeExecutor {
     } catch (error: any) {
       this.logger.error(`Webhook call failed: ${error.message}`);
 
-      if (config.retryOnFail && (!error.response || error.response.status >= 500)) {
+      if (
+        config.retryOnFail &&
+        (!error.response || error.response.status >= 500)
+      ) {
         throw error; // Let the queue system handle retries
       }
 
@@ -149,7 +157,10 @@ export class WebhookNodeExecutor implements NodeExecutor {
     }
   }
 
-  private buildHeaders(config: WebhookConfig, inputData: Record<string, any>): Record<string, string> {
+  private buildHeaders(
+    config: WebhookConfig,
+    inputData: Record<string, any>,
+  ): Record<string, string> {
     let headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...config.headers,
@@ -165,16 +176,20 @@ export class WebhookNodeExecutor implements NodeExecutor {
       switch (config.authentication.type) {
         case 'basic':
           const credentials = config.authentication.credentials!;
-          const auth = Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64');
+          const auth = Buffer.from(
+            `${credentials.username}:${credentials.password}`,
+          ).toString('base64');
           headers['Authorization'] = `Basic ${auth}`;
           break;
 
         case 'bearer':
-          headers['Authorization'] = `Bearer ${config.authentication.credentials!.token}`;
+          headers['Authorization'] =
+            `Bearer ${config.authentication.credentials!.token}`;
           break;
 
         case 'apiKey':
-          const headerName = config.authentication.credentials!.headerName || 'X-API-Key';
+          const headerName =
+            config.authentication.credentials!.headerName || 'X-API-Key';
           headers[headerName] = config.authentication.credentials!.apiKey!;
           break;
 
@@ -187,7 +202,10 @@ export class WebhookNodeExecutor implements NodeExecutor {
     return headers;
   }
 
-  private preparePayload(inputData: Record<string, any>, config: WebhookConfig): any {
+  private preparePayload(
+    inputData: Record<string, any>,
+    config: WebhookConfig,
+  ): any {
     // Remove internal fields
     const payload = { ...inputData };
     delete payload._webhook;

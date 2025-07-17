@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const FunctionNodeDefinition = new NodeDefinition({
   name: 'Function',
@@ -26,7 +30,8 @@ for (let item of $input.all()) {
 }
 
 return $input.all();`,
-      description: 'JavaScript code to execute. Use $input to access input data.',
+      description:
+        'JavaScript code to execute. Use $input to access input data.',
     },
   ],
 });
@@ -46,9 +51,14 @@ export class FunctionNodeExecutor implements INodeExecutor {
       // Create a safe execution context
       const $input = {
         all: () => JSON.parse(JSON.stringify(items)), // Deep clone to prevent mutation
-        first: () => items[0] ? JSON.parse(JSON.stringify(items[0])) : undefined,
-        last: () => items[items.length - 1] ? JSON.parse(JSON.stringify(items[items.length - 1])) : undefined,
-        item: (index: number) => items[index] ? JSON.parse(JSON.stringify(items[index])) : undefined,
+        first: () =>
+          items[0] ? JSON.parse(JSON.stringify(items[0])) : undefined,
+        last: () =>
+          items[items.length - 1]
+            ? JSON.parse(JSON.stringify(items[items.length - 1]))
+            : undefined,
+        item: (index: number) =>
+          items[index] ? JSON.parse(JSON.stringify(items[index])) : undefined,
       };
 
       // Create execution context with limited globals
@@ -98,8 +108,7 @@ export class FunctionNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

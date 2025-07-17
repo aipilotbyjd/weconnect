@@ -1,11 +1,16 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import axios, { AxiosInstance } from 'axios';
 
 export const JiraNodeDefinition = new NodeDefinition({
   name: 'Jira',
   displayName: 'Jira',
-  description: 'Interact with Atlassian Jira for project management and issue tracking',
+  description:
+    'Interact with Atlassian Jira for project management and issue tracking',
   version: 1,
   group: ['integrations', 'project-management'],
   icon: 'simple-icons:jira',
@@ -56,7 +61,17 @@ export const JiraNodeDefinition = new NodeDefinition({
       default: '',
       displayOptions: {
         show: {
-          operation: ['updateIssue', 'getIssue', 'deleteIssue', 'assignIssue', 'transitionIssue', 'addComment', 'getComments', 'addAttachment', 'getTransitions'],
+          operation: [
+            'updateIssue',
+            'getIssue',
+            'deleteIssue',
+            'assignIssue',
+            'transitionIssue',
+            'addComment',
+            'getComments',
+            'addAttachment',
+            'getTransitions',
+          ],
         },
       },
       required: true,
@@ -69,7 +84,13 @@ export const JiraNodeDefinition = new NodeDefinition({
       default: '',
       displayOptions: {
         show: {
-          operation: ['createIssue', 'getProject', 'getIssueTypes', 'createSprint', 'getSprints'],
+          operation: [
+            'createIssue',
+            'getProject',
+            'getIssueTypes',
+            'createSprint',
+            'getSprints',
+          ],
         },
       },
       required: true,
@@ -336,7 +357,7 @@ export class JiraNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.jira;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -357,7 +378,7 @@ export class JiraNodeExecutor implements INodeExecutor {
         },
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       });
 
@@ -433,7 +454,6 @@ export class JiraNodeExecutor implements INodeExecutor {
           projectKey: context.parameters.projectKey,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -463,16 +483,18 @@ export class JiraNodeExecutor implements INodeExecutor {
     const fields: any = {
       project: { key: projectKey },
       summary: summary,
-      description: description ? {
-        type: 'doc',
-        version: 1,
-        content: [
-          {
-            type: 'paragraph',
-            content: [{ type: 'text', text: description }],
-          },
-        ],
-      } : undefined,
+      description: description
+        ? {
+            type: 'doc',
+            version: 1,
+            content: [
+              {
+                type: 'paragraph',
+                content: [{ type: 'text', text: description }],
+              },
+            ],
+          }
+        : undefined,
       issuetype: { name: issueType === 'custom' ? customIssueType : issueType },
       priority: priority ? { name: priority } : undefined,
     };
@@ -537,12 +559,15 @@ export class JiraNodeExecutor implements INodeExecutor {
       };
     }
     if (issueType) {
-      fields.issuetype = { name: issueType === 'custom' ? customIssueType : issueType };
+      fields.issuetype = {
+        name: issueType === 'custom' ? customIssueType : issueType,
+      };
     }
     if (priority) fields.priority = { name: priority };
     if (assignee) fields.assignee = { accountId: assignee };
     if (labels) fields.labels = labels;
-    if (components) fields.components = components.map((name: string) => ({ name }));
+    if (components)
+      fields.components = components.map((name: string) => ({ name }));
 
     // Add custom fields
     if (customFields && Object.keys(customFields).length > 0) {
@@ -685,12 +710,16 @@ export class JiraNodeExecutor implements INodeExecutor {
     const form = new FormData();
     form.append('file', fs.createReadStream(filePath));
 
-    const response = await this.client!.post(`/issue/${issueKey}/attachments`, form, {
-      headers: {
-        ...form.getHeaders(),
-        'X-Atlassian-Token': 'no-check',
+    const response = await this.client!.post(
+      `/issue/${issueKey}/attachments`,
+      form,
+      {
+        headers: {
+          ...form.getHeaders(),
+          'X-Atlassian-Token': 'no-check',
+        },
       },
-    });
+    );
 
     return response.data;
   }
@@ -712,7 +741,9 @@ export class JiraNodeExecutor implements INodeExecutor {
   private async getIssueTypes(context: NodeExecutionContext): Promise<any> {
     const { projectKey } = context.parameters;
 
-    const response = await this.client!.get(`/issuetype/project?projectId=${projectKey}`);
+    const response = await this.client!.get(
+      `/issuetype/project?projectId=${projectKey}`,
+    );
 
     return response.data;
   }
@@ -801,8 +832,7 @@ export class JiraNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

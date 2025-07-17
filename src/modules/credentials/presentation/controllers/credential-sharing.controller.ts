@@ -22,9 +22,17 @@ import {
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { User } from '../../../auth/domain/entities/user.entity';
-import { CredentialSharingService, CreateShareDto, UpdateShareDto, ShareListFilters } from '../../application/services/credential-sharing.service';
+import {
+  CredentialSharingService,
+  CreateShareDto,
+  UpdateShareDto,
+  ShareListFilters,
+} from '../../application/services/credential-sharing.service';
 import { CredentialShare } from '../../domain/entities/credential-share.entity';
-import { SharePermission, ShareStatus } from '../../domain/enums/credential-share.enum';
+import {
+  SharePermission,
+  ShareStatus,
+} from '../../domain/enums/credential-share.enum';
 
 class CreateCredentialShareDto {
   credentialId: string;
@@ -53,7 +61,9 @@ class ShareStatsResponseDto {
 @UseGuards(JwtAuthGuard)
 @Controller('credential-shares')
 export class CredentialSharingController {
-  constructor(private readonly credentialSharingService: CredentialSharingService) {}
+  constructor(
+    private readonly credentialSharingService: CredentialSharingService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Share a credential with another user' })
@@ -66,7 +76,10 @@ export class CredentialSharingController {
     @CurrentUser() user: User,
     @Body() createShareDto: CreateCredentialShareDto,
   ): Promise<CredentialShare> {
-    return this.credentialSharingService.shareCredential(user.id, createShareDto);
+    return this.credentialSharingService.shareCredential(
+      user.id,
+      createShareDto,
+    );
   }
 
   @Put(':shareId')
@@ -82,7 +95,11 @@ export class CredentialSharingController {
     @Param('shareId', ParseUUIDPipe) shareId: string,
     @Body() updateShareDto: UpdateCredentialShareDto,
   ): Promise<CredentialShare> {
-    return this.credentialSharingService.updateShare(shareId, user.id, updateShareDto);
+    return this.credentialSharingService.updateShare(
+      shareId,
+      user.id,
+      updateShareDto,
+    );
   }
 
   @Delete(':shareId')
@@ -101,8 +118,17 @@ export class CredentialSharingController {
 
   @Get('shared-with-me')
   @ApiOperation({ summary: 'Get credentials shared with current user' })
-  @ApiQuery({ name: 'credentialId', required: false, description: 'Filter by credential ID' })
-  @ApiQuery({ name: 'permission', required: false, enum: SharePermission, description: 'Filter by permission' })
+  @ApiQuery({
+    name: 'credentialId',
+    required: false,
+    description: 'Filter by credential ID',
+  })
+  @ApiQuery({
+    name: 'permission',
+    required: false,
+    enum: SharePermission,
+    description: 'Filter by permission',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of shared credentials',
@@ -132,7 +158,10 @@ export class CredentialSharingController {
     @CurrentUser() user: User,
     @Param('credentialId', ParseUUIDPipe) credentialId: string,
   ): Promise<CredentialShare[]> {
-    return this.credentialSharingService.getCredentialShares(credentialId, user.id);
+    return this.credentialSharingService.getCredentialShares(
+      credentialId,
+      user.id,
+    );
   }
 
   @Get('accessible')
@@ -152,7 +181,9 @@ export class CredentialSharingController {
     description: 'Sharing statistics',
     type: ShareStatsResponseDto,
   })
-  async getShareStatistics(@CurrentUser() user: User): Promise<ShareStatsResponseDto> {
+  async getShareStatistics(
+    @CurrentUser() user: User,
+  ): Promise<ShareStatsResponseDto> {
     return this.credentialSharingService.getShareStatistics(user.id);
   }
 
@@ -168,9 +199,15 @@ export class CredentialSharingController {
   }
 
   @Get('check-permission/:credentialId/:permission')
-  @ApiOperation({ summary: 'Check if user has specific permission for credential' })
+  @ApiOperation({
+    summary: 'Check if user has specific permission for credential',
+  })
   @ApiParam({ name: 'credentialId', description: 'Credential ID' })
-  @ApiParam({ name: 'permission', enum: SharePermission, description: 'Permission to check' })
+  @ApiParam({
+    name: 'permission',
+    enum: SharePermission,
+    description: 'Permission to check',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Permission check result',

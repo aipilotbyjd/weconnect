@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UnifiedNodeRegistryService } from '../registry/unified-node-registry.service';
-import { 
-  NodeExecutionContext, 
-  NodeExecutionResult, 
-  IUnifiedNodeExecutor 
+import {
+  NodeExecutionContext,
+  NodeExecutionResult,
+  IUnifiedNodeExecutor,
 } from '../interfaces/unified-node-executor.interface';
 import { WorkflowNode } from '../../../modules/workflows/domain/entities/workflow-node.entity';
 
@@ -11,26 +11,24 @@ import { WorkflowNode } from '../../../modules/workflows/domain/entities/workflo
 export class UnifiedNodeExecutionService {
   private readonly logger = new Logger(UnifiedNodeExecutionService.name);
 
-  constructor(
-    private readonly nodeRegistry: UnifiedNodeRegistryService,
-  ) {}
+  constructor(private readonly nodeRegistry: UnifiedNodeRegistryService) {}
 
   /**
    * Execute a single node
    */
   async executeNode(
     node: WorkflowNode,
-    context: Partial<NodeExecutionContext>
+    context: Partial<NodeExecutionContext>,
   ): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       // Get the executor for this node type
       const executor = this.nodeRegistry.getExecutor(node.type);
       if (!executor) {
         return this.createErrorResult(
           `No executor found for node type: ${node.type}`,
-          node.id
+          node.id,
         );
       }
 
@@ -57,7 +55,7 @@ export class UnifiedNodeExecutionService {
       if (!validation.isValid) {
         return this.createErrorResult(
           `Node validation failed: ${validation.errors.join(', ')}`,
-          node.id
+          node.id,
         );
       }
 
@@ -77,17 +75,17 @@ export class UnifiedNodeExecutionService {
       };
 
       this.logger.log(
-        `Node execution completed: ${node.name} (${result.success ? 'SUCCESS' : 'FAILED'})`
+        `Node execution completed: ${node.name} (${result.success ? 'SUCCESS' : 'FAILED'})`,
       );
 
       return result;
     } catch (error) {
       this.logger.error(`Node execution error: ${error.message}`, error.stack);
-      
+
       return this.createErrorResult(
         `Execution failed: ${error.message}`,
         node.id,
-        Date.now() - startTime
+        Date.now() - startTime,
       );
     }
   }
@@ -97,31 +95,31 @@ export class UnifiedNodeExecutionService {
    */
   async executeNodesSequence(
     nodes: WorkflowNode[],
-    context: Partial<NodeExecutionContext>
+    context: Partial<NodeExecutionContext>,
   ): Promise<NodeExecutionResult[]> {
     const results: NodeExecutionResult[] = [];
     let currentData = context.inputData || [];
-    
+
     for (const node of nodes) {
       const nodeContext = {
         ...context,
         inputData: currentData,
       };
-      
+
       const result = await this.executeNode(node, nodeContext);
       results.push(result);
-      
+
       // If execution failed and shouldn't continue, break
       if (!result.success && !result.shouldContinue) {
         break;
       }
-      
+
       // Use output as input for next node
       if (result.success && result.data) {
         currentData = result.data;
       }
     }
-    
+
     return results;
   }
 
@@ -130,7 +128,7 @@ export class UnifiedNodeExecutionService {
    */
   async testNode(
     node: WorkflowNode,
-    context: Partial<NodeExecutionContext>
+    context: Partial<NodeExecutionContext>,
   ): Promise<{ valid: boolean; errors: string[]; warnings?: string[] }> {
     try {
       const executor = this.nodeRegistry.getExecutor(node.type);
@@ -142,11 +140,13 @@ export class UnifiedNodeExecutionService {
       }
 
       const validation = executor.validate(node.configuration);
-      
+
       // Test connection if supported
       if (executor.testConnection && context.credentials) {
         try {
-          const connectionValid = await executor.testConnection(context.credentials);
+          const connectionValid = await executor.testConnection(
+            context.credentials,
+          );
           if (!connectionValid) {
             validation.errors.push('Connection test failed');
             validation.isValid = false;
@@ -177,7 +177,7 @@ export class UnifiedNodeExecutionService {
     nodeType: string,
     optionName: string,
     credentials: Record<string, any>,
-    parameters: Record<string, any>
+    parameters: Record<string, any>,
   ): Promise<{ name: string; value: any }[]> {
     try {
       const executor = this.nodeRegistry.getExecutor(nodeType);
@@ -187,7 +187,9 @@ export class UnifiedNodeExecutionService {
 
       return await executor.getOptions(optionName, credentials, parameters);
     } catch (error) {
-      this.logger.error(`Failed to get options for ${nodeType}.${optionName}: ${error.message}`);
+      this.logger.error(
+        `Failed to get options for ${nodeType}.${optionName}: ${error.message}`,
+      );
       return [];
     }
   }
@@ -195,7 +197,7 @@ export class UnifiedNodeExecutionService {
   private createErrorResult(
     errorMessage: string,
     nodeId: string,
-    executionTime?: number
+    executionTime?: number,
   ): NodeExecutionResult {
     return {
       success: false,

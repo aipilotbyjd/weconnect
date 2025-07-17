@@ -20,4 +20,3 @@ export class AIAgentTool extends BaseEntity {
   @Column({ type: 'json', default: {} })
   configuration: Record<string, any>;
 }
-

@@ -23,9 +23,7 @@ import { WorkflowTemplate } from '../../domain/entities';
 @ApiTags('Workflow Templates')
 @Controller('api/v1/workflow-templates')
 export class WorkflowTemplateController {
-  constructor(
-    private readonly templateService: WorkflowTemplateService,
-  ) {}
+  constructor(private readonly templateService: WorkflowTemplateService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -54,10 +52,7 @@ export class WorkflowTemplateController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a workflow template' })
-  async delete(
-    @Param('id') id: string,
-    @Request() req,
-  ): Promise<void> {
+  async delete(@Param('id') id: string, @Request() req): Promise<void> {
     await this.templateService.delete(id, req.user);
   }
 
@@ -69,10 +64,7 @@ export class WorkflowTemplateController {
 
   @Get()
   @ApiOperation({ summary: 'Search workflow templates' })
-  async search(
-    @Query() query: SearchTemplatesDto,
-    @Request() req,
-  ) {
+  async search(@Query() query: SearchTemplatesDto, @Request() req) {
     const user = req.user || null;
     return await this.templateService.search(query, user);
   }

@@ -1,7 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Workflow, WorkflowStatus } from '../../domain/entities/workflow.entity';
+import {
+  Workflow,
+  WorkflowStatus,
+} from '../../domain/entities/workflow.entity';
 import { WorkflowNode } from '../../domain/entities/workflow-node.entity';
 import { WorkflowNodeConnection } from '../../domain/entities/workflow-node-connection.entity';
 import { WorkflowVariable } from '../../domain/entities/workflow-variable.entity';
@@ -76,11 +79,14 @@ export class WorkflowImportExportService {
         name: workflow.name,
         description: workflow.description,
         configuration: workflow.configuration,
-        nodes: workflow.nodes.map(node => ({
+        nodes: workflow.nodes.map((node) => ({
           id: node.id,
           name: node.name,
           type: node.type,
-          configuration: this.sanitizeNodeConfiguration(node.configuration, options?.includeCredentials),
+          configuration: this.sanitizeNodeConfiguration(
+            node.configuration,
+            options?.includeCredentials,
+          ),
           position: node.position,
           isEnabled: node.isEnabled,
         })),
@@ -106,7 +112,7 @@ export class WorkflowImportExportService {
         where: { workflowId },
       });
 
-      exportData.workflow.variables = variables.map(v => ({
+      exportData.workflow.variables = variables.map((v) => ({
         name: v.name,
         type: v.type,
         value: v.isSecret ? undefined : v.value,
@@ -160,7 +166,7 @@ export class WorkflowImportExportService {
 
     // Import nodes with new IDs
     const nodeIdMap = new Map<string, string>();
-    
+
     for (const nodeData of exportData.workflow.nodes) {
       const newNodeId = uuidv4();
       nodeIdMap.set(nodeData.id, newNodeId);
@@ -269,10 +275,14 @@ export class WorkflowImportExportService {
           errors.push(`Connection at index ${index} missing source or target`);
         } else {
           if (!nodeIds.has(conn.sourceNodeId)) {
-            errors.push(`Connection at index ${index} references non-existent source node`);
+            errors.push(
+              `Connection at index ${index} references non-existent source node`,
+            );
           }
           if (!nodeIds.has(conn.targetNodeId)) {
-            errors.push(`Connection at index ${index} references non-existent target node`);
+            errors.push(
+              `Connection at index ${index} references non-existent target node`,
+            );
           }
         }
       });
@@ -295,10 +305,18 @@ export class WorkflowImportExportService {
 
     // Remove sensitive data like API keys, tokens, etc.
     const sanitized = { ...configuration };
-    const sensitiveKeys = ['apiKey', 'token', 'secret', 'password', 'credential'];
-    
-    Object.keys(sanitized).forEach(key => {
-      if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
+    const sensitiveKeys = [
+      'apiKey',
+      'token',
+      'secret',
+      'password',
+      'credential',
+    ];
+
+    Object.keys(sanitized).forEach((key) => {
+      if (
+        sensitiveKeys.some((sensitive) => key.toLowerCase().includes(sensitive))
+      ) {
         delete sanitized[key];
       }
     });

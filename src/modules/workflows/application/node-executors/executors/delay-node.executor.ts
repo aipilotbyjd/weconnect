@@ -36,7 +36,7 @@ export class DelayNodeExecutor implements NodeExecutor {
         const targetDate = new Date(targetTime);
         const now = new Date();
         delayMs = targetDate.getTime() - now.getTime();
-        
+
         if (delayMs < 0) {
           delayMs = 0; // If target time is in the past, don't delay
         }
@@ -51,10 +51,14 @@ export class DelayNodeExecutor implements NodeExecutor {
       }
 
       // Log the delay
-      this.logger.log(`Delaying for ${delayMs}ms (${this.formatDelay(delayMs)})`);
+      this.logger.log(
+        `Delaying for ${delayMs}ms (${this.formatDelay(delayMs)})`,
+      );
 
       // Perform the delay
-      await new Promise(resolve => setTimeout(resolve, Math.min(delayMs, 2147483647))); // Max 32-bit int
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.min(delayMs, 2147483647)),
+      ); // Max 32-bit int
 
       return {
         ...inputData,
@@ -79,7 +83,10 @@ export class DelayNodeExecutor implements NodeExecutor {
     return !!(config.delay && config.unit) || !!config.waitUntil;
   }
 
-  private convertToMilliseconds(value: number, unit: DelayConfig['unit']): number {
+  private convertToMilliseconds(
+    value: number,
+    unit: DelayConfig['unit'],
+  ): number {
     switch (unit) {
       case 'milliseconds':
         return value;
@@ -118,14 +125,14 @@ export class DelayNodeExecutor implements NodeExecutor {
   private adjustForBusinessHours(delayMs: number, businessHours: any): number {
     const now = new Date();
     const endTime = new Date(now.getTime() + delayMs);
-    
+
     // Parse business hours
     const [startHour, startMinute] = businessHours.start.split(':').map(Number);
     const [endHour, endMinute] = businessHours.end.split(':').map(Number);
-    
+
     let adjustedEndTime = new Date(endTime);
     let totalDelayMs = 0;
-    
+
     // Check if we need to skip non-business hours
     while (now < adjustedEndTime) {
       const currentHour = now.getHours();
@@ -133,21 +140,24 @@ export class DelayNodeExecutor implements NodeExecutor {
       const currentTime = currentHour * 60 + currentMinute;
       const businessStart = startHour * 60 + startMinute;
       const businessEnd = endHour * 60 + endMinute;
-      
+
       // Check if current time is outside business hours
       if (currentTime < businessStart || currentTime >= businessEnd) {
         // Skip to next business day start
         const nextBusinessDay = new Date(now);
         nextBusinessDay.setDate(nextBusinessDay.getDate() + 1);
         nextBusinessDay.setHours(startHour, startMinute, 0, 0);
-        
+
         // Skip weekends if configured
         if (businessHours.excludeWeekends) {
-          while (nextBusinessDay.getDay() === 0 || nextBusinessDay.getDay() === 6) {
+          while (
+            nextBusinessDay.getDay() === 0 ||
+            nextBusinessDay.getDay() === 6
+          ) {
             nextBusinessDay.setDate(nextBusinessDay.getDate() + 1);
           }
         }
-        
+
         const skipMs = nextBusinessDay.getTime() - now.getTime();
         totalDelayMs += skipMs;
         now.setTime(nextBusinessDay.getTime());
@@ -157,7 +167,7 @@ export class DelayNodeExecutor implements NodeExecutor {
         break;
       }
     }
-    
+
     return totalDelayMs;
   }
 
@@ -165,11 +175,11 @@ export class DelayNodeExecutor implements NodeExecutor {
     return str.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
       const keys = key.trim().split('.');
       let value = data;
-      
+
       for (const k of keys) {
         value = value?.[k];
       }
-      
+
       return value !== undefined ? String(value) : match;
     });
   }

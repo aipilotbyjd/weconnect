@@ -1,4 +1,10 @@
-import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableIndex,
+  TableForeignKey,
+} from 'typeorm';
 
 export class CreateAIAgentsTables1751692000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -323,9 +329,18 @@ export class CreateAIAgentsTables1751692000000 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop foreign keys first
-    await queryRunner.dropForeignKey('ai_agent_executions', 'FK_ai_agent_executions_agentId');
-    await queryRunner.dropForeignKey('ai_agent_tools', 'FK_ai_agent_tools_agentId');
-    await queryRunner.dropForeignKey('ai_agent_memory', 'FK_ai_agent_memory_agentId');
+    await queryRunner.dropForeignKey(
+      'ai_agent_executions',
+      'FK_ai_agent_executions_agentId',
+    );
+    await queryRunner.dropForeignKey(
+      'ai_agent_tools',
+      'FK_ai_agent_tools_agentId',
+    );
+    await queryRunner.dropForeignKey(
+      'ai_agent_memory',
+      'FK_ai_agent_memory_agentId',
+    );
 
     // Drop tables
     await queryRunner.dropTable('ai_agent_memory');

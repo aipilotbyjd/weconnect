@@ -1,12 +1,23 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ScheduledWorkflow, ScheduleStatus } from '../../domain/entities/scheduled-workflow.entity';
+import {
+  ScheduledWorkflow,
+  ScheduleStatus,
+} from '../../domain/entities/scheduled-workflow.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { WORKFLOW_EXECUTION_QUEUE, WorkflowJobType } from '../../../workflows/infrastructure/queues/constants';
+import {
+  WORKFLOW_EXECUTION_QUEUE,
+  WorkflowJobType,
+} from '../../../workflows/infrastructure/queues/constants';
 import { ExecutionMode } from '../../../workflows/domain/entities/workflow-execution.entity';
 const cronParser = require('cron-parser');
 
@@ -41,7 +52,9 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
     for (const schedule of activeSchedules) {
       try {
         await this.scheduleWorkflow(schedule);
-        this.logger.log(`Loaded schedule: ${schedule.name} (${schedule.cronExpression})`);
+        this.logger.log(
+          `Loaded schedule: ${schedule.name} (${schedule.cronExpression})`,
+        );
       } catch (error) {
         this.logger.error(`Failed to load schedule ${schedule.id}:`, error);
       }
@@ -50,13 +63,16 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
   async scheduleWorkflow(scheduledWorkflow: ScheduledWorkflow) {
     const jobName = `scheduled-workflow-${scheduledWorkflow.id}`;
-    
+
     // Remove existing job if any
     this.removeSchedule(jobName);
 
     // Calculate next execution time
-    const nextExecution = this.getNextExecutionTime(scheduledWorkflow.cronExpression, scheduledWorkflow.timezone);
-    
+    const nextExecution = this.getNextExecutionTime(
+      scheduledWorkflow.cronExpression,
+      scheduledWorkflow.timezone,
+    );
+
     // Create cron job
     const job = new CronJob(
       scheduledWorkflow.cronExpression,
@@ -104,22 +120,31 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
       );
 
       // Update execution stats
-      const nextExecution = this.getNextExecutionTime(scheduledWorkflow.cronExpression, scheduledWorkflow.timezone);
-      
+      const nextExecution = this.getNextExecutionTime(
+        scheduledWorkflow.cronExpression,
+        scheduledWorkflow.timezone,
+      );
+
       const updates: any = {
         lastExecutionAt: new Date(),
         lastExecutionId: job.id.toString(),
         executionCount: () => 'execution_count + 1',
       };
-      
+
       if (nextExecution) {
         updates.nextExecutionAt = nextExecution;
       }
-      
-      await this.scheduledWorkflowRepository.update(scheduledWorkflow.id, updates);
+
+      await this.scheduledWorkflowRepository.update(
+        scheduledWorkflow.id,
+        updates,
+      );
     } catch (error) {
-      this.logger.error(`Failed to execute scheduled workflow ${scheduledWorkflow.id}:`, error);
-      
+      this.logger.error(
+        `Failed to execute scheduled workflow ${scheduledWorkflow.id}:`,
+        error,
+      );
+
       await this.scheduledWorkflowRepository.update(scheduledWorkflow.id, {
         failureCount: () => 'failure_count + 1',
       });
@@ -148,7 +173,10 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  private getNextExecutionTime(cronExpression: string, timezone?: string): Date | null {
+  private getNextExecutionTime(
+    cronExpression: string,
+    timezone?: string,
+  ): Date | null {
     try {
       const options = timezone ? { tz: timezone } : {};
       const interval = cronParser.parseExpression(cronExpression, options);

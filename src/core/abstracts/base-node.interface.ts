@@ -33,7 +33,7 @@ export interface INodeExecutor {
 
 export abstract class BaseNodeExecutor implements INodeExecutor {
   abstract execute(context: NodeExecutionContext): Promise<NodeExecutionResult>;
-  
+
   validate(configuration: Record<string, any>): boolean {
     return true; // Override in specific implementations
   }
@@ -42,7 +42,10 @@ export abstract class BaseNodeExecutor implements INodeExecutor {
     return {}; // Override in specific implementations
   }
 
-  protected createSuccessResult(outputData: any, metadata?: Record<string, any>): NodeExecutionResult {
+  protected createSuccessResult(
+    outputData: any,
+    metadata?: Record<string, any>,
+  ): NodeExecutionResult {
     return {
       success: true,
       outputData,
@@ -50,7 +53,10 @@ export abstract class BaseNodeExecutor implements INodeExecutor {
     };
   }
 
-  protected createErrorResult(errorMessage: string, outputData?: any): NodeExecutionResult {
+  protected createErrorResult(
+    errorMessage: string,
+    outputData?: any,
+  ): NodeExecutionResult {
     return {
       success: false,
       outputData: outputData || {},

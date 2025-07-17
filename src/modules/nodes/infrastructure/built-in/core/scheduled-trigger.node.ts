@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const ScheduledTriggerNodeDefinition = new NodeDefinition({
   name: 'ScheduledTrigger',
@@ -21,7 +25,8 @@ export const ScheduledTriggerNodeDefinition = new NodeDefinition({
       type: 'string',
       default: '0 0 * * *',
       placeholder: '0 0 * * *',
-      description: 'Cron expression for scheduling (e.g., "0 0 * * *" for daily at midnight)',
+      description:
+        'Cron expression for scheduling (e.g., "0 0 * * *" for daily at midnight)',
       required: true,
     },
     {
@@ -36,7 +41,8 @@ export const ScheduledTriggerNodeDefinition = new NodeDefinition({
       name: 'info',
       displayName: 'Info',
       type: 'string',
-      default: 'This node will trigger the workflow according to the specified schedule. The schedule is managed separately from the workflow definition.',
+      default:
+        'This node will trigger the workflow according to the specified schedule. The schedule is managed separately from the workflow definition.',
       description: 'Schedule information',
     },
   ],
@@ -45,20 +51,20 @@ export const ScheduledTriggerNodeDefinition = new NodeDefinition({
 export class ScheduledTriggerNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       // When a scheduled workflow runs, this node simply passes through the input data
       const inputData = context.inputData.length > 0 ? context.inputData : [{}];
-      
+
       // Add execution metadata
-      const outputData = inputData.map(item => ({
+      const outputData = inputData.map((item) => ({
         ...item,
         executionTime: new Date().toISOString(),
         mode: 'scheduled',
         scheduledAt: context.parameters?.cronExpression || '0 0 * * *',
         timezone: context.parameters?.timezone || 'UTC',
       }));
-      
+
       return {
         success: true,
         data: outputData,
@@ -88,8 +94,7 @@ export class ScheduledTriggerNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

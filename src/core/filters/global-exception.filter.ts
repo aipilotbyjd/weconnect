@@ -8,7 +8,10 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { QueryFailedError, EntityNotFoundError } from 'typeorm';
-import { LoggerService, LogCategory } from '../infrastructure/logging/logger.service';
+import {
+  LoggerService,
+  LogCategory,
+} from '../infrastructure/logging/logger.service';
 
 @Injectable()
 @Catch()
@@ -27,15 +30,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      message = typeof exceptionResponse === 'string' 
-        ? exceptionResponse 
-        : (exceptionResponse as any).message || exception.message;
+      message =
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : (exceptionResponse as any).message || exception.message;
       code = exception.constructor.name;
     } else if (exception instanceof QueryFailedError) {
       status = HttpStatus.BAD_REQUEST;
       message = 'Database query failed';
       code = 'QUERY_FAILED';
-      
+
       // Handle specific database errors
       if (exception.message.includes('duplicate key')) {
         message = 'Resource already exists';
@@ -53,7 +57,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       if (exception.message.includes('not found')) {
         status = HttpStatus.NOT_FOUND;
         code = 'NOT_FOUND';
-      } else if (exception.message.includes('access denied') || exception.message.includes('unauthorized')) {
+      } else if (
+        exception.message.includes('access denied') ||
+        exception.message.includes('unauthorized')
+      ) {
         status = HttpStatus.FORBIDDEN;
         code = 'ACCESS_DENIED';
       }

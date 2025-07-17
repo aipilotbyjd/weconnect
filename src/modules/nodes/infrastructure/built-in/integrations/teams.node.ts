@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import axios, { AxiosInstance } from 'axios';
 
 export const TeamsNodeDefinition = new NodeDefinition({
@@ -52,7 +56,14 @@ export const TeamsNodeDefinition = new NodeDefinition({
       type: 'string',
       displayOptions: {
         show: {
-          operation: ['sendChannelMessage', 'getTeamInfo', 'listChannels', 'createChannel', 'addTeamMember', 'removeTeamMember'],
+          operation: [
+            'sendChannelMessage',
+            'getTeamInfo',
+            'listChannels',
+            'createChannel',
+            'addTeamMember',
+            'removeTeamMember',
+          ],
         },
       },
       required: true,
@@ -64,7 +75,13 @@ export const TeamsNodeDefinition = new NodeDefinition({
       type: 'string',
       displayOptions: {
         show: {
-          operation: ['sendChannelMessage', 'replyToMessage', 'updateMessage', 'deleteMessage', 'getChannelInfo'],
+          operation: [
+            'sendChannelMessage',
+            'replyToMessage',
+            'updateMessage',
+            'deleteMessage',
+            'getChannelInfo',
+          ],
         },
       },
       required: true,
@@ -112,7 +129,12 @@ export const TeamsNodeDefinition = new NodeDefinition({
       type: 'string',
       displayOptions: {
         show: {
-          operation: ['sendChannelMessage', 'sendChatMessage', 'replyToMessage', 'updateMessage'],
+          operation: [
+            'sendChannelMessage',
+            'sendChatMessage',
+            'replyToMessage',
+            'updateMessage',
+          ],
         },
       },
       required: true,
@@ -130,7 +152,12 @@ export const TeamsNodeDefinition = new NodeDefinition({
       default: 'html',
       displayOptions: {
         show: {
-          operation: ['sendChannelMessage', 'sendChatMessage', 'replyToMessage', 'updateMessage'],
+          operation: [
+            'sendChannelMessage',
+            'sendChatMessage',
+            'replyToMessage',
+            'updateMessage',
+          ],
         },
       },
       description: 'Format of the message content',
@@ -298,7 +325,7 @@ export class TeamsNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.microsoftTeams;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -314,7 +341,7 @@ export class TeamsNodeExecutor implements INodeExecutor {
       this.client = axios.create({
         baseURL: 'https://graph.microsoft.com/v1.0',
         headers: {
-          'Authorization': `Bearer ${credentials.accessToken}`,
+          Authorization: `Bearer ${credentials.accessToken}`,
           'Content-Type': 'application/json',
         },
         timeout: 30000,
@@ -383,7 +410,6 @@ export class TeamsNodeExecutor implements INodeExecutor {
           channelId: context.parameters.channelId,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -395,7 +421,9 @@ export class TeamsNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async sendChannelMessage(context: NodeExecutionContext): Promise<any> {
+  private async sendChannelMessage(
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const {
       teamId,
       channelId,
@@ -416,24 +444,27 @@ export class TeamsNodeExecutor implements INodeExecutor {
     };
 
     if (subject) message.subject = subject;
-    if (attachments && attachments.length > 0) message.attachments = attachments;
+    if (attachments && attachments.length > 0)
+      message.attachments = attachments;
 
     // Add mentions if specified
     if (mentionedUsers && mentionedUsers.length > 0) {
-      message.mentions = mentionedUsers.map((userId: string, index: number) => ({
-        id: index,
-        mentionText: `@${userId}`,
-        mentioned: {
-          user: {
-            id: userId,
+      message.mentions = mentionedUsers.map(
+        (userId: string, index: number) => ({
+          id: index,
+          mentionText: `@${userId}`,
+          mentioned: {
+            user: {
+              id: userId,
+            },
           },
-        },
-      }));
+        }),
+      );
     }
 
     const response = await this.client!.post(
       `/teams/${teamId}/channels/${channelId}/messages`,
-      message
+      message,
     );
 
     return response.data;
@@ -457,27 +488,36 @@ export class TeamsNodeExecutor implements INodeExecutor {
       importance: importance || 'normal',
     };
 
-    if (attachments && attachments.length > 0) message.attachments = attachments;
+    if (attachments && attachments.length > 0)
+      message.attachments = attachments;
 
     // Add mentions if specified
     if (mentionedUsers && mentionedUsers.length > 0) {
-      message.mentions = mentionedUsers.map((userId: string, index: number) => ({
-        id: index,
-        mentionText: `@${userId}`,
-        mentioned: {
-          user: {
-            id: userId,
+      message.mentions = mentionedUsers.map(
+        (userId: string, index: number) => ({
+          id: index,
+          mentionText: `@${userId}`,
+          mentioned: {
+            user: {
+              id: userId,
+            },
           },
-        },
-      }));
+        }),
+      );
     }
 
-    const response = await this.client!.post(`/chats/${chatId}/messages`, message);
+    const response = await this.client!.post(
+      `/chats/${chatId}/messages`,
+      message,
+    );
     return response.data;
   }
 
-  private async sendWebhookMessage(context: NodeExecutionContext): Promise<any> {
-    const { webhookUrl, webhookTitle, webhookText, webhookColor } = context.parameters;
+  private async sendWebhookMessage(
+    context: NodeExecutionContext,
+  ): Promise<any> {
+    const { webhookUrl, webhookTitle, webhookText, webhookColor } =
+      context.parameters;
 
     const payload: any = {
       '@type': 'MessageCard',
@@ -504,7 +544,8 @@ export class TeamsNodeExecutor implements INodeExecutor {
   }
 
   private async replyToMessage(context: NodeExecutionContext): Promise<any> {
-    const { teamId, channelId, messageId, content, contentType } = context.parameters;
+    const { teamId, channelId, messageId, content, contentType } =
+      context.parameters;
 
     const reply = {
       body: {
@@ -515,14 +556,15 @@ export class TeamsNodeExecutor implements INodeExecutor {
 
     const response = await this.client!.post(
       `/teams/${teamId}/channels/${channelId}/messages/${messageId}/replies`,
-      reply
+      reply,
     );
 
     return response.data;
   }
 
   private async updateMessage(context: NodeExecutionContext): Promise<any> {
-    const { teamId, channelId, messageId, content, contentType } = context.parameters;
+    const { teamId, channelId, messageId, content, contentType } =
+      context.parameters;
 
     const updatedMessage = {
       body: {
@@ -533,7 +575,7 @@ export class TeamsNodeExecutor implements INodeExecutor {
 
     const response = await this.client!.patch(
       `/teams/${teamId}/channels/${channelId}/messages/${messageId}`,
-      updatedMessage
+      updatedMessage,
     );
 
     return response.data;
@@ -543,7 +585,7 @@ export class TeamsNodeExecutor implements INodeExecutor {
     const { teamId, channelId, messageId } = context.parameters;
 
     await this.client!.delete(
-      `/teams/${teamId}/channels/${channelId}/messages/${messageId}`
+      `/teams/${teamId}/channels/${channelId}/messages/${messageId}`,
     );
 
     return { deleted: true, messageId };
@@ -564,7 +606,9 @@ export class TeamsNodeExecutor implements INodeExecutor {
   private async getChannelInfo(context: NodeExecutionContext): Promise<any> {
     const { teamId, channelId } = context.parameters;
 
-    const response = await this.client!.get(`/teams/${teamId}/channels/${channelId}`);
+    const response = await this.client!.get(
+      `/teams/${teamId}/channels/${channelId}`,
+    );
     return response.data;
   }
 
@@ -576,7 +620,8 @@ export class TeamsNodeExecutor implements INodeExecutor {
   }
 
   private async createChannel(context: NodeExecutionContext): Promise<any> {
-    const { teamId, channelName, channelDescription, channelType } = context.parameters;
+    const { teamId, channelName, channelDescription, channelType } =
+      context.parameters;
 
     const channel = {
       displayName: channelName,
@@ -584,7 +629,10 @@ export class TeamsNodeExecutor implements INodeExecutor {
       membershipType: channelType || 'standard',
     };
 
-    const response = await this.client!.post(`/teams/${teamId}/channels`, channel);
+    const response = await this.client!.post(
+      `/teams/${teamId}/channels`,
+      channel,
+    );
     return response.data;
   }
 
@@ -609,7 +657,10 @@ export class TeamsNodeExecutor implements INodeExecutor {
       roles: memberRole === 'owner' ? ['owner'] : ['member'],
     };
 
-    const response = await this.client!.post(`/teams/${teamId}/members`, member);
+    const response = await this.client!.post(
+      `/teams/${teamId}/members`,
+      member,
+    );
     return response.data;
   }
 
@@ -618,7 +669,9 @@ export class TeamsNodeExecutor implements INodeExecutor {
 
     // First, get the membership ID
     const membersResponse = await this.client!.get(`/teams/${teamId}/members`);
-    const member = membersResponse.data.value.find((m: any) => m.userId === userId);
+    const member = membersResponse.data.value.find(
+      (m: any) => m.userId === userId,
+    );
 
     if (!member) {
       throw new Error('User is not a member of this team');
@@ -637,8 +690,7 @@ export class TeamsNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

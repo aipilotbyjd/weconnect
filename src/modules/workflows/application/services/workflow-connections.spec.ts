@@ -3,8 +3,14 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WorkflowsService } from './workflows.service';
 import { Workflow } from '../../domain/entities/workflow.entity';
-import { WorkflowNode, NodeType } from '../../domain/entities/workflow-node.entity';
-import { WorkflowNodeConnection, ConnectionType } from '../../domain/entities/workflow-node-connection.entity';
+import {
+  WorkflowNode,
+  NodeType,
+} from '../../domain/entities/workflow-node.entity';
+import {
+  WorkflowNodeConnection,
+  ConnectionType,
+} from '../../domain/entities/workflow-node-connection.entity';
 import { CreateWorkflowDto } from '../../presentation/dto/create-workflow.dto';
 
 describe('WorkflowsService - Connections', () => {
@@ -60,9 +66,15 @@ describe('WorkflowsService - Connections', () => {
     }).compile();
 
     service = module.get<WorkflowsService>(WorkflowsService);
-    workflowRepository = module.get<Repository<Workflow>>(getRepositoryToken(Workflow));
-    nodeRepository = module.get<Repository<WorkflowNode>>(getRepositoryToken(WorkflowNode));
-    connectionRepository = module.get<Repository<WorkflowNodeConnection>>(getRepositoryToken(WorkflowNodeConnection));
+    workflowRepository = module.get<Repository<Workflow>>(
+      getRepositoryToken(Workflow),
+    );
+    nodeRepository = module.get<Repository<WorkflowNode>>(
+      getRepositoryToken(WorkflowNode),
+    );
+    connectionRepository = module.get<Repository<WorkflowNodeConnection>>(
+      getRepositoryToken(WorkflowNodeConnection),
+    );
   });
 
   afterEach(() => {
@@ -127,15 +139,18 @@ describe('WorkflowsService - Connections', () => {
       };
 
       // Mock the transaction
-      mockWorkflowRepository.manager.transaction.mockImplementation(async (callback) => {
-        const manager = {
-          save: jest.fn()
-            .mockResolvedValueOnce(mockWorkflow) // Save workflow
-            .mockResolvedValueOnce(mockNodes) // Save nodes
-            .mockResolvedValueOnce([mockConnection]), // Save connections
-        };
-        return callback(manager);
-      });
+      mockWorkflowRepository.manager.transaction.mockImplementation(
+        async (callback) => {
+          const manager = {
+            save: jest
+              .fn()
+              .mockResolvedValueOnce(mockWorkflow) // Save workflow
+              .mockResolvedValueOnce(mockNodes) // Save nodes
+              .mockResolvedValueOnce([mockConnection]), // Save connections
+          };
+          return callback(manager);
+        },
+      );
 
       // Mock repository methods
       mockWorkflowRepository.create.mockReturnValue(mockWorkflow);
@@ -196,12 +211,14 @@ describe('WorkflowsService - Connections', () => {
         userId: 'user-1',
       };
 
-      mockWorkflowRepository.manager.transaction.mockImplementation(async (callback) => {
-        const manager = {
-          save: jest.fn().mockResolvedValue(mockWorkflow),
-        };
-        return callback(manager);
-      });
+      mockWorkflowRepository.manager.transaction.mockImplementation(
+        async (callback) => {
+          const manager = {
+            save: jest.fn().mockResolvedValue(mockWorkflow),
+          };
+          return callback(manager);
+        },
+      );
 
       mockWorkflowRepository.create.mockReturnValue(mockWorkflow);
       mockWorkflowRepository.findOne.mockResolvedValue(mockWorkflow);

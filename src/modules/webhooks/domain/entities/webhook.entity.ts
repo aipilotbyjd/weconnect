@@ -14,11 +14,17 @@ export enum WebhookMethod {
 
 @Entity('webhooks')
 export class Webhook extends BaseEntity {
-  @ApiProperty({ description: 'Webhook name', example: 'User Registration Webhook' })
+  @ApiProperty({
+    description: 'Webhook name',
+    example: 'User Registration Webhook',
+  })
   @Column()
   name: string;
 
-  @ApiProperty({ description: 'Unique webhook path', example: 'user-registration-abc123' })
+  @ApiProperty({
+    description: 'Unique webhook path',
+    example: 'user-registration-abc123',
+  })
   @Column({ unique: true })
   path: string;
 

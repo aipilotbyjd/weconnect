@@ -1,11 +1,16 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import axios, { AxiosInstance } from 'axios';
 
 export const SalesforceNodeDefinition = new NodeDefinition({
   name: 'Salesforce',
   displayName: 'Salesforce',
-  description: 'Interact with Salesforce CRM for managing leads, contacts, accounts, and opportunities',
+  description:
+    'Interact with Salesforce CRM for managing leads, contacts, accounts, and opportunities',
   version: 1,
   group: ['integrations', 'crm'],
   icon: 'simple-icons:salesforce',
@@ -61,7 +66,18 @@ export const SalesforceNodeDefinition = new NodeDefinition({
       default: 'Account',
       displayOptions: {
         show: {
-          operation: ['create', 'update', 'get', 'delete', 'query', 'search', 'metadata', 'upsert', 'bulkCreate', 'bulkUpdate'],
+          operation: [
+            'create',
+            'update',
+            'get',
+            'delete',
+            'query',
+            'search',
+            'metadata',
+            'upsert',
+            'bulkCreate',
+            'bulkUpdate',
+          ],
         },
       },
       required: true,
@@ -141,7 +157,8 @@ export const SalesforceNodeDefinition = new NodeDefinition({
         },
       },
       required: true,
-      description: 'SOQL query to execute (e.g., SELECT Id, Name FROM Account LIMIT 10)',
+      description:
+        'SOQL query to execute (e.g., SELECT Id, Name FROM Account LIMIT 10)',
     },
     {
       name: 'searchQuery',
@@ -166,7 +183,8 @@ export const SalesforceNodeDefinition = new NodeDefinition({
           operation: ['get'],
         },
       },
-      description: 'Comma-separated list of fields to retrieve (default: all fields)',
+      description:
+        'Comma-separated list of fields to retrieve (default: all fields)',
     },
     {
       name: 'bulkData',
@@ -203,7 +221,7 @@ export class SalesforceNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.salesforce;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -265,7 +283,6 @@ export class SalesforceNodeExecutor implements INodeExecutor {
           sobjectType: this.getSObjectType(context),
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -278,7 +295,7 @@ export class SalesforceNodeExecutor implements INodeExecutor {
   }
 
   private async authenticate(credentials: any): Promise<void> {
-    const authUrl = credentials.isSandbox 
+    const authUrl = credentials.isSandbox
       ? 'https://test.salesforce.com/services/oauth2/token'
       : 'https://login.salesforce.com/services/oauth2/token';
 
@@ -302,7 +319,7 @@ export class SalesforceNodeExecutor implements INodeExecutor {
     this.client = axios.create({
       baseURL: `${this.instanceUrl}/services/data/v57.0`,
       headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
+        Authorization: `Bearer ${this.accessToken}`,
         'Content-Type': 'application/json',
       },
     });
@@ -317,8 +334,11 @@ export class SalesforceNodeExecutor implements INodeExecutor {
     const sobjectType = this.getSObjectType(context);
     const { fields } = context.parameters;
 
-    const response = await this.client!.post(`/sobjects/${sobjectType}`, fields);
-    
+    const response = await this.client!.post(
+      `/sobjects/${sobjectType}`,
+      fields,
+    );
+
     return {
       id: response.data.id,
       success: response.data.success,
@@ -331,7 +351,7 @@ export class SalesforceNodeExecutor implements INodeExecutor {
     const { recordId, fields } = context.parameters;
 
     await this.client!.patch(`/sobjects/${sobjectType}/${recordId}`, fields);
-    
+
     return {
       id: recordId,
       success: true,
@@ -357,7 +377,7 @@ export class SalesforceNodeExecutor implements INodeExecutor {
     const { recordId } = context.parameters;
 
     await this.client!.delete(`/sobjects/${sobjectType}/${recordId}`);
-    
+
     return {
       id: recordId,
       success: true,
@@ -395,8 +415,10 @@ export class SalesforceNodeExecutor implements INodeExecutor {
   private async getMetadata(context: NodeExecutionContext): Promise<any> {
     const sobjectType = this.getSObjectType(context);
 
-    const response = await this.client!.get(`/sobjects/${sobjectType}/describe`);
-    
+    const response = await this.client!.get(
+      `/sobjects/${sobjectType}/describe`,
+    );
+
     return {
       name: response.data.name,
       label: response.data.label,
@@ -412,7 +434,7 @@ export class SalesforceNodeExecutor implements INodeExecutor {
 
     const response = await this.client!.patch(
       `/sobjects/${sobjectType}/${externalIdField}/${externalId}`,
-      fields
+      fields,
     );
 
     return {
@@ -435,7 +457,10 @@ export class SalesforceNodeExecutor implements INodeExecutor {
       records: bulkData,
     };
 
-    const response = await this.client!.post(`/composite/sobjects/${sobjectType}`, requestBody);
+    const response = await this.client!.post(
+      `/composite/sobjects/${sobjectType}`,
+      requestBody,
+    );
 
     return {
       hasErrors: response.data.hasErrors,
@@ -462,7 +487,10 @@ export class SalesforceNodeExecutor implements INodeExecutor {
       records: bulkData,
     };
 
-    const response = await this.client!.patch(`/composite/sobjects/${sobjectType}`, requestBody);
+    const response = await this.client!.patch(
+      `/composite/sobjects/${sobjectType}`,
+      requestBody,
+    );
 
     return {
       hasErrors: response.data.hasErrors,
@@ -479,8 +507,7 @@ export class SalesforceNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

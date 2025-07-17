@@ -12,7 +12,17 @@ export default new DataSource({
   password: process.env.DB_PASSWORD || 'weconnect123',
   database: process.env.DB_DATABASE || 'weconnect',
   entities: [join(__dirname, '..', '**', '*.entity.{ts,js}')],
-  migrations: [join(__dirname, '..', 'core', 'infrastructure', 'database', 'migrations', '*.{ts,js}')],
+  migrations: [
+    join(
+      __dirname,
+      '..',
+      'core',
+      'infrastructure',
+      'database',
+      'migrations',
+      '*.{ts,js}',
+    ),
+  ],
   synchronize: false,
   logging: true,
 });

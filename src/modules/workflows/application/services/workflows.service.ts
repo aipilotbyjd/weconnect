@@ -7,7 +7,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Workflow } from '../../domain/entities/workflow.entity';
 import { WorkflowNode } from '../../domain/entities/workflow-node.entity';
-import { WorkflowNodeConnection, ConnectionType } from '../../domain/entities/workflow-node-connection.entity';
+import {
+  WorkflowNodeConnection,
+  ConnectionType,
+} from '../../domain/entities/workflow-node-connection.entity';
 import { CreateWorkflowDto } from '../../presentation/dto/create-workflow.dto';
 import { UpdateWorkflowDto } from '../../presentation/dto/update-workflow.dto';
 import { CreateWorkflowUseCase } from '../use-cases/create-workflow.use-case';
@@ -45,7 +48,9 @@ export class WorkflowsService {
         // Get transactional repositories
         const transactionalWorkflowRepo = manager.getRepository(Workflow);
         const transactionalNodeRepo = manager.getRepository(WorkflowNode);
-        const transactionalConnectionRepo = manager.getRepository(WorkflowNodeConnection);
+        const transactionalConnectionRepo = manager.getRepository(
+          WorkflowNodeConnection,
+        );
 
         // Create workflow
         const workflow = transactionalWorkflowRepo.create({
@@ -82,7 +87,10 @@ export class WorkflowsService {
           const workflowConnections: WorkflowNodeConnection[] = [];
 
           // Debug: Log available node mappings
-          console.log('Available node mappings:', Object.fromEntries(nodeIdMap));
+          console.log(
+            'Available node mappings:',
+            Object.fromEntries(nodeIdMap),
+          );
           console.log('Connection data:', connections);
 
           for (const connData of connections) {
@@ -90,7 +98,9 @@ export class WorkflowsService {
             const targetNodeId = nodeIdMap.get(connData.targetNodeId);
 
             if (!sourceNodeId || !targetNodeId) {
-              throw new Error(`Connection references non-existent node ID: source('${connData.sourceNodeId}') or target('${connData.targetNodeId}'). Available mappings: ${JSON.stringify(Object.fromEntries(nodeIdMap))}`);
+              throw new Error(
+                `Connection references non-existent node ID: source('${connData.sourceNodeId}') or target('${connData.targetNodeId}'). Available mappings: ${JSON.stringify(Object.fromEntries(nodeIdMap))}`,
+              );
             }
 
             const connection = transactionalConnectionRepo.create({

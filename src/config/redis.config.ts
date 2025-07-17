@@ -6,7 +6,7 @@ export default registerAs('redis', () => ({
   password: process.env.REDIS_PASSWORD,
   db: parseInt(process.env.REDIS_DB || '0', 10),
   keyPrefix: process.env.REDIS_KEY_PREFIX || 'weconnect:',
-  
+
   // BullMQ specific settings
   bull: {
     prefix: 'bull',
@@ -26,7 +26,7 @@ export default registerAs('redis', () => ({
       },
     },
   },
-  
+
   // Cache settings
   cache: {
     ttl: 300, // 5 minutes default

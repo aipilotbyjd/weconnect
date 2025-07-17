@@ -1,4 +1,11 @@
-import { Entity, Column, BeforeInsert, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  BeforeInsert,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import * as bcrypt from 'bcryptjs';
@@ -12,7 +19,10 @@ export enum UserRole {
 
 @Entity('users')
 export class User extends BaseEntity {
-  @ApiProperty({ description: 'User email address', example: 'user@example.com' })
+  @ApiProperty({
+    description: 'User email address',
+    example: 'user@example.com',
+  })
   @Column({ unique: true })
   email: string;
 
@@ -52,7 +62,10 @@ export class User extends BaseEntity {
   currentOrganization?: Organization;
 
   // Organization memberships
-  @ApiProperty({ type: () => [OrganizationMember], description: 'User organization memberships' })
+  @ApiProperty({
+    type: () => [OrganizationMember],
+    description: 'User organization memberships',
+  })
   @OneToMany(() => OrganizationMember, (member) => member.user)
   organizationMemberships: OrganizationMember[];
 

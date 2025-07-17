@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WorkflowVersion } from '../../domain/entities/workflow-version.entity';
@@ -31,7 +35,11 @@ export class WorkflowVersioningService {
   ): Promise<WorkflowVersion> {
     const workflow = await this.workflowRepository.findOne({
       where: { id: workflowId, userId },
-      relations: ['nodes', 'nodes.outgoingConnections', 'nodes.incomingConnections'],
+      relations: [
+        'nodes',
+        'nodes.outgoingConnections',
+        'nodes.incomingConnections',
+      ],
     });
 
     if (!workflow) {
@@ -48,14 +56,14 @@ export class WorkflowVersioningService {
 
     // Serialize current workflow state
     const definition = {
-      nodes: workflow.nodes.map(node => ({
+      nodes: workflow.nodes.map((node) => ({
         id: node.id,
         name: node.name,
         type: node.type,
         configuration: node.configuration,
         position: node.position,
         isEnabled: node.isEnabled,
-        outgoingConnections: node.outgoingConnections.map(conn => ({
+        outgoingConnections: node.outgoingConnections.map((conn) => ({
           targetNodeId: conn.targetNodeId,
           type: conn.type,
           condition: conn.condition,
@@ -66,10 +74,7 @@ export class WorkflowVersioningService {
 
     // If making this version active, deactivate others
     if (data.isActive) {
-      await this.versionRepository.update(
-        { workflowId },
-        { isActive: false },
-      );
+      await this.versionRepository.update({ workflowId }, { isActive: false });
     }
 
     const version = await this.versionRepository.save({
@@ -152,7 +157,7 @@ export class WorkflowVersioningService {
 
     // Restore nodes from version
     const nodeMap = new Map<string, WorkflowNode>();
-    
+
     for (const nodeData of version.definition.nodes) {
       const node = await this.nodeRepository.save({
         workflowId,
@@ -188,14 +193,8 @@ export class WorkflowVersioningService {
     await this.workflowRepository.save(workflow);
 
     // Mark this version as active
-    await this.versionRepository.update(
-      { workflowId },
-      { isActive: false },
-    );
-    await this.versionRepository.update(
-      { id: versionId },
-      { isActive: true },
-    );
+    await this.versionRepository.update({ workflowId }, { isActive: false });
+    await this.versionRepository.update({ id: versionId }, { isActive: true });
 
     return workflow;
   }
@@ -226,36 +225,42 @@ export class WorkflowVersioningService {
     const version1 = await this.getVersion(workflowId, versionId1, userId);
     const version2 = await this.getVersion(workflowId, versionId2, userId);
 
-    const nodes1Map = new Map(version1.definition.nodes.map(n => [n.id, n]));
-    const nodes2Map = new Map(version2.definition.nodes.map(n => [n.id, n]));
+    const nodes1Map = new Map(version1.definition.nodes.map((n) => [n.id, n]));
+    const nodes2Map = new Map(version2.definition.nodes.map((n) => [n.id, n]));
 
     // Compare nodes
-    const nodesAdded = version2.definition.nodes.filter(n => !nodes1Map.has(n.id));
-    const nodesRemoved = version1.definition.nodes.filter(n => !nodes2Map.has(n.id));
-    const nodesModified = version2.definition.nodes.filter(n => {
+    const nodesAdded = version2.definition.nodes.filter(
+      (n) => !nodes1Map.has(n.id),
+    );
+    const nodesRemoved = version1.definition.nodes.filter(
+      (n) => !nodes2Map.has(n.id),
+    );
+    const nodesModified = version2.definition.nodes.filter((n) => {
       const old = nodes1Map.get(n.id);
       return old && JSON.stringify(old) !== JSON.stringify(n);
     });
 
     // Compare connections
-    const conns1 = version1.definition.nodes.flatMap(n => 
-      n.outgoingConnections.map(c => ({ ...c, sourceId: n.id }))
+    const conns1 = version1.definition.nodes.flatMap((n) =>
+      n.outgoingConnections.map((c) => ({ ...c, sourceId: n.id })),
     );
-    const conns2 = version2.definition.nodes.flatMap(n => 
-      n.outgoingConnections.map(c => ({ ...c, sourceId: n.id }))
+    const conns2 = version2.definition.nodes.flatMap((n) =>
+      n.outgoingConnections.map((c) => ({ ...c, sourceId: n.id })),
     );
 
-    const connsAdded = conns2.filter(c2 => 
-      !conns1.some(c1 => 
-        c1.sourceId === c2.sourceId && 
-        c1.targetNodeId === c2.targetNodeId
-      )
+    const connsAdded = conns2.filter(
+      (c2) =>
+        !conns1.some(
+          (c1) =>
+            c1.sourceId === c2.sourceId && c1.targetNodeId === c2.targetNodeId,
+        ),
     );
-    const connsRemoved = conns1.filter(c1 => 
-      !conns2.some(c2 => 
-        c1.sourceId === c2.sourceId && 
-        c1.targetNodeId === c2.targetNodeId
-      )
+    const connsRemoved = conns1.filter(
+      (c1) =>
+        !conns2.some(
+          (c2) =>
+            c1.sourceId === c2.sourceId && c1.targetNodeId === c2.targetNodeId,
+        ),
     );
 
     // Compare configuration

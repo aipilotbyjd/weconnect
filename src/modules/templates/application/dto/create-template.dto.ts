@@ -1,6 +1,19 @@
-import { IsString, IsEnum, IsOptional, IsArray, IsObject, IsNumber, IsUrl, ValidateNested, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  IsObject,
+  IsNumber,
+  IsUrl,
+  ValidateNested,
+  IsBoolean,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { TemplateVisibility, TemplateTier } from '../../domain/entities/workflow-template.entity';
+import {
+  TemplateVisibility,
+  TemplateTier,
+} from '../../domain/entities/workflow-template.entity';
 
 class WorkflowDefinitionDto {
   @IsArray()

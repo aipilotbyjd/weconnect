@@ -32,14 +32,17 @@ export class LoggerService {
 
   constructor(private configService: ConfigService) {
     this.logLevel = this.configService.get<LogLevel>('LOG_LEVEL', 'log');
-    this.environment = this.configService.get<string>('NODE_ENV', 'development');
+    this.environment = this.configService.get<string>(
+      'NODE_ENV',
+      'development',
+    );
   }
 
   error(message: string, error?: Error, context?: LogContext): void {
     const errorContext: LogContext = {
       category: context?.category || LogCategory.SYSTEM,
       ...context,
-      error: error?.stack || error?.message
+      error: error?.stack || error?.message,
     };
     this.log('error', message, errorContext);
   }
@@ -50,7 +53,7 @@ export class LoggerService {
 
   log(level: LogLevel | string, message: string, context?: LogContext): void {
     const timestamp = new Date().toISOString();
-    
+
     const logEntry = {
       timestamp,
       level,

@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const GitHubNodeDefinition = new NodeDefinition({
   name: 'GitHub',
@@ -80,29 +84,30 @@ export const GitHubNodeDefinition = new NodeDefinition({
 export class GitHubNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { operation, owner, repo, title, body, labels } = context.parameters;
-      
+      const { operation, owner, repo, title, body, labels } =
+        context.parameters;
+
       // Simulate GitHub API integration
       // In a real implementation, you would use GitHub API (Octokit)
-      
+
       if (operation === 'createIssue') {
         if (!title) {
           throw new Error('Title is required for creating issue');
         }
-        
+
         const issueData = {
           id: Date.now(),
           number: Math.floor(Math.random() * 1000) + 1,
           title,
           body: body || '',
-          labels: labels ? labels.split(',').map(l => l.trim()) : [],
+          labels: labels ? labels.split(',').map((l) => l.trim()) : [],
           state: 'open',
           created_at: new Date().toISOString(),
           html_url: `https://github.com/${owner}/${repo}/issues/${Math.floor(Math.random() * 1000) + 1}`,
         };
-        
+
         return {
           success: true,
           data: [issueData],
@@ -126,7 +131,7 @@ export class GitHubNodeExecutor implements INodeExecutor {
           stargazers_count: 42,
           forks_count: 7,
         };
-        
+
         return {
           success: true,
           data: [repoData],
@@ -158,7 +163,7 @@ export class GitHubNodeExecutor implements INodeExecutor {
             html_url: `https://github.com/${owner}/${repo}/issues/2`,
           },
         ];
-        
+
         return {
           success: true,
           data: issuesList,
@@ -172,7 +177,7 @@ export class GitHubNodeExecutor implements INodeExecutor {
         if (!title) {
           throw new Error('Title is required for creating PR');
         }
-        
+
         const prData = {
           id: Date.now(),
           number: Math.floor(Math.random() * 100) + 1,
@@ -184,7 +189,7 @@ export class GitHubNodeExecutor implements INodeExecutor {
           head: { ref: 'feature-branch' },
           base: { ref: 'main' },
         };
-        
+
         return {
           success: true,
           data: [prData],
@@ -195,7 +200,7 @@ export class GitHubNodeExecutor implements INodeExecutor {
           },
         };
       }
-      
+
       throw new Error(`Unknown operation: ${operation}`);
     } catch (error) {
       return {
@@ -217,8 +222,7 @@ export class GitHubNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

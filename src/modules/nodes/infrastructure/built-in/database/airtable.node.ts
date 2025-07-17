@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import Airtable from 'airtable';
 
 export const AirtableNodeDefinition = new NodeDefinition({
@@ -138,7 +142,8 @@ export const AirtableNodeDefinition = new NodeDefinition({
           operation: ['list', 'find'],
         },
       },
-      description: 'Array of sort objects: [{"field": "Name", "direction": "asc"}]',
+      description:
+        'Array of sort objects: [{"field": "Name", "direction": "asc"}]',
     },
     {
       name: 'filterByFormula',
@@ -211,7 +216,7 @@ export class AirtableNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.airtable;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -276,7 +281,6 @@ export class AirtableNodeExecutor implements INodeExecutor {
           tableName,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -288,16 +292,19 @@ export class AirtableNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async listRecords(table: any, context: NodeExecutionContext): Promise<any> {
-    const { 
-      maxRecords, 
-      view, 
-      sort, 
-      filterByFormula, 
-      fieldsToReturn, 
-      cellFormat, 
-      timeZone, 
-      userLocale 
+  private async listRecords(
+    table: any,
+    context: NodeExecutionContext,
+  ): Promise<any> {
+    const {
+      maxRecords,
+      view,
+      sort,
+      filterByFormula,
+      fieldsToReturn,
+      cellFormat,
+      timeZone,
+      userLocale,
     } = context.parameters;
 
     const options: any = {};
@@ -306,7 +313,8 @@ export class AirtableNodeExecutor implements INodeExecutor {
     if (view) options.view = view;
     if (sort && sort.length > 0) options.sort = sort;
     if (filterByFormula) options.filterByFormula = filterByFormula;
-    if (fieldsToReturn && fieldsToReturn.length > 0) options.fields = fieldsToReturn;
+    if (fieldsToReturn && fieldsToReturn.length > 0)
+      options.fields = fieldsToReturn;
     if (cellFormat) options.cellFormat = cellFormat;
     if (timeZone) options.timeZone = timeZone;
     if (userLocale) options.userLocale = userLocale;
@@ -323,11 +331,16 @@ export class AirtableNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async getRecord(table: any, context: NodeExecutionContext): Promise<any> {
-    const { recordId, fieldsToReturn, cellFormat, timeZone, userLocale } = context.parameters;
+  private async getRecord(
+    table: any,
+    context: NodeExecutionContext,
+  ): Promise<any> {
+    const { recordId, fieldsToReturn, cellFormat, timeZone, userLocale } =
+      context.parameters;
 
     const options: any = {};
-    if (fieldsToReturn && fieldsToReturn.length > 0) options.fields = fieldsToReturn;
+    if (fieldsToReturn && fieldsToReturn.length > 0)
+      options.fields = fieldsToReturn;
     if (cellFormat) options.cellFormat = cellFormat;
     if (timeZone) options.timeZone = timeZone;
     if (userLocale) options.userLocale = userLocale;
@@ -341,7 +354,10 @@ export class AirtableNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async createRecord(table: any, context: NodeExecutionContext): Promise<any> {
+  private async createRecord(
+    table: any,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { fields } = context.parameters;
 
     const record = await table.create(fields);
@@ -353,7 +369,10 @@ export class AirtableNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async updateRecord(table: any, context: NodeExecutionContext): Promise<any> {
+  private async updateRecord(
+    table: any,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { recordId, fields } = context.parameters;
 
     const record = await table.update(recordId, fields);
@@ -365,7 +384,10 @@ export class AirtableNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async deleteRecord(table: any, context: NodeExecutionContext): Promise<any> {
+  private async deleteRecord(
+    table: any,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { recordId } = context.parameters;
 
     const record = await table.destroy(recordId);
@@ -376,16 +398,19 @@ export class AirtableNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async findRecords(table: any, context: NodeExecutionContext): Promise<any> {
-    const { 
-      maxRecords, 
-      view, 
-      sort, 
-      filterByFormula, 
-      fieldsToReturn, 
-      cellFormat, 
-      timeZone, 
-      userLocale 
+  private async findRecords(
+    table: any,
+    context: NodeExecutionContext,
+  ): Promise<any> {
+    const {
+      maxRecords,
+      view,
+      sort,
+      filterByFormula,
+      fieldsToReturn,
+      cellFormat,
+      timeZone,
+      userLocale,
     } = context.parameters;
 
     const options: any = {};
@@ -394,7 +419,8 @@ export class AirtableNodeExecutor implements INodeExecutor {
     if (view) options.view = view;
     if (sort && sort.length > 0) options.sort = sort;
     if (filterByFormula) options.filterByFormula = filterByFormula;
-    if (fieldsToReturn && fieldsToReturn.length > 0) options.fields = fieldsToReturn;
+    if (fieldsToReturn && fieldsToReturn.length > 0)
+      options.fields = fieldsToReturn;
     if (cellFormat) options.cellFormat = cellFormat;
     if (timeZone) options.timeZone = timeZone;
     if (userLocale) options.userLocale = userLocale;
@@ -411,7 +437,10 @@ export class AirtableNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async batchCreateRecords(table: any, context: NodeExecutionContext): Promise<any> {
+  private async batchCreateRecords(
+    table: any,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { batchData } = context.parameters;
 
     // Airtable API allows max 10 records per batch
@@ -436,7 +465,10 @@ export class AirtableNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async batchUpdateRecords(table: any, context: NodeExecutionContext): Promise<any> {
+  private async batchUpdateRecords(
+    table: any,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { batchData } = context.parameters;
 
     // Airtable API allows max 10 records per batch
@@ -461,7 +493,10 @@ export class AirtableNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async batchDeleteRecords(table: any, context: NodeExecutionContext): Promise<any> {
+  private async batchDeleteRecords(
+    table: any,
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { recordIds } = context.parameters;
 
     // Airtable API allows max 10 records per batch
@@ -494,8 +529,7 @@ export class AirtableNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

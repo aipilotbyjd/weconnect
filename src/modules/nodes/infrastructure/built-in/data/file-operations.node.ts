@@ -1,7 +1,11 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const FileOperationsNodeDefinition = new NodeDefinition({
   name: 'FileOperations',
@@ -44,7 +48,15 @@ export const FileOperationsNodeDefinition = new NodeDefinition({
       description: 'Path to the file',
       displayOptions: {
         show: {
-          operation: ['readFile', 'writeFile', 'appendFile', 'deleteFile', 'copyFile', 'moveFile', 'getStats'],
+          operation: [
+            'readFile',
+            'writeFile',
+            'appendFile',
+            'deleteFile',
+            'copyFile',
+            'moveFile',
+            'getStats',
+          ],
         },
       },
     },
@@ -107,7 +119,7 @@ export const FileOperationsNodeDefinition = new NodeDefinition({
       displayName: 'Create Directories',
       type: 'boolean',
       default: true,
-      description: 'Create parent directories if they don\'t exist',
+      description: "Create parent directories if they don't exist",
       displayOptions: {
         show: {
           operation: ['writeFile', 'appendFile', 'copyFile', 'moveFile'],
@@ -122,7 +134,15 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
     const startTime = Date.now();
 
     try {
-      const { operation, filePath, directoryPath, content, encoding, destinationPath, createDirectories } = context.parameters;
+      const {
+        operation,
+        filePath,
+        directoryPath,
+        content,
+        encoding,
+        destinationPath,
+        createDirectories,
+      } = context.parameters;
       const results: any[] = [];
 
       for (const item of context.inputData) {
@@ -130,8 +150,12 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
 
         // Use input data to dynamically set paths if needed
         const resolvedFilePath = this.resolvePath(filePath || item.filePath);
-        const resolvedDirectoryPath = this.resolvePath(directoryPath || item.directoryPath);
-        const resolvedDestinationPath = this.resolvePath(destinationPath || item.destinationPath);
+        const resolvedDirectoryPath = this.resolvePath(
+          directoryPath || item.directoryPath,
+        );
+        const resolvedDestinationPath = this.resolvePath(
+          destinationPath || item.destinationPath,
+        );
         const resolvedContent = content || item.content || '';
 
         switch (operation) {
@@ -139,10 +163,20 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
             result = await this.readFile(resolvedFilePath, encoding);
             break;
           case 'writeFile':
-            result = await this.writeFile(resolvedFilePath, resolvedContent, encoding, createDirectories);
+            result = await this.writeFile(
+              resolvedFilePath,
+              resolvedContent,
+              encoding,
+              createDirectories,
+            );
             break;
           case 'appendFile':
-            result = await this.appendFile(resolvedFilePath, resolvedContent, encoding, createDirectories);
+            result = await this.appendFile(
+              resolvedFilePath,
+              resolvedContent,
+              encoding,
+              createDirectories,
+            );
             break;
           case 'deleteFile':
             result = await this.deleteFile(resolvedFilePath);
@@ -154,10 +188,18 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
             result = await this.createDirectory(resolvedDirectoryPath);
             break;
           case 'copyFile':
-            result = await this.copyFile(resolvedFilePath, resolvedDestinationPath, createDirectories);
+            result = await this.copyFile(
+              resolvedFilePath,
+              resolvedDestinationPath,
+              createDirectories,
+            );
             break;
           case 'moveFile':
-            result = await this.moveFile(resolvedFilePath, resolvedDestinationPath, createDirectories);
+            result = await this.moveFile(
+              resolvedFilePath,
+              resolvedDestinationPath,
+              createDirectories,
+            );
             break;
           case 'getStats':
             result = await this.getStats(resolvedFilePath);
@@ -196,7 +238,10 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
     return path.resolve(inputPath);
   }
 
-  private async readFile(filePath: string, encoding: string = 'utf8'): Promise<any> {
+  private async readFile(
+    filePath: string,
+    encoding: string = 'utf8',
+  ): Promise<any> {
     try {
       const content = await fs.readFile(filePath, encoding as BufferEncoding);
       const stats = await fs.stat(filePath);
@@ -214,7 +259,12 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async writeFile(filePath: string, content: string, encoding: string = 'utf8', createDirs: boolean = true): Promise<any> {
+  private async writeFile(
+    filePath: string,
+    content: string,
+    encoding: string = 'utf8',
+    createDirs: boolean = true,
+  ): Promise<any> {
     try {
       if (createDirs) {
         const directory = path.dirname(filePath);
@@ -237,7 +287,12 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async appendFile(filePath: string, content: string, encoding: string = 'utf8', createDirs: boolean = true): Promise<any> {
+  private async appendFile(
+    filePath: string,
+    content: string,
+    encoding: string = 'utf8',
+    createDirs: boolean = true,
+  ): Promise<any> {
     try {
       if (createDirs) {
         const directory = path.dirname(filePath);
@@ -298,8 +353,8 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
         success: true,
         directoryPath,
         totalItems: files.length,
-        files: files.filter(f => f.isFile),
-        directories: files.filter(f => f.isDirectory),
+        files: files.filter((f) => f.isFile),
+        directories: files.filter((f) => f.isDirectory),
         items: files,
       };
     } catch (error) {
@@ -322,7 +377,11 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async copyFile(sourcePath: string, destinationPath: string, createDirs: boolean = true): Promise<any> {
+  private async copyFile(
+    sourcePath: string,
+    destinationPath: string,
+    createDirs: boolean = true,
+  ): Promise<any> {
     try {
       if (createDirs) {
         const directory = path.dirname(destinationPath);
@@ -345,7 +404,11 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async moveFile(sourcePath: string, destinationPath: string, createDirs: boolean = true): Promise<any> {
+  private async moveFile(
+    sourcePath: string,
+    destinationPath: string,
+    createDirs: boolean = true,
+  ): Promise<any> {
     try {
       if (createDirs) {
         const directory = path.dirname(destinationPath);
@@ -399,8 +462,7 @@ export class FileOperationsNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

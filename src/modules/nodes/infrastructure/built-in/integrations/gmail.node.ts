@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const GmailNodeDefinition = new NodeDefinition({
   name: 'Gmail',
@@ -68,18 +72,21 @@ export const GmailNodeDefinition = new NodeDefinition({
 export class GmailNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { operation, to, subject, message, attachments } = context.parameters;
-      
+      const { operation, to, subject, message, attachments } =
+        context.parameters;
+
       // Simulate Gmail API integration
       // In a real implementation, you would use Google APIs client library
-      
+
       if (operation === 'sendEmail') {
         if (!to || !subject || !message) {
-          throw new Error('To, Subject, and Message are required for sending email');
+          throw new Error(
+            'To, Subject, and Message are required for sending email',
+          );
         }
-        
+
         // Simulate sending email
         const emailData = {
           messageId: `msg_${Date.now()}`,
@@ -90,7 +97,7 @@ export class GmailNodeExecutor implements INodeExecutor {
           sentAt: new Date().toISOString(),
           status: 'sent',
         };
-        
+
         return {
           success: true,
           data: [emailData],
@@ -118,7 +125,7 @@ export class GmailNodeExecutor implements INodeExecutor {
             date: new Date().toISOString(),
           },
         ];
-        
+
         return {
           success: true,
           data: messages,
@@ -129,7 +136,7 @@ export class GmailNodeExecutor implements INodeExecutor {
           },
         };
       }
-      
+
       throw new Error(`Unknown operation: ${operation}`);
     } catch (error) {
       return {
@@ -151,8 +158,7 @@ export class GmailNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

@@ -1,6 +1,10 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const HttpRequestNodeDefinition = new NodeDefinition({
   name: 'HttpRequest',
@@ -64,10 +68,10 @@ export const HttpRequestNodeDefinition = new NodeDefinition({
 export class HttpRequestNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const { method, url, headers, body, timeout } = context.parameters;
-      
+
       if (!url) {
         throw new Error('URL is required');
       }
@@ -85,14 +89,16 @@ export class HttpRequestNodeExecutor implements INodeExecutor {
       }
 
       const response = await axios(config);
-      
+
       return {
         success: true,
-        data: [{
-          statusCode: response.status,
-          headers: response.headers,
-          body: response.data,
-        }],
+        data: [
+          {
+            statusCode: response.status,
+            headers: response.headers,
+            body: response.data,
+          },
+        ],
         metadata: {
           executionTime: Date.now() - startTime,
           itemsProcessed: 1,
@@ -100,10 +106,10 @@ export class HttpRequestNodeExecutor implements INodeExecutor {
         },
       };
     } catch (error) {
-      const errorMessage = axios.isAxiosError(error) 
+      const errorMessage = axios.isAxiosError(error)
         ? `HTTP ${error.response?.status}: ${error.message}`
         : error.message;
-      
+
       return {
         success: false,
         error: errorMessage,
@@ -127,8 +133,7 @@ export class HttpRequestNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

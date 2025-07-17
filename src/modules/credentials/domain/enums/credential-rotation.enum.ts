@@ -75,7 +75,7 @@ export function getRotationPriority(rotationType: RotationType): number {
     [RotationType.OAUTH2]: 4,
     [RotationType.MANUAL]: 5, // Lowest priority
   };
-  
+
   return priorities[rotationType] || 5;
 }
 
@@ -92,10 +92,9 @@ export function isSuccessStatus(status: RotationStatus): boolean {
 }
 
 export function isPendingStatus(status: RotationStatus): boolean {
-  return [
-    RotationStatus.SCHEDULED,
-    RotationStatus.IN_PROGRESS,
-  ].includes(status);
+  return [RotationStatus.SCHEDULED, RotationStatus.IN_PROGRESS].includes(
+    status,
+  );
 }
 
 export function isActiveStatus(status: RotationStatus): boolean {
@@ -112,7 +111,7 @@ export function getStatusColor(status: RotationStatus): string {
     [RotationStatus.ACTIVE]: '#28a745', // Green
     [RotationStatus.EXPIRED]: '#dc3545', // Red
   };
-  
+
   return colors[status] || '#6c757d';
 }
 
@@ -124,6 +123,6 @@ export function getTypeIcon(rotationType: RotationType): string {
     [RotationType.PASSWORD]: '🔒',
     [RotationType.CERTIFICATE]: '📜',
   };
-  
+
   return icons[rotationType] || '🔧';
 }

@@ -13,7 +13,10 @@ export class NodeExecutionAdminController {
 
   @Get('registry/status')
   @ApiOperation({ summary: 'Get node registry status' })
-  @ApiResponse({ status: 200, description: 'Registry status retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Registry status retrieved successfully',
+  })
   getRegistryStatus() {
     const availableTypes = this.nodeRegistry.getAvailableNodeTypes();
     const schemas = this.nodeRegistry.getAllSchemas();
@@ -29,14 +32,20 @@ export class NodeExecutionAdminController {
 
   @Get('migration/status')
   @ApiOperation({ summary: 'Get migration status' })
-  @ApiResponse({ status: 200, description: 'Migration status retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Migration status retrieved successfully',
+  })
   getMigrationStatus() {
     return this.migrationService.getMigrationStatus();
   }
 
   @Get('migration/cleanup-instructions')
   @ApiOperation({ summary: 'Get cleanup instructions for legacy executors' })
-  @ApiResponse({ status: 200, description: 'Cleanup instructions retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Cleanup instructions retrieved successfully',
+  })
   getCleanupInstructions() {
     return {
       instructions: this.migrationService.generateCleanupInstructions(),
@@ -45,7 +54,10 @@ export class NodeExecutionAdminController {
 
   @Get('migration/sql-script')
   @ApiOperation({ summary: 'Generate SQL migration script' })
-  @ApiResponse({ status: 200, description: 'SQL migration script generated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'SQL migration script generated successfully',
+  })
   getSQLMigrationScript() {
     return {
       sql: this.migrationService.generateSQLMigration(),
@@ -68,7 +80,10 @@ export class NodeExecutionAdminController {
 
   @Get('schemas/:nodeType')
   @ApiOperation({ summary: 'Get schema for specific node type' })
-  @ApiResponse({ status: 200, description: 'Node schema retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Node schema retrieved successfully',
+  })
   getNodeSchema(nodeType: string) {
     const schema = this.nodeRegistry.getSchema(nodeType);
     if (!schema) {
@@ -79,7 +94,10 @@ export class NodeExecutionAdminController {
 
   @Get('search')
   @ApiOperation({ summary: 'Search nodes by query' })
-  @ApiResponse({ status: 200, description: 'Search results retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Search results retrieved successfully',
+  })
   searchNodes(query: string) {
     const results = this.nodeRegistry.searchNodes(query || '');
     return {

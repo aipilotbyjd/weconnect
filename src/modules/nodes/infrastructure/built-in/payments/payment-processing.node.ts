@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const PaymentProcessingNodeDefinition = new NodeDefinition({
   name: 'PaymentProcessing',
@@ -43,7 +47,8 @@ export const PaymentProcessingNodeDefinition = new NodeDefinition({
       type: 'number',
       required: true,
       placeholder: '100.00',
-      description: 'Payment amount in the smallest currency unit (e.g., cents for USD)',
+      description:
+        'Payment amount in the smallest currency unit (e.g., cents for USD)',
       displayOptions: {
         show: {
           operation: ['createPayment', 'refundPayment'],
@@ -192,11 +197,11 @@ export const PaymentProcessingNodeDefinition = new NodeDefinition({
 export class PaymentProcessingNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const { operation } = context.parameters;
       const credentials = context.credentials?.paymentCredentials;
-      
+
       if (!credentials) {
         throw new Error('Payment gateway credentials are required');
       }
@@ -251,27 +256,60 @@ export class PaymentProcessingNodeExecutor implements INodeExecutor {
   }
 
   private async createPayment(context: NodeExecutionContext, credentials: any) {
-    const { amount, currency, description, paymentMethodId, customerId, metadata, confirmPayment } = context.parameters;
-    
+    const {
+      amount,
+      currency,
+      description,
+      paymentMethodId,
+      customerId,
+      metadata,
+      confirmPayment,
+    } = context.parameters;
+
     // This is a mock implementation
     // In a real scenario, you would integrate with actual payment providers
     switch (credentials.provider) {
       case 'stripe':
-        return await this.createStripePayment({ amount, currency, description, paymentMethodId, customerId, metadata, confirmPayment }, credentials);
+        return await this.createStripePayment(
+          {
+            amount,
+            currency,
+            description,
+            paymentMethodId,
+            customerId,
+            metadata,
+            confirmPayment,
+          },
+          credentials,
+        );
       case 'paypal':
-        return await this.createPayPalPayment({ amount, currency, description }, credentials);
+        return await this.createPayPalPayment(
+          { amount, currency, description },
+          credentials,
+        );
       case 'square':
-        return await this.createSquarePayment({ amount, currency, description }, credentials);
+        return await this.createSquarePayment(
+          { amount, currency, description },
+          credentials,
+        );
       case 'razorpay':
-        return await this.createRazorpayPayment({ amount, currency, description }, credentials);
+        return await this.createRazorpayPayment(
+          { amount, currency, description },
+          credentials,
+        );
       default:
-        throw new Error(`Unsupported payment provider: ${credentials.provider}`);
+        throw new Error(
+          `Unsupported payment provider: ${credentials.provider}`,
+        );
     }
   }
 
-  private async capturePayment(context: NodeExecutionContext, credentials: any) {
+  private async capturePayment(
+    context: NodeExecutionContext,
+    credentials: any,
+  ) {
     const { paymentIntentId } = context.parameters;
-    
+
     // Mock implementation
     return {
       id: paymentIntentId,
@@ -284,7 +322,7 @@ export class PaymentProcessingNodeExecutor implements INodeExecutor {
 
   private async refundPayment(context: NodeExecutionContext, credentials: any) {
     const { paymentIntentId, refundAmount, description } = context.parameters;
-    
+
     // Mock implementation
     return {
       id: `re_${Date.now()}`,
@@ -297,9 +335,12 @@ export class PaymentProcessingNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async getPaymentStatus(context: NodeExecutionContext, credentials: any) {
+  private async getPaymentStatus(
+    context: NodeExecutionContext,
+    credentials: any,
+  ) {
     const { paymentIntentId } = context.parameters;
-    
+
     // Mock implementation
     return {
       id: paymentIntentId,
@@ -311,9 +352,18 @@ export class PaymentProcessingNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async createCustomer(context: NodeExecutionContext, credentials: any) {
-    const { customerEmail, customerName, customerPhone, billingAddress, metadata } = context.parameters;
-    
+  private async createCustomer(
+    context: NodeExecutionContext,
+    credentials: any,
+  ) {
+    const {
+      customerEmail,
+      customerName,
+      customerPhone,
+      billingAddress,
+      metadata,
+    } = context.parameters;
+
     // Mock implementation
     return {
       id: `cus_${Date.now()}`,
@@ -327,9 +377,19 @@ export class PaymentProcessingNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async updateCustomer(context: NodeExecutionContext, credentials: any) {
-    const { customerId, customerEmail, customerName, customerPhone, billingAddress, metadata } = context.parameters;
-    
+  private async updateCustomer(
+    context: NodeExecutionContext,
+    credentials: any,
+  ) {
+    const {
+      customerId,
+      customerEmail,
+      customerName,
+      customerPhone,
+      billingAddress,
+      metadata,
+    } = context.parameters;
+
     // Mock implementation
     return {
       id: customerId,
@@ -345,7 +405,7 @@ export class PaymentProcessingNodeExecutor implements INodeExecutor {
 
   private async getCustomer(context: NodeExecutionContext, credentials: any) {
     const { customerId } = context.parameters;
-    
+
     // Mock implementation
     return {
       id: customerId,
@@ -418,8 +478,7 @@ export class PaymentProcessingNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

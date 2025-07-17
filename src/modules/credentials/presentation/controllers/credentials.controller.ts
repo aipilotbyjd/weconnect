@@ -9,7 +9,12 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { CredentialsService } from '../../application/services/credentials.service';
 import { CreateCredentialDto } from '../dto/create-credential.dto';
@@ -34,7 +39,7 @@ export class CredentialsController {
       userId,
       createCredentialDto,
     );
-    
+
     // Return credential without encrypted data
     const { encryptedData, ...result } = credential;
     return result;
@@ -45,7 +50,7 @@ export class CredentialsController {
   async findAll(@Req() req: RequestWithUser) {
     const userId = req.user.id;
     const credentials = await this.credentialsService.findAll(userId);
-    
+
     // Return credentials without encrypted data
     return credentials.map(({ encryptedData, ...credential }) => credential);
   }
@@ -56,7 +61,7 @@ export class CredentialsController {
   async findOne(@Req() req: RequestWithUser, @Param('id') id: string) {
     const userId = req.user.id;
     const credential = await this.credentialsService.findOne(id, userId);
-    
+
     // Return credential without encrypted data
     const { encryptedData, ...result } = credential;
     return result;
@@ -76,7 +81,7 @@ export class CredentialsController {
       userId,
       updateCredentialDto,
     );
-    
+
     // Return credential without encrypted data
     const { encryptedData, ...result } = credential;
     return result;
@@ -96,7 +101,10 @@ export class CredentialsController {
   @ApiParam({ name: 'id', description: 'Credential ID' })
   async validate(@Req() req: RequestWithUser, @Param('id') id: string) {
     const userId = req.user.id;
-    const isValid = await this.credentialsService.validateCredential(id, userId);
+    const isValid = await this.credentialsService.validateCredential(
+      id,
+      userId,
+    );
     return { credentialId: id, isValid };
   }
 
@@ -112,11 +120,11 @@ export class CredentialsController {
       service,
       userId,
     );
-    
+
     if (!credential) {
       return null;
     }
-    
+
     // Return credential without encrypted data
     const { encryptedData, ...result } = credential;
     return result;
@@ -125,10 +133,7 @@ export class CredentialsController {
   @Get(':id/test')
   @ApiOperation({ summary: 'Test credential connectivity' })
   @ApiParam({ name: 'id', description: 'Credential ID' })
-  async testCredential(
-    @Req() req: RequestWithUser,
-    @Param('id') id: string,
-  ) {
+  async testCredential(@Req() req: RequestWithUser, @Param('id') id: string) {
     const userId = req.user.id;
     return await this.credentialsService.testCredential(id, userId);
   }

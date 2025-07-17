@@ -1,10 +1,15 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const JsonTransformNodeDefinition = new NodeDefinition({
   name: 'JsonTransform',
   displayName: 'JSON Transform',
-  description: 'Transform JSON data using JSONPath expressions and custom mapping',
+  description:
+    'Transform JSON data using JSONPath expressions and custom mapping',
   version: 1,
   group: ['data'],
   icon: 'fa:code',
@@ -46,9 +51,9 @@ export const JsonTransformNodeDefinition = new NodeDefinition({
       displayName: 'Field Mapping',
       type: 'json',
       default: {
-        'newField': '$.oldField',
-        'userName': '$.user.name',
-        'userEmail': '$.user.email'
+        newField: '$.oldField',
+        userName: '$.user.name',
+        userEmail: '$.user.email',
       },
       description: 'Map fields using JSONPath expressions',
       displayOptions: {
@@ -114,9 +119,17 @@ export const JsonTransformNodeDefinition = new NodeDefinition({
 export class JsonTransformNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { operation, jsonPath, mapping, filterExpression, sortField, sortOrder, groupByField } = context.parameters;
+      const {
+        operation,
+        jsonPath,
+        mapping,
+        filterExpression,
+        sortField,
+        sortOrder,
+        groupByField,
+      } = context.parameters;
       const results: any[] = [];
 
       for (const item of context.inputData) {
@@ -214,7 +227,7 @@ export class JsonTransformNodeExecutor implements INodeExecutor {
     }
 
     try {
-      return data.filter(item => {
+      return data.filter((item) => {
         // Simple expression evaluation (in production, use a safer evaluator)
         const func = new Function('item', `return ${expression}`);
         return func(item);
@@ -262,7 +275,7 @@ export class JsonTransformNodeExecutor implements INodeExecutor {
       for (const item of data) {
         const groupKey = this.getNestedValue(item, field);
         const key = String(groupKey);
-        
+
         if (!groups[key]) {
           groups[key] = [];
         }
@@ -277,24 +290,24 @@ export class JsonTransformNodeExecutor implements INodeExecutor {
 
   private getNestedValue(obj: any, path: string): any {
     if (!path) return obj;
-    
+
     const keys = path.split('.');
     let current = obj;
-    
+
     for (const key of keys) {
       if (current === null || current === undefined) {
         return undefined;
       }
-      
+
       // Handle array notation [index] or [*]
       if (key.includes('[') && key.includes(']')) {
         const arrayKey = key.substring(0, key.indexOf('['));
         const indexPart = key.substring(key.indexOf('[') + 1, key.indexOf(']'));
-        
+
         if (arrayKey) {
           current = current[arrayKey];
         }
-        
+
         if (indexPart === '*') {
           // Return all array items
           return current;
@@ -306,7 +319,7 @@ export class JsonTransformNodeExecutor implements INodeExecutor {
         current = current[key];
       }
     }
-    
+
     return current;
   }
 
@@ -319,8 +332,7 @@ export class JsonTransformNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

@@ -1,11 +1,16 @@
 import * as nodemailer from 'nodemailer';
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const EmailOperationsNodeDefinition = new NodeDefinition({
   name: 'EmailOperations',
   displayName: 'Email Operations',
-  description: 'Comprehensive email operations including sending, reading, and managing emails',
+  description:
+    'Comprehensive email operations including sending, reading, and managing emails',
   version: 1,
   group: ['communication'],
   icon: 'fa:envelope',
@@ -271,11 +276,11 @@ export const EmailOperationsNodeDefinition = new NodeDefinition({
 export class EmailOperationsNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const { operation } = context.parameters;
       const credentials = context.credentials?.emailCredentials;
-      
+
       if (!credentials) {
         throw new Error('Email credentials are required');
       }
@@ -330,9 +335,22 @@ export class EmailOperationsNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async sendSingleEmail(context: NodeExecutionContext, transporter: any) {
-    const { to, cc, bcc, subject, body, bodyType, attachments, priority, deliveryTime } = context.parameters;
-    
+  private async sendSingleEmail(
+    context: NodeExecutionContext,
+    transporter: any,
+  ) {
+    const {
+      to,
+      cc,
+      bcc,
+      subject,
+      body,
+      bodyType,
+      attachments,
+      priority,
+      deliveryTime,
+    } = context.parameters;
+
     const mailOptions: any = {
       from: context.credentials?.emailCredentials?.username,
       to,
@@ -369,7 +387,7 @@ export class EmailOperationsNodeExecutor implements INodeExecutor {
     }
 
     const info = await transporter.sendMail(mailOptions);
-    
+
     return {
       status: 'sent',
       messageId: info.messageId,
@@ -380,8 +398,9 @@ export class EmailOperationsNodeExecutor implements INodeExecutor {
   }
 
   private async sendBulkEmail(context: NodeExecutionContext, transporter: any) {
-    const { recipientList, bulkSubject, bulkBody, priority } = context.parameters;
-    
+    const { recipientList, bulkSubject, bulkBody, priority } =
+      context.parameters;
+
     const sent: any[] = [];
     const failed: any[] = [];
 
@@ -392,7 +411,7 @@ export class EmailOperationsNodeExecutor implements INodeExecutor {
           email: recipient.email,
           name: recipient.name,
         });
-        
+
         const personalizedBody = this.replaceTokens(bulkBody, {
           ...recipient.customFields,
           email: recipient.email,
@@ -431,13 +450,28 @@ export class EmailOperationsNodeExecutor implements INodeExecutor {
     };
   }
 
-  private async sendTemplateEmail(context: NodeExecutionContext, transporter: any) {
-    const { to, cc, bcc, subject, templateId, templateData, attachments, priority } = context.parameters;
-    
+  private async sendTemplateEmail(
+    context: NodeExecutionContext,
+    transporter: any,
+  ) {
+    const {
+      to,
+      cc,
+      bcc,
+      subject,
+      templateId,
+      templateData,
+      attachments,
+      priority,
+    } = context.parameters;
+
     // This is a placeholder for template processing
     // In a real implementation, you would load and process the template
     const processedSubject = this.replaceTokens(subject, templateData);
-    const processedBody = this.replaceTokens(`Template ${templateId} content`, templateData);
+    const processedBody = this.replaceTokens(
+      `Template ${templateId} content`,
+      templateData,
+    );
 
     const mailOptions: any = {
       from: context.credentials?.emailCredentials?.username,
@@ -458,7 +492,7 @@ export class EmailOperationsNodeExecutor implements INodeExecutor {
     }
 
     const info = await transporter.sendMail(mailOptions);
-    
+
     return {
       status: 'sent',
       messageId: info.messageId,
@@ -470,14 +504,14 @@ export class EmailOperationsNodeExecutor implements INodeExecutor {
 
   private async verifyEmail(context: NodeExecutionContext, transporter: any) {
     const { emailToVerify } = context.parameters;
-    
+
     try {
       const verification = await transporter.verify();
-      
+
       // Basic email format validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const isValidFormat = emailRegex.test(emailToVerify);
-      
+
       return {
         email: emailToVerify,
         valid: isValidFormat,
@@ -513,8 +547,7 @@ export class EmailOperationsNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

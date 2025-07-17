@@ -6,7 +6,15 @@ import { NodeExecutor } from '../node-executor.interface';
 import { CredentialIntegrationService } from '../../../../credentials/application/services/credential-integration.service';
 
 export interface GoogleSheetsConfig {
-  operation: 'readSheet' | 'writeSheet' | 'appendRow' | 'updateRow' | 'deleteRow' | 'createSheet' | 'clearSheet' | 'getSheetInfo';
+  operation:
+    | 'readSheet'
+    | 'writeSheet'
+    | 'appendRow'
+    | 'updateRow'
+    | 'deleteRow'
+    | 'createSheet'
+    | 'clearSheet'
+    | 'getSheetInfo';
   credentialId?: string;
   accessToken?: string;
   spreadsheetId?: string;
@@ -76,7 +84,9 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
           result = await this.getSheetInfo(config, inputData, accessToken);
           break;
         default:
-          throw new Error(`Unsupported Google Sheets operation: ${config.operation}`);
+          throw new Error(
+            `Unsupported Google Sheets operation: ${config.operation}`,
+          );
       }
 
       return {
@@ -91,7 +101,7 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
       };
     } catch (error) {
       this.logger.error(`Google Sheets operation failed: ${error.message}`);
-      
+
       return {
         ...inputData,
         googleSheets: null,
@@ -109,7 +119,7 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
 
   async validate(configuration: Record<string, any>): Promise<boolean> {
     const config = configuration as GoogleSheetsConfig;
-    
+
     if (!config.operation) return false;
     if (!config.accessToken && !config.credentialId) return false;
     if (!config.spreadsheetId) return false;
@@ -136,42 +146,53 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     }
   }
 
-  private async getAccessToken(config: GoogleSheetsConfig, inputData: Record<string, any>): Promise<string> {
+  private async getAccessToken(
+    config: GoogleSheetsConfig,
+    inputData: Record<string, any>,
+  ): Promise<string> {
     if (config.accessToken) {
       return this.replaceVariables(config.accessToken, inputData);
     }
 
     if (config.credentialId) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialById(
-          config.credentialId,
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialById(
+            config.credentialId,
+            inputData._credentialContext,
+          );
         const accessToken = credential.data.access_token;
         if (!accessToken) {
           throw new Error('Google Sheets credential is missing access_token');
         }
         return accessToken;
       } catch (error) {
-        this.logger.error(`Failed to get Google Sheets credential: ${error.message}`);
-        throw new Error(`Failed to retrieve Google Sheets credentials: ${error.message}`);
+        this.logger.error(
+          `Failed to get Google Sheets credential: ${error.message}`,
+        );
+        throw new Error(
+          `Failed to retrieve Google Sheets credentials: ${error.message}`,
+        );
       }
     }
 
     // Try to get credential by service name
     if (inputData._credentialContext) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialByService(
-          'google_sheets',
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialByService(
+            'google_sheets',
+            inputData._credentialContext,
+          );
         const accessToken = credential.data.access_token;
         if (!accessToken) {
           throw new Error('Google Sheets credential is missing access_token');
         }
         return accessToken;
       } catch (error) {
-        this.logger.error(`Failed to get Google Sheets credential by service: ${error.message}`);
+        this.logger.error(
+          `Failed to get Google Sheets credential by service: ${error.message}`,
+        );
       }
     }
 
@@ -183,13 +204,16 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
     accessToken: string,
   ): Promise<any> {
-    const spreadsheetId = this.replaceVariables(config.spreadsheetId!, inputData);
+    const spreadsheetId = this.replaceVariables(
+      config.spreadsheetId!,
+      inputData,
+    );
     let range = config.range;
-    
+
     if (!range && config.sheetName) {
       range = this.replaceVariables(config.sheetName, inputData);
     }
-    
+
     if (!range) {
       throw new Error('Either range or sheetName must be provided');
     }
@@ -233,15 +257,18 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
     accessToken: string,
   ): Promise<any> {
-    const spreadsheetId = this.replaceVariables(config.spreadsheetId!, inputData);
+    const spreadsheetId = this.replaceVariables(
+      config.spreadsheetId!,
+      inputData,
+    );
     const range = this.replaceVariables(config.range!, inputData);
-    
+
     // Process values - can be from config or input data
     let values = config.values;
     if (!values && inputData.values) {
       values = inputData.values;
     }
-    
+
     if (!values) {
       throw new Error('Values must be provided');
     }
@@ -280,22 +307,27 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
     accessToken: string,
   ): Promise<any> {
-    const spreadsheetId = this.replaceVariables(config.spreadsheetId!, inputData);
+    const spreadsheetId = this.replaceVariables(
+      config.spreadsheetId!,
+      inputData,
+    );
     const sheetName = this.replaceVariables(config.sheetName!, inputData);
-    
+
     // Process row data - can be from config or input data
     let rowData = config.rowData;
     if (!rowData && inputData.rowData) {
       rowData = inputData.rowData;
     }
-    
+
     if (!rowData) {
       throw new Error('Row data must be provided');
     }
 
     // Replace variables in row data
-    const processedRowData = rowData.map(value => 
-      typeof value === 'string' ? this.replaceVariables(value, inputData) : value
+    const processedRowData = rowData.map((value) =>
+      typeof value === 'string'
+        ? this.replaceVariables(value, inputData)
+        : value,
     );
 
     const response = await lastValueFrom(
@@ -334,23 +366,30 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
     accessToken: string,
   ): Promise<any> {
-    const spreadsheetId = this.replaceVariables(config.spreadsheetId!, inputData);
+    const spreadsheetId = this.replaceVariables(
+      config.spreadsheetId!,
+      inputData,
+    );
     const sheetName = this.replaceVariables(config.sheetName!, inputData);
-    const row = parseInt(this.replaceVariables(config.row!.toString(), inputData));
-    
+    const row = parseInt(
+      this.replaceVariables(config.row!.toString(), inputData),
+    );
+
     // Process row data
     let rowData = config.rowData;
     if (!rowData && inputData.rowData) {
       rowData = inputData.rowData;
     }
-    
+
     if (!rowData) {
       throw new Error('Row data must be provided');
     }
 
     // Replace variables in row data
-    const processedRowData = rowData.map(value => 
-      typeof value === 'string' ? this.replaceVariables(value, inputData) : value
+    const processedRowData = rowData.map((value) =>
+      typeof value === 'string'
+        ? this.replaceVariables(value, inputData)
+        : value,
     );
 
     const range = `${sheetName}!${row}:${row}`;
@@ -390,14 +429,21 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
     accessToken: string,
   ): Promise<any> {
-    const spreadsheetId = this.replaceVariables(config.spreadsheetId!, inputData);
+    const spreadsheetId = this.replaceVariables(
+      config.spreadsheetId!,
+      inputData,
+    );
     const sheetName = this.replaceVariables(config.sheetName!, inputData);
-    const row = parseInt(this.replaceVariables(config.row!.toString(), inputData));
+    const row = parseInt(
+      this.replaceVariables(config.row!.toString(), inputData),
+    );
 
     // First, get the sheet ID
     const sheetInfo = await this.getSheetInfo(config, inputData, accessToken);
-    const sheet = sheetInfo.sheets.find((s: any) => s.properties.title === sheetName);
-    
+    const sheet = sheetInfo.sheets.find(
+      (s: any) => s.properties.title === sheetName,
+    );
+
     if (!sheet) {
       throw new Error(`Sheet "${sheetName}" not found`);
     }
@@ -443,7 +489,10 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
     accessToken: string,
   ): Promise<any> {
-    const spreadsheetId = this.replaceVariables(config.spreadsheetId!, inputData);
+    const spreadsheetId = this.replaceVariables(
+      config.spreadsheetId!,
+      inputData,
+    );
     const title = this.replaceVariables(config.title!, inputData);
 
     const sheetProperties: any = {
@@ -491,13 +540,16 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
     accessToken: string,
   ): Promise<any> {
-    const spreadsheetId = this.replaceVariables(config.spreadsheetId!, inputData);
+    const spreadsheetId = this.replaceVariables(
+      config.spreadsheetId!,
+      inputData,
+    );
     let range = config.range;
-    
+
     if (!range && config.sheetName) {
       range = this.replaceVariables(config.sheetName, inputData);
     }
-    
+
     if (!range) {
       throw new Error('Either range or sheetName must be provided');
     }
@@ -529,7 +581,10 @@ export class GoogleSheetsNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
     accessToken: string,
   ): Promise<any> {
-    const spreadsheetId = this.replaceVariables(config.spreadsheetId!, inputData);
+    const spreadsheetId = this.replaceVariables(
+      config.spreadsheetId!,
+      inputData,
+    );
 
     const response = await lastValueFrom(
       this.httpService.get(

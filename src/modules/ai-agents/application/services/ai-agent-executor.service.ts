@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AIAgent } from '../../domain/entities/ai-agent.entity';
-import { AIAgentExecution, ExecutionStatus } from '../../domain/entities/ai-agent-execution.entity';
+import {
+  AIAgentExecution,
+  ExecutionStatus,
+} from '../../domain/entities/ai-agent-execution.entity';
 import { AIProviderService, AIProvider } from './ai-provider.service';
 import { AIToolService } from './ai-tool.service';
 import { AIMemoryService } from './ai-memory.service';
@@ -50,7 +53,9 @@ export class AIAgentExecutorService {
   /**
    * Execute an AI agent within a workflow context
    */
-  async executeAgent(context: AIAgentExecutionContext): Promise<AIAgentExecutionResult> {
+  async executeAgent(
+    context: AIAgentExecutionContext,
+  ): Promise<AIAgentExecutionResult> {
     const startTime = Date.now();
     let execution: AIAgentExecution | null = null;
 
@@ -60,7 +65,7 @@ export class AIAgentExecutorService {
 
       // Get agent configuration
       const agent = await this.agentService.getAgentWithTools(context.agentId);
-      
+
       // Create language model
       const llm = this.providerService.createLanguageModel({
         provider: agent.provider as AIProvider,
@@ -70,7 +75,7 @@ export class AIAgentExecutorService {
       });
 
       // Create tools
-      const toolConfigs = agent.tools.map(tool => ({
+      const toolConfigs = agent.tools.map((tool) => ({
         name: tool.name,
         description: tool.description,
         parameters: tool.configuration,
@@ -88,19 +93,22 @@ export class AIAgentExecutorService {
           context.agentId,
           context.sessionId,
           agent.configuration.memoryConfig,
-          llm
+          llm,
         );
       }
 
       // Build prompt
-      const prompt = await this.buildPrompt(agent.configuration.systemPrompt, context);
+      const prompt = await this.buildPrompt(
+        agent.configuration.systemPrompt,
+        context,
+      );
 
       // For now, let's create a simple execution without complex agent framework
       // In a full implementation, you'd use the proper LangChain agent setup
-      
+
       // Execute the LLM directly with the prompt
       const result = await llm.invoke(prompt);
-      
+
       // Simulate agent result structure
       const agentResult = {
         output: result.content,
@@ -114,7 +122,10 @@ export class AIAgentExecutorService {
       const metadata = {
         executionTime,
         toolsUsed: this.extractToolsUsed(agentResult.intermediateSteps),
-        tokensUsed: this.estimateTokensUsed(prompt, agentResult.output as string),
+        tokensUsed: this.estimateTokensUsed(
+          prompt,
+          agentResult.output as string,
+        ),
         intermediateSteps: agentResult.intermediateSteps?.length || 0,
       };
 
@@ -135,20 +146,27 @@ export class AIAgentExecutorService {
           context.agentId,
           context.sessionId,
           agent.configuration.memoryType,
-          [{ role: 'user', content: prompt }, { role: 'assistant', content: agentResult.output }]
+          [
+            { role: 'user', content: prompt },
+            { role: 'assistant', content: agentResult.output },
+          ],
         );
       }
 
-      this.logger.debug(`AI agent execution completed for agent ${context.agentId}`);
+      this.logger.debug(
+        `AI agent execution completed for agent ${context.agentId}`,
+      );
 
       return {
         success: true,
         data: agentResult.output,
         metadata,
       };
-
     } catch (error) {
-      this.logger.error(`AI agent execution failed for agent ${context.agentId}:`, error);
+      this.logger.error(
+        `AI agent execution failed for agent ${context.agentId}:`,
+        error,
+      );
 
       const executionTime = Date.now() - startTime;
 
@@ -175,7 +193,9 @@ export class AIAgentExecutorService {
   /**
    * Create execution record
    */
-  private async createExecutionRecord(context: AIAgentExecutionContext): Promise<AIAgentExecution> {
+  private async createExecutionRecord(
+    context: AIAgentExecutionContext,
+  ): Promise<AIAgentExecution> {
     const execution = this.executionRepository.create({
       agentId: context.agentId,
       workflowExecutionId: context.workflowExecutionId,
@@ -191,14 +211,20 @@ export class AIAgentExecutorService {
   /**
    * Update execution record
    */
-  private async updateExecutionRecord(executionId: string, updates: Partial<AIAgentExecution>): Promise<void> {
+  private async updateExecutionRecord(
+    executionId: string,
+    updates: Partial<AIAgentExecution>,
+  ): Promise<void> {
     await this.executionRepository.update(executionId, updates);
   }
 
   /**
    * Build prompt from system prompt and context
    */
-  private async buildPrompt(systemPrompt: string, context: AIAgentExecutionContext): Promise<string> {
+  private async buildPrompt(
+    systemPrompt: string,
+    context: AIAgentExecutionContext,
+  ): Promise<string> {
     const template = new PromptTemplate({
       template: `${systemPrompt}
 
@@ -214,7 +240,14 @@ Previous node outputs: {previousNodeOutputs}
 Parameters: {parameters}
 
 Please process this information and provide a helpful response.`,
-      inputVariables: ['workflowExecutionId', 'nodeId', 'sessionId', 'inputData', 'previousNodeOutputs', 'parameters'],
+      inputVariables: [
+        'workflowExecutionId',
+        'nodeId',
+        'sessionId',
+        'inputData',
+        'previousNodeOutputs',
+        'parameters',
+      ],
     });
 
     return await template.format({
@@ -222,7 +255,11 @@ Please process this information and provide a helpful response.`,
       nodeId: context.nodeId,
       sessionId: context.sessionId,
       inputData: JSON.stringify(context.inputData, null, 2),
-      previousNodeOutputs: JSON.stringify(context.previousNodeOutputs || {}, null, 2),
+      previousNodeOutputs: JSON.stringify(
+        context.previousNodeOutputs || {},
+        null,
+        2,
+      ),
       parameters: JSON.stringify(context.parameters || {}, null, 2),
     });
   }
@@ -236,7 +273,7 @@ Please process this information and provide a helpful response.`,
     }
 
     const toolsUsed = new Set<string>();
-    
+
     for (const step of intermediateSteps) {
       if (step.action && step.action.tool) {
         toolsUsed.add(step.action.tool);
@@ -257,7 +294,10 @@ Please process this information and provide a helpful response.`,
   /**
    * Get execution history for an agent
    */
-  async getExecutionHistory(agentId: string, limit: number = 50): Promise<AIAgentExecution[]> {
+  async getExecutionHistory(
+    agentId: string,
+    limit: number = 50,
+  ): Promise<AIAgentExecution[]> {
     return this.executionRepository.find({
       where: { agentId },
       order: { createdAt: 'DESC' },

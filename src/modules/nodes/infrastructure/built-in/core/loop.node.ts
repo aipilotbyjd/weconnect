@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const LoopNodeDefinition = new NodeDefinition({
   name: 'Loop',
@@ -62,7 +66,8 @@ export const LoopNodeDefinition = new NodeDefinition({
         },
       },
       placeholder: 'items',
-      description: 'Field containing array to split. Leave empty to split input array.',
+      description:
+        'Field containing array to split. Leave empty to split input array.',
     },
     {
       name: 'addIndex',
@@ -84,8 +89,9 @@ export const LoopNodeDefinition = new NodeDefinition({
 export class LoopNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    const { mode, batchSize, loopCount, splitField, addIndex, resetIndex } = context.parameters;
-    
+    const { mode, batchSize, loopCount, splitField, addIndex, resetIndex } =
+      context.parameters;
+
     try {
       let outputData: any[] = [];
       let doneData: any[] = [];
@@ -95,7 +101,10 @@ export class LoopNodeExecutor implements INodeExecutor {
           ({ outputData, doneData } = this.splitItems(context));
           break;
         case 'batchItems':
-          ({ outputData, doneData } = this.batchItems(context, batchSize || 10));
+          ({ outputData, doneData } = this.batchItems(
+            context,
+            batchSize || 10,
+          ));
           break;
         case 'loopCount':
           ({ outputData, doneData } = this.loopNTimes(context, loopCount || 5));
@@ -126,7 +135,10 @@ export class LoopNodeExecutor implements INodeExecutor {
     }
   }
 
-  private splitItems(context: NodeExecutionContext): { outputData: any[]; doneData: any[] } {
+  private splitItems(context: NodeExecutionContext): {
+    outputData: any[];
+    doneData: any[];
+  } {
     const { splitField, addIndex, resetIndex } = context.parameters;
     const outputData: any[] = [];
     const doneData: any[] = [];
@@ -136,7 +148,9 @@ export class LoopNodeExecutor implements INodeExecutor {
       // Get array to split
       let arrayToSplit: any[];
       if (splitField && item[splitField]) {
-        arrayToSplit = Array.isArray(item[splitField]) ? item[splitField] : [item[splitField]];
+        arrayToSplit = Array.isArray(item[splitField])
+          ? item[splitField]
+          : [item[splitField]];
       } else {
         arrayToSplit = [item];
       }
@@ -169,19 +183,25 @@ export class LoopNodeExecutor implements INodeExecutor {
     return { outputData, doneData };
   }
 
-  private batchItems(context: NodeExecutionContext, batchSize: number): { outputData: any[]; doneData: any[] } {
+  private batchItems(
+    context: NodeExecutionContext,
+    batchSize: number,
+  ): { outputData: any[]; doneData: any[] } {
     const { addIndex } = context.parameters;
     const outputData: any[] = [];
     const doneData: any[] = [];
-    
+
     // Create batches
     const batches: any[][] = [];
     let currentBatch: any[] = [];
-    
+
     for (let i = 0; i < context.inputData.length; i++) {
       currentBatch.push(context.inputData[i]);
-      
-      if (currentBatch.length === batchSize || i === context.inputData.length - 1) {
+
+      if (
+        currentBatch.length === batchSize ||
+        i === context.inputData.length - 1
+      ) {
         batches.push(currentBatch);
         currentBatch = [];
       }
@@ -214,7 +234,10 @@ export class LoopNodeExecutor implements INodeExecutor {
     return { outputData, doneData };
   }
 
-  private loopNTimes(context: NodeExecutionContext, count: number): { outputData: any[]; doneData: any[] } {
+  private loopNTimes(
+    context: NodeExecutionContext,
+    count: number,
+  ): { outputData: any[]; doneData: any[] } {
     const { addIndex } = context.parameters;
     const outputData: any[] = [];
     const doneData: any[] = [];
@@ -253,8 +276,7 @@ export class LoopNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { 
-  BaseUnifiedNodeExecutor, 
-  NodeExecutionContext, 
-  NodeExecutionResult, 
-  NodeSchema 
+import {
+  BaseUnifiedNodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+  NodeSchema,
 } from '../../interfaces/unified-node-executor.interface';
 
 @Injectable()
@@ -111,7 +111,14 @@ export class DelayNodeExecutor extends BaseUnifiedNodeExecutor {
   }
 
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
-    const { delayType, duration, unit = 'seconds', untilTime, minDuration, maxDuration } = context.parameters;
+    const {
+      delayType,
+      duration,
+      unit = 'seconds',
+      untilTime,
+      minDuration,
+      maxDuration,
+    } = context.parameters;
 
     try {
       let delayMs: number;
@@ -122,21 +129,23 @@ export class DelayNodeExecutor extends BaseUnifiedNodeExecutor {
           delayMs = this.convertToMilliseconds(duration, unit);
           delayReason = `Fixed delay of ${duration} ${unit}`;
           break;
-          
+
         case 'until':
-          const targetTime = new Date(this.replaceVariables(untilTime, context));
+          const targetTime = new Date(
+            this.replaceVariables(untilTime, context),
+          );
           const now = new Date();
           delayMs = Math.max(0, targetTime.getTime() - now.getTime());
           delayReason = `Wait until ${targetTime.toISOString()}`;
           break;
-          
+
         case 'random':
           const min = this.convertToMilliseconds(minDuration, 'seconds');
           const max = this.convertToMilliseconds(maxDuration, 'seconds');
           delayMs = Math.random() * (max - min) + min;
           delayReason = `Random delay between ${minDuration}s and ${maxDuration}s`;
           break;
-          
+
         default:
           return this.createErrorResult(`Unknown delay type: ${delayType}`);
       }
@@ -183,6 +192,6 @@ export class DelayNodeExecutor extends BaseUnifiedNodeExecutor {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

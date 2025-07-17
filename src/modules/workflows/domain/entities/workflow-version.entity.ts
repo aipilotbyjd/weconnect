@@ -47,7 +47,9 @@ export class WorkflowVersion extends BaseEntity {
   previousVersionId?: string;
 
   // Relations
-  @ManyToOne(() => Workflow, workflow => workflow.versions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Workflow, (workflow) => workflow.versions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'workflowId' })
   workflow: Workflow;
 

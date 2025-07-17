@@ -17,7 +17,7 @@ export class WorkflowCredentialContextService {
    */
   injectContext(
     inputData: Record<string, any>,
-    context: WorkflowExecutionContext
+    context: WorkflowExecutionContext,
   ): Record<string, any> {
     return {
       ...inputData,
@@ -32,9 +32,7 @@ export class WorkflowCredentialContextService {
   /**
    * Extract context from execution data
    */
-  extractContext(
-    data: Record<string, any>
-  ): WorkflowExecutionContext | null {
+  extractContext(data: Record<string, any>): WorkflowExecutionContext | null {
     if (data._context) {
       return data._context as WorkflowExecutionContext;
     }
@@ -61,7 +59,7 @@ export class WorkflowCredentialContextService {
     workflowId: string,
     executionId: string,
     nodeId: string,
-    organizationId?: string
+    organizationId?: string,
   ): WorkflowExecutionContext {
     return {
       userId,
@@ -82,7 +80,7 @@ export class WorkflowCredentialContextService {
     error?: string;
   } {
     const context = this.extractContext(data);
-    
+
     if (!context) {
       return {
         isValid: false,

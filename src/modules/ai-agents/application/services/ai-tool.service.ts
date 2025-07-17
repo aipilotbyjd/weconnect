@@ -13,7 +13,7 @@ export enum BuiltInToolType {
   DATE_TIME = 'date_time',
   JSON_PARSER = 'json_parser',
   CALCULATOR = 'calculator',
-  WEB_SEARCH = 'web_search'
+  WEB_SEARCH = 'web_search',
 }
 
 export interface ToolConfig {
@@ -40,16 +40,16 @@ export class AIToolService {
           url: { type: 'string', required: true },
           method: { type: 'string', default: 'GET' },
           headers: { type: 'object', default: {} },
-          body: { type: 'object', default: null }
-        }
+          body: { type: 'object', default: null },
+        },
       },
       {
         name: BuiltInToolType.WORKFLOW_DATA,
         description: 'Access data from previous workflow nodes',
         parameters: {
           nodeId: { type: 'string', required: true },
-          dataPath: { type: 'string', default: '' }
-        }
+          dataPath: { type: 'string', default: '' },
+        },
       },
       {
         name: BuiltInToolType.EMAIL_SENDER,
@@ -58,52 +58,59 @@ export class AIToolService {
           to: { type: 'string', required: true },
           subject: { type: 'string', required: true },
           body: { type: 'string', required: true },
-          html: { type: 'boolean', default: false }
-        }
+          html: { type: 'boolean', default: false },
+        },
       },
       {
         name: BuiltInToolType.TEXT_PROCESSOR,
         description: 'Process and manipulate text data',
         parameters: {
           text: { type: 'string', required: true },
-          operation: { 
-            type: 'string', 
+          operation: {
+            type: 'string',
             required: true,
-            enum: ['uppercase', 'lowercase', 'trim', 'length', 'split', 'replace']
-          }
-        }
+            enum: [
+              'uppercase',
+              'lowercase',
+              'trim',
+              'length',
+              'split',
+              'replace',
+            ],
+          },
+        },
       },
       {
         name: BuiltInToolType.DATE_TIME,
         description: 'Get current date/time or format dates',
         parameters: {
-          operation: { 
-            type: 'string', 
+          operation: {
+            type: 'string',
             required: true,
-            enum: ['now', 'format', 'add', 'subtract']
+            enum: ['now', 'format', 'add', 'subtract'],
           },
-          format: { type: 'string', default: 'ISO' }
-        }
+          format: { type: 'string', default: 'ISO' },
+        },
       },
       {
         name: BuiltInToolType.JSON_PARSER,
         description: 'Parse, stringify, or manipulate JSON data',
         parameters: {
-          operation: { 
-            type: 'string', 
+          operation: {
+            type: 'string',
             required: true,
-            enum: ['parse', 'stringify', 'extract', 'merge']
+            enum: ['parse', 'stringify', 'extract', 'merge'],
           },
-          data: { type: 'any', required: true }
-        }
+          data: { type: 'any', required: true },
+        },
       },
       {
         name: BuiltInToolType.CALCULATOR,
         description: 'Perform mathematical calculations',
         parameters: {
-          expression: { type: 'string', required: true }
-        }
-      }
+          expression: { type: 'string', required: true },
+        },
+      },
     ];
   }
 
@@ -130,7 +137,10 @@ export class AIToolService {
   /**
    * Create a single LangChain tool
    */
-  private createSingleTool(config: ToolConfig, workflowContext?: any): DynamicTool | null {
+  private createSingleTool(
+    config: ToolConfig,
+    workflowContext?: any,
+  ): DynamicTool | null {
     switch (config.name) {
       case BuiltInToolType.HTTP_REQUEST:
         return this.createHttpRequestTool();
@@ -162,7 +172,8 @@ export class AIToolService {
   private createHttpRequestTool(): DynamicTool {
     return new DynamicTool({
       name: 'http_request',
-      description: 'Make HTTP requests to external APIs. Input should be JSON with url, method (optional), headers (optional), and body (optional).',
+      description:
+        'Make HTTP requests to external APIs. Input should be JSON with url, method (optional), headers (optional), and body (optional).',
       func: async (input: string) => {
         try {
           const params = JSON.parse(input);
@@ -174,7 +185,7 @@ export class AIToolService {
               method,
               headers,
               data: body,
-            })
+            }),
           );
 
           return JSON.stringify({
@@ -198,7 +209,8 @@ export class AIToolService {
   private createWorkflowDataTool(workflowContext?: any): DynamicTool {
     return new DynamicTool({
       name: 'workflow_data',
-      description: 'Get data from previous workflow nodes. Input should be JSON with nodeId and optional dataPath.',
+      description:
+        'Get data from previous workflow nodes. Input should be JSON with nodeId and optional dataPath.',
       func: async (input: string) => {
         try {
           const params = JSON.parse(input);
@@ -210,7 +222,9 @@ export class AIToolService {
 
           const nodeData = workflowContext.previousNodeOutputs[nodeId];
           if (!nodeData) {
-            return JSON.stringify({ error: `No data found for node ${nodeId}` });
+            return JSON.stringify({
+              error: `No data found for node ${nodeId}`,
+            });
           }
 
           // If dataPath is provided, extract specific data
@@ -237,7 +251,8 @@ export class AIToolService {
   private createTextProcessorTool(): DynamicTool {
     return new DynamicTool({
       name: 'text_processor',
-      description: 'Process text data. Input should be JSON with text and operation (uppercase, lowercase, trim, length, split, replace).',
+      description:
+        'Process text data. Input should be JSON with text and operation (uppercase, lowercase, trim, length, split, replace).',
       func: async (input: string) => {
         try {
           const params = JSON.parse(input);
@@ -255,9 +270,14 @@ export class AIToolService {
             case 'split':
               return JSON.stringify(text.split(args.separator || ' '));
             case 'replace':
-              return text.replace(new RegExp(args.search || '', args.flags || 'g'), args.replace || '');
+              return text.replace(
+                new RegExp(args.search || '', args.flags || 'g'),
+                args.replace || '',
+              );
             default:
-              return JSON.stringify({ error: `Unknown operation: ${operation}` });
+              return JSON.stringify({
+                error: `Unknown operation: ${operation}`,
+              });
           }
         } catch (error) {
           return JSON.stringify({ error: error.message });
@@ -272,7 +292,8 @@ export class AIToolService {
   private createDateTimeTool(): DynamicTool {
     return new DynamicTool({
       name: 'date_time',
-      description: 'Work with dates and times. Input should be JSON with operation (now, format, add, subtract) and optional parameters.',
+      description:
+        'Work with dates and times. Input should be JSON with operation (now, format, add, subtract) and optional parameters.',
       func: async (input: string) => {
         try {
           const params = JSON.parse(input);
@@ -282,19 +303,28 @@ export class AIToolService {
 
           switch (operation) {
             case 'now':
-              return format === 'ISO' ? now.toISOString() : now.toLocaleString();
+              return format === 'ISO'
+                ? now.toISOString()
+                : now.toLocaleString();
             case 'format':
               const targetDate = date ? new Date(date) : now;
-              return format === 'ISO' ? targetDate.toISOString() : targetDate.toLocaleString();
+              return format === 'ISO'
+                ? targetDate.toISOString()
+                : targetDate.toLocaleString();
             case 'add':
             case 'subtract':
               const baseDate = date ? new Date(date) : now;
               const multiplier = operation === 'add' ? 1 : -1;
-              const amountMs = this.convertToMilliseconds(amount, unit) * multiplier;
+              const amountMs =
+                this.convertToMilliseconds(amount, unit) * multiplier;
               const resultDate = new Date(baseDate.getTime() + amountMs);
-              return format === 'ISO' ? resultDate.toISOString() : resultDate.toLocaleString();
+              return format === 'ISO'
+                ? resultDate.toISOString()
+                : resultDate.toLocaleString();
             default:
-              return JSON.stringify({ error: `Unknown operation: ${operation}` });
+              return JSON.stringify({
+                error: `Unknown operation: ${operation}`,
+              });
           }
         } catch (error) {
           return JSON.stringify({ error: error.message });
@@ -309,7 +339,8 @@ export class AIToolService {
   private createJsonParserTool(): DynamicTool {
     return new DynamicTool({
       name: 'json_parser',
-      description: 'Parse, stringify, or manipulate JSON data. Input should be JSON with operation and data.',
+      description:
+        'Parse, stringify, or manipulate JSON data. Input should be JSON with operation and data.',
       func: async (input: string) => {
         try {
           const params = JSON.parse(input);
@@ -330,7 +361,9 @@ export class AIToolService {
             case 'merge':
               return JSON.stringify({ ...data, ...mergeData });
             default:
-              return JSON.stringify({ error: `Unknown operation: ${operation}` });
+              return JSON.stringify({
+                error: `Unknown operation: ${operation}`,
+              });
           }
         } catch (error) {
           return JSON.stringify({ error: error.message });
@@ -345,13 +378,16 @@ export class AIToolService {
   private createCalculatorTool(): DynamicTool {
     return new DynamicTool({
       name: 'calculator',
-      description: 'Perform mathematical calculations. Input should be a mathematical expression as a string.',
+      description:
+        'Perform mathematical calculations. Input should be a mathematical expression as a string.',
       func: async (input: string) => {
         try {
           // Basic safe evaluation - only allow numbers and basic operators
           const sanitized = input.replace(/[^0-9+\-*/().\s]/g, '');
           if (sanitized !== input) {
-            return JSON.stringify({ error: 'Invalid characters in expression' });
+            return JSON.stringify({
+              error: 'Invalid characters in expression',
+            });
           }
 
           // Use Function constructor for safe evaluation

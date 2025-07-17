@@ -4,11 +4,13 @@ import { IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ScheduleStatus } from '../../domain/entities/scheduled-workflow.entity';
 
-export class UpdateScheduledWorkflowDto extends PartialType(CreateScheduledWorkflowDto) {
-  @ApiProperty({ 
+export class UpdateScheduledWorkflowDto extends PartialType(
+  CreateScheduledWorkflowDto,
+) {
+  @ApiProperty({
     description: 'Status of the scheduled workflow',
     enum: ScheduleStatus,
-    required: false
+    required: false,
   })
   @IsEnum(ScheduleStatus)
   @IsOptional()

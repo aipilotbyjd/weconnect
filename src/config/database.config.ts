@@ -11,7 +11,9 @@ export default registerAs(
     password: process.env.DB_PASSWORD || 'weconnect123',
     database: process.env.DB_DATABASE || 'weconnect',
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    migrations: [__dirname + '/../core/infrastructure/database/migrations/*{.ts,.js}'],
+    migrations: [
+      __dirname + '/../core/infrastructure/database/migrations/*{.ts,.js}',
+    ],
     synchronize: process.env.NODE_ENV === 'development',
     logging: process.env.NODE_ENV === 'development',
     migrationsRun: false,

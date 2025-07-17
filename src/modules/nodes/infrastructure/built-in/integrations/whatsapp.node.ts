@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const WhatsAppNodeDefinition = new NodeDefinition({
   name: 'WhatsApp',
@@ -266,7 +270,7 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
               phone,
               mediaType,
               mediaUrl || item.mediaUrl,
-              caption || item.caption
+              caption || item.caption,
             );
             break;
           case 'sendTemplate':
@@ -274,7 +278,7 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
               phone,
               templateName || item.templateName,
               templateLanguage || item.templateLanguage,
-              templateParameters || item.templateParameters
+              templateParameters || item.templateParameters,
             );
             break;
           case 'sendLocation':
@@ -283,14 +287,14 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
               latitude || item.latitude,
               longitude || item.longitude,
               locationName || item.locationName,
-              locationAddress || item.locationAddress
+              locationAddress || item.locationAddress,
             );
             break;
           case 'sendContact':
             result = await this.sendContact(
               phone,
               contactName || item.contactName,
-              contactPhone || item.contactPhone
+              contactPhone || item.contactPhone,
             );
             break;
           case 'getStatus':
@@ -326,7 +330,10 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
     }
   }
 
-  private async sendTextMessage(phoneNumber: string, message: string): Promise<any> {
+  private async sendTextMessage(
+    phoneNumber: string,
+    message: string,
+  ): Promise<any> {
     if (!phoneNumber || !message) {
       throw new Error('Phone number and message are required');
     }
@@ -334,7 +341,7 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
     // Simulate WhatsApp API call
     // In a real implementation, you would use WhatsApp Business API
     const messageId = `wamid.${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const response = {
       messaging_product: 'whatsapp',
       contacts: [
@@ -366,14 +373,14 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
     phoneNumber: string,
     mediaType: string,
     mediaUrl: string,
-    caption?: string
+    caption?: string,
   ): Promise<any> {
     if (!phoneNumber || !mediaType || !mediaUrl) {
       throw new Error('Phone number, media type, and media URL are required');
     }
 
     const messageId = `wamid.${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const response = {
       messaging_product: 'whatsapp',
       contacts: [
@@ -407,14 +414,14 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
     phoneNumber: string,
     templateName: string,
     language: string = 'en_US',
-    parameters: any[] = []
+    parameters: any[] = [],
   ): Promise<any> {
     if (!phoneNumber || !templateName) {
       throw new Error('Phone number and template name are required');
     }
 
     const messageId = `wamid.${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const response = {
       messaging_product: 'whatsapp',
       contacts: [
@@ -449,14 +456,14 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
     latitude: number,
     longitude: number,
     name?: string,
-    address?: string
+    address?: string,
   ): Promise<any> {
     if (!phoneNumber || !latitude || !longitude) {
       throw new Error('Phone number, latitude, and longitude are required');
     }
 
     const messageId = `wamid.${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const response = {
       messaging_product: 'whatsapp',
       contacts: [
@@ -492,14 +499,16 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
   private async sendContact(
     phoneNumber: string,
     contactName: string,
-    contactPhone: string
+    contactPhone: string,
   ): Promise<any> {
     if (!phoneNumber || !contactName || !contactPhone) {
-      throw new Error('Phone number, contact name, and contact phone are required');
+      throw new Error(
+        'Phone number, contact name, and contact phone are required',
+      );
     }
 
     const messageId = `wamid.${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const response = {
       messaging_product: 'whatsapp',
       contacts: [
@@ -537,8 +546,9 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
 
     // Simulate getting message status
     const statusOptions = ['sent', 'delivered', 'read', 'failed'];
-    const randomStatus = statusOptions[Math.floor(Math.random() * statusOptions.length)];
-    
+    const randomStatus =
+      statusOptions[Math.floor(Math.random() * statusOptions.length)];
+
     return {
       success: true,
       operation: 'getStatus',
@@ -547,7 +557,8 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
       timestamp: new Date(),
       details: {
         sent_at: new Date(Date.now() - 60000),
-        delivered_at: randomStatus !== 'sent' ? new Date(Date.now() - 30000) : null,
+        delivered_at:
+          randomStatus !== 'sent' ? new Date(Date.now() - 30000) : null,
         read_at: randomStatus === 'read' ? new Date(Date.now() - 10000) : null,
       },
     };
@@ -576,8 +587,7 @@ export class WhatsAppNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

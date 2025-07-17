@@ -42,7 +42,8 @@ export const AIAgentNodeDefinition = new NodeDefinition({
       displayName: 'Session ID',
       type: 'string',
       placeholder: 'auto-generated',
-      description: 'Session ID for memory persistence (auto-generated if empty)',
+      description:
+        'Session ID for memory persistence (auto-generated if empty)',
     },
     {
       name: 'includeWorkflowContext',
@@ -59,7 +60,7 @@ export const AIAgentNodeDefinition = new NodeDefinition({
         multipleValues: false,
       },
       placeholder: 'Use agent default',
-      description: 'Override the agent\'s temperature setting',
+      description: "Override the agent's temperature setting",
     },
     {
       name: 'maxTokens',
@@ -69,7 +70,7 @@ export const AIAgentNodeDefinition = new NodeDefinition({
         multipleValues: false,
       },
       placeholder: 'Use agent default',
-      description: 'Override the agent\'s max tokens setting',
+      description: "Override the agent's max tokens setting",
     },
     {
       name: 'toolsOverride',
@@ -92,7 +93,7 @@ export const AIAgentNodeDefinition = new NodeDefinition({
         { name: 'Structured', value: 'structured' },
       ],
       default: 'text',
-      description: 'How to format the agent\'s response',
+      description: "How to format the agent's response",
     },
     {
       name: 'continueOnFailure',

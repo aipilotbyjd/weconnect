@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import axios, { AxiosInstance } from 'axios';
 
 export const TelegramNodeDefinition = new NodeDefinition({
@@ -50,7 +54,18 @@ export const TelegramNodeDefinition = new NodeDefinition({
       type: 'string',
       displayOptions: {
         show: {
-          operation: ['sendMessage', 'sendPhoto', 'sendDocument', 'sendVideo', 'sendAudio', 'sendLocation', 'sendPoll', 'editMessage', 'deleteMessage', 'getChatInfo'],
+          operation: [
+            'sendMessage',
+            'sendPhoto',
+            'sendDocument',
+            'sendVideo',
+            'sendAudio',
+            'sendLocation',
+            'sendPoll',
+            'editMessage',
+            'deleteMessage',
+            'getChatInfo',
+          ],
         },
       },
       required: true,
@@ -83,7 +98,14 @@ export const TelegramNodeDefinition = new NodeDefinition({
       default: '',
       displayOptions: {
         show: {
-          operation: ['sendMessage', 'sendPhoto', 'sendDocument', 'sendVideo', 'sendAudio', 'editMessage'],
+          operation: [
+            'sendMessage',
+            'sendPhoto',
+            'sendDocument',
+            'sendVideo',
+            'sendAudio',
+            'editMessage',
+          ],
         },
       },
       description: 'Message formatting mode',
@@ -107,7 +129,15 @@ export const TelegramNodeDefinition = new NodeDefinition({
       default: false,
       displayOptions: {
         show: {
-          operation: ['sendMessage', 'sendPhoto', 'sendDocument', 'sendVideo', 'sendAudio', 'sendLocation', 'sendPoll'],
+          operation: [
+            'sendMessage',
+            'sendPhoto',
+            'sendDocument',
+            'sendVideo',
+            'sendAudio',
+            'sendLocation',
+            'sendPoll',
+          ],
         },
       },
       description: 'Send message silently without notification',
@@ -119,7 +149,15 @@ export const TelegramNodeDefinition = new NodeDefinition({
       default: '',
       displayOptions: {
         show: {
-          operation: ['sendMessage', 'sendPhoto', 'sendDocument', 'sendVideo', 'sendAudio', 'sendLocation', 'sendPoll'],
+          operation: [
+            'sendMessage',
+            'sendPhoto',
+            'sendDocument',
+            'sendVideo',
+            'sendAudio',
+            'sendLocation',
+            'sendPoll',
+          ],
         },
       },
       description: 'ID of the message to reply to',
@@ -299,7 +337,14 @@ export const TelegramNodeDefinition = new NodeDefinition({
       default: [],
       displayOptions: {
         show: {
-          operation: ['sendMessage', 'sendPhoto', 'sendDocument', 'sendVideo', 'sendAudio', 'editMessage'],
+          operation: [
+            'sendMessage',
+            'sendPhoto',
+            'sendDocument',
+            'sendVideo',
+            'sendAudio',
+            'editMessage',
+          ],
         },
       },
       description: 'Inline keyboard markup as JSON array',
@@ -337,7 +382,7 @@ export class TelegramNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.telegram;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -414,7 +459,6 @@ export class TelegramNodeExecutor implements INodeExecutor {
           chatId: context.parameters.chatId,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -445,7 +489,8 @@ export class TelegramNodeExecutor implements INodeExecutor {
     if (parseMode) payload.parse_mode = parseMode;
     if (disableWebPagePreview) payload.disable_web_page_preview = true;
     if (disableNotification) payload.disable_notification = true;
-    if (replyToMessageId) payload.reply_to_message_id = parseInt(replyToMessageId);
+    if (replyToMessageId)
+      payload.reply_to_message_id = parseInt(replyToMessageId);
     if (inlineKeyboard && inlineKeyboard.length > 0) {
       payload.reply_markup = { inline_keyboard: inlineKeyboard };
     }
@@ -473,7 +518,8 @@ export class TelegramNodeExecutor implements INodeExecutor {
     if (caption) payload.caption = caption;
     if (parseMode) payload.parse_mode = parseMode;
     if (disableNotification) payload.disable_notification = true;
-    if (replyToMessageId) payload.reply_to_message_id = parseInt(replyToMessageId);
+    if (replyToMessageId)
+      payload.reply_to_message_id = parseInt(replyToMessageId);
     if (inlineKeyboard && inlineKeyboard.length > 0) {
       payload.reply_markup = { inline_keyboard: inlineKeyboard };
     }
@@ -501,7 +547,8 @@ export class TelegramNodeExecutor implements INodeExecutor {
     if (caption) payload.caption = caption;
     if (parseMode) payload.parse_mode = parseMode;
     if (disableNotification) payload.disable_notification = true;
-    if (replyToMessageId) payload.reply_to_message_id = parseInt(replyToMessageId);
+    if (replyToMessageId)
+      payload.reply_to_message_id = parseInt(replyToMessageId);
     if (inlineKeyboard && inlineKeyboard.length > 0) {
       payload.reply_markup = { inline_keyboard: inlineKeyboard };
     }
@@ -529,7 +576,8 @@ export class TelegramNodeExecutor implements INodeExecutor {
     if (caption) payload.caption = caption;
     if (parseMode) payload.parse_mode = parseMode;
     if (disableNotification) payload.disable_notification = true;
-    if (replyToMessageId) payload.reply_to_message_id = parseInt(replyToMessageId);
+    if (replyToMessageId)
+      payload.reply_to_message_id = parseInt(replyToMessageId);
     if (inlineKeyboard && inlineKeyboard.length > 0) {
       payload.reply_markup = { inline_keyboard: inlineKeyboard };
     }
@@ -557,7 +605,8 @@ export class TelegramNodeExecutor implements INodeExecutor {
     if (caption) payload.caption = caption;
     if (parseMode) payload.parse_mode = parseMode;
     if (disableNotification) payload.disable_notification = true;
-    if (replyToMessageId) payload.reply_to_message_id = parseInt(replyToMessageId);
+    if (replyToMessageId)
+      payload.reply_to_message_id = parseInt(replyToMessageId);
     if (inlineKeyboard && inlineKeyboard.length > 0) {
       payload.reply_markup = { inline_keyboard: inlineKeyboard };
     }
@@ -582,7 +631,8 @@ export class TelegramNodeExecutor implements INodeExecutor {
     };
 
     if (disableNotification) payload.disable_notification = true;
-    if (replyToMessageId) payload.reply_to_message_id = parseInt(replyToMessageId);
+    if (replyToMessageId)
+      payload.reply_to_message_id = parseInt(replyToMessageId);
 
     const response = await this.client!.post('/sendLocation', payload);
     return response.data;
@@ -608,7 +658,8 @@ export class TelegramNodeExecutor implements INodeExecutor {
     };
 
     if (disableNotification) payload.disable_notification = true;
-    if (replyToMessageId) payload.reply_to_message_id = parseInt(replyToMessageId);
+    if (replyToMessageId)
+      payload.reply_to_message_id = parseInt(replyToMessageId);
 
     const response = await this.client!.post('/sendPoll', payload);
     return response.data;
@@ -653,12 +704,8 @@ export class TelegramNodeExecutor implements INodeExecutor {
   }
 
   private async forwardMessage(context: NodeExecutionContext): Promise<any> {
-    const {
-      chatId,
-      fromChatId,
-      messageToForward,
-      disableNotification,
-    } = context.parameters;
+    const { chatId, fromChatId, messageToForward, disableNotification } =
+      context.parameters;
 
     const payload: any = {
       chat_id: chatId,
@@ -693,7 +740,9 @@ export class TelegramNodeExecutor implements INodeExecutor {
     return response.data;
   }
 
-  private async answerCallbackQuery(context: NodeExecutionContext): Promise<any> {
+  private async answerCallbackQuery(
+    context: NodeExecutionContext,
+  ): Promise<any> {
     const { callbackQueryId, callbackText, showAlert } = context.parameters;
 
     const payload: any = {
@@ -716,8 +765,7 @@ export class TelegramNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

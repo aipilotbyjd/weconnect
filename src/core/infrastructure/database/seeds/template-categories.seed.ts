@@ -192,32 +192,32 @@ const categories = [
 
 async function seedCategories() {
   await dataSource.initialize();
-  
+
   try {
     const categoryRepo = dataSource.getTreeRepository('TemplateCategory');
-    
+
     for (const categoryData of categories) {
       const { subcategories, ...parentData } = categoryData;
-      
+
       // Check if parent category exists
       let parent = await categoryRepo.findOne({
         where: { slug: parentData.slug },
       });
-      
+
       if (!parent) {
         // Create parent category
         parent = categoryRepo.create(parentData);
         await categoryRepo.save(parent);
         console.log(`Created parent category: ${parent.name}`);
       }
-      
+
       // Create subcategories
       if (subcategories) {
         for (const subData of subcategories) {
           const existing = await categoryRepo.findOne({
             where: { slug: subData.slug },
           });
-          
+
           if (!existing) {
             const subcategory = categoryRepo.create({
               ...subData,
@@ -229,7 +229,7 @@ async function seedCategories() {
         }
       }
     }
-    
+
     console.log('\nCategory seeding completed successfully!');
   } catch (error) {
     console.error('Error seeding categories:', error);

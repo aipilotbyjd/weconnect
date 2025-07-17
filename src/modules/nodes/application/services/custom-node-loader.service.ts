@@ -5,7 +5,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vm from 'vm';
 import { NodeDefinition } from '../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../domain/interfaces/node-executor.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../domain/interfaces/node-executor.interface';
 import { NodeRegistryService } from '../registry/node-registry.service';
 
 export interface CustomNodePackage {
@@ -45,7 +49,7 @@ export class CustomNodeLoaderService {
       try {
         // Create executor from string
         const executor = this.createExecutorFromCode(node.executor);
-        
+
         // Save node definition to database
         const savedDefinition = await this.nodeDefinitionRepository.save({
           ...node.definition,
@@ -60,7 +64,10 @@ export class CustomNodeLoaderService {
 
         this.logger.log(`Loaded custom node: ${node.definition.name}`);
       } catch (error) {
-        this.logger.error(`Failed to load custom node ${node.definition.name}:`, error);
+        this.logger.error(
+          `Failed to load custom node ${node.definition.name}:`,
+          error,
+        );
         throw error;
       }
     }
@@ -87,7 +94,8 @@ export class CustomNodeLoaderService {
     script.runInContext(context);
 
     // Get the exported executor class
-    const ExecutorClass = (sandbox.exports as any).default || (sandbox.exports as any).NodeExecutor;
+    const ExecutorClass =
+      (sandbox.exports as any).default || (sandbox.exports as any).NodeExecutor;
     if (!ExecutorClass) {
       throw new Error('Custom node must export a default executor class');
     }
@@ -102,8 +110,9 @@ export class CustomNodeLoaderService {
   }
 
   async loadAllFromDirectory(): Promise<void> {
-    const files = fs.readdirSync(this.customNodesPath)
-      .filter(file => file.endsWith('.json'));
+    const files = fs
+      .readdirSync(this.customNodesPath)
+      .filter((file) => file.endsWith('.json'));
 
     for (const file of files) {
       try {
@@ -163,7 +172,9 @@ export class CustomNodeLoaderService {
       try {
         this.createExecutorFromCode(node.executor);
       } catch (error) {
-        errors.push(`Node at index ${index} has invalid executor code: ${error.message}`);
+        errors.push(
+          `Node at index ${index} has invalid executor code: ${error.message}`,
+        );
       }
     }
 
@@ -178,35 +189,36 @@ export class CustomNodeLoaderService {
       name: 'my-custom-node-package',
       version: '1.0.0',
       description: 'Custom node package template',
-      nodes: [{
-        definition: {
-          name: 'MyCustomNode',
-          displayName: 'My Custom Node',
-          description: 'A custom node that does something',
-          version: 1,
-          group: ['custom'],
-          icon: 'fa:cog',
-          defaults: {
-            name: 'My Custom Node',
-            color: '#772244',
-          },
-          inputs: ['main'],
-          outputs: ['main'],
-          properties: [
-            {
-              name: 'operation',
-              displayName: 'Operation',
-              type: 'options',
-              options: [
-                { name: 'Do Something', value: 'doSomething' },
-                { name: 'Do Something Else', value: 'doSomethingElse' },
-              ],
-              default: 'doSomething',
-              required: true,
+      nodes: [
+        {
+          definition: {
+            name: 'MyCustomNode',
+            displayName: 'My Custom Node',
+            description: 'A custom node that does something',
+            version: 1,
+            group: ['custom'],
+            icon: 'fa:cog',
+            defaults: {
+              name: 'My Custom Node',
+              color: '#772244',
             },
-          ],
-        } as any,
-        executor: `
+            inputs: ['main'],
+            outputs: ['main'],
+            properties: [
+              {
+                name: 'operation',
+                displayName: 'Operation',
+                type: 'options',
+                options: [
+                  { name: 'Do Something', value: 'doSomething' },
+                  { name: 'Do Something Else', value: 'doSomethingElse' },
+                ],
+                default: 'doSomething',
+                required: true,
+              },
+            ],
+          } as any,
+          executor: `
 class NodeExecutor {
   async execute(context) {
     const { operation } = context.parameters;
@@ -241,7 +253,8 @@ class NodeExecutor {
 
 exports.default = NodeExecutor;
 `,
-      }],
+        },
+      ],
     };
   }
 }

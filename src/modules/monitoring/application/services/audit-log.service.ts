@@ -41,11 +41,15 @@ export class AuditLogService {
     }
 
     if (filters.entityType) {
-      query.andWhere('audit.entityType = :entityType', { entityType: filters.entityType });
+      query.andWhere('audit.entityType = :entityType', {
+        entityType: filters.entityType,
+      });
     }
 
     if (filters.entityId) {
-      query.andWhere('audit.entityId = :entityId', { entityId: filters.entityId });
+      query.andWhere('audit.entityId = :entityId', {
+        entityId: filters.entityId,
+      });
     }
 
     if (filters.action) {
@@ -60,8 +64,8 @@ export class AuditLogService {
     }
 
     if (filters.organizationId) {
-      query.andWhere('audit.organizationId = :organizationId', { 
-        organizationId: filters.organizationId 
+      query.andWhere('audit.organizationId = :organizationId', {
+        organizationId: filters.organizationId,
       });
     }
 

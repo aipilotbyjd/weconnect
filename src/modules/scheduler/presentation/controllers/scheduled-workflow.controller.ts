@@ -11,7 +11,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ScheduledWorkflowService } from '../../application/services/scheduled-workflow.service';
 import { CreateScheduledWorkflowDto } from '../dto/create-scheduled-workflow.dto';
@@ -23,7 +28,9 @@ import { ScheduledWorkflow } from '../../domain/entities/scheduled-workflow.enti
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class ScheduledWorkflowController {
-  constructor(private readonly scheduledWorkflowService: ScheduledWorkflowService) {}
+  constructor(
+    private readonly scheduledWorkflowService: ScheduledWorkflowService,
+  ) {}
 
   @Post('workflows/:workflowId')
   @ApiOperation({ summary: 'Create a scheduled workflow' })
@@ -58,7 +65,10 @@ export class ScheduledWorkflowController {
     description: 'Scheduled workflow details',
     type: ScheduledWorkflow,
   })
-  async findOne(@Param('id') id: string, @Req() req: any): Promise<ScheduledWorkflow> {
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<ScheduledWorkflow> {
     return this.scheduledWorkflowService.findOne(id, req.user.id);
   }
 
@@ -85,7 +95,10 @@ export class ScheduledWorkflowController {
     description: 'Scheduled workflow paused successfully',
     type: ScheduledWorkflow,
   })
-  async pause(@Param('id') id: string, @Req() req: any): Promise<ScheduledWorkflow> {
+  async pause(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<ScheduledWorkflow> {
     return this.scheduledWorkflowService.pause(id, req.user.id);
   }
 
@@ -97,7 +110,10 @@ export class ScheduledWorkflowController {
     description: 'Scheduled workflow resumed successfully',
     type: ScheduledWorkflow,
   })
-  async resume(@Param('id') id: string, @Req() req: any): Promise<ScheduledWorkflow> {
+  async resume(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<ScheduledWorkflow> {
     return this.scheduledWorkflowService.resume(id, req.user.id);
   }
 
@@ -113,7 +129,9 @@ export class ScheduledWorkflowController {
   }
 
   @Get(':id/next-executions')
-  @ApiOperation({ summary: 'Get next execution times for a scheduled workflow' })
+  @ApiOperation({
+    summary: 'Get next execution times for a scheduled workflow',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of next execution times',

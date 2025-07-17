@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AIAgentMemory, MemoryType } from '../../domain/entities/ai-agent-memory.entity';
+import {
+  AIAgentMemory,
+  MemoryType,
+} from '../../domain/entities/ai-agent-memory.entity';
 import { BaseMemory } from '@langchain/core/memory';
 import { BaseChatMessageHistory } from '@langchain/core/chat_history';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
@@ -30,13 +33,19 @@ export class AIMemoryService {
     agentId: string,
     sessionId: string,
     config: MemoryConfig,
-    llm?: BaseChatModel
+    llm?: BaseChatModel,
   ): Promise<BaseMemory> {
-    const { type, maxTokens = 1000, windowSize = 10, returnMessages = true, memoryKey = 'history' } = config;
+    const {
+      type,
+      maxTokens = 1000,
+      windowSize = 10,
+      returnMessages = true,
+      memoryKey = 'history',
+    } = config;
 
     // Load existing memory data
     const existingMemory = await this.loadMemoryData(agentId, sessionId, type);
-    
+
     // Create a simple in-memory chat history for now
     // In a production environment, you'd want to implement a proper chat history class
     const chatHistory = {
@@ -81,7 +90,7 @@ export class AIMemoryService {
     sessionId: string,
     type: MemoryType,
     data: any,
-    expiresAt?: Date
+    expiresAt?: Date,
   ): Promise<void> {
     try {
       const memory = this.memoryRepository.create({
@@ -94,7 +103,9 @@ export class AIMemoryService {
       });
 
       await this.memoryRepository.save(memory);
-      this.logger.debug(`Saved memory data for agent ${agentId}, session ${sessionId}, type ${type}`);
+      this.logger.debug(
+        `Saved memory data for agent ${agentId}, session ${sessionId}, type ${type}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to save memory data:`, error);
     }
@@ -103,7 +114,11 @@ export class AIMemoryService {
   /**
    * Load memory data from database
    */
-  async loadMemoryData(agentId: string, sessionId: string, type: MemoryType): Promise<any[]> {
+  async loadMemoryData(
+    agentId: string,
+    sessionId: string,
+    type: MemoryType,
+  ): Promise<any[]> {
     try {
       const memory = await this.memoryRepository.findOne({
         where: {
@@ -135,7 +150,11 @@ export class AIMemoryService {
   /**
    * Clear memory for a specific session
    */
-  async clearMemory(agentId: string, sessionId: string, type?: MemoryType): Promise<void> {
+  async clearMemory(
+    agentId: string,
+    sessionId: string,
+    type?: MemoryType,
+  ): Promise<void> {
     try {
       const query: any = { agentId, sessionId };
       if (type) {
@@ -143,7 +162,9 @@ export class AIMemoryService {
       }
 
       await this.memoryRepository.delete(query);
-      this.logger.debug(`Cleared memory for agent ${agentId}, session ${sessionId}`);
+      this.logger.debug(
+        `Cleared memory for agent ${agentId}, session ${sessionId}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to clear memory:`, error);
     }

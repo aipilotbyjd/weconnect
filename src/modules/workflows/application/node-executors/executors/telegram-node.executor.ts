@@ -6,7 +6,12 @@ import { NodeExecutor } from '../node-executor.interface';
 import { CredentialIntegrationService } from '../../../../credentials/application/services/credential-integration.service';
 
 export interface TelegramConfig {
-  operation: 'sendMessage' | 'sendPhoto' | 'sendDocument' | 'editMessage' | 'deleteMessage';
+  operation:
+    | 'sendMessage'
+    | 'sendPhoto'
+    | 'sendDocument'
+    | 'editMessage'
+    | 'deleteMessage';
   botToken?: string;
   credentialId?: string;
   chatId?: string;
@@ -61,7 +66,9 @@ export class TelegramNodeExecutor implements NodeExecutor {
           result = await this.deleteMessage(config, inputData, botToken);
           break;
         default:
-          throw new Error(`Unsupported Telegram operation: ${config.operation}`);
+          throw new Error(
+            `Unsupported Telegram operation: ${config.operation}`,
+          );
       }
 
       return {
@@ -76,7 +83,7 @@ export class TelegramNodeExecutor implements NodeExecutor {
       };
     } catch (error) {
       this.logger.error(`Telegram operation failed: ${error.message}`);
-      
+
       return {
         ...inputData,
         telegram: null,
@@ -94,7 +101,7 @@ export class TelegramNodeExecutor implements NodeExecutor {
 
   async validate(configuration: Record<string, any>): Promise<boolean> {
     const config = configuration as TelegramConfig;
-    
+
     if (!config.operation) return false;
     if (!config.botToken && !config.credentialId) return false;
     if (!config.chatId) return false;
@@ -115,7 +122,10 @@ export class TelegramNodeExecutor implements NodeExecutor {
     }
   }
 
-  private async getBotToken(config: TelegramConfig, inputData: Record<string, any>): Promise<string> {
+  private async getBotToken(
+    config: TelegramConfig,
+    inputData: Record<string, any>,
+  ): Promise<string> {
     // First try direct bot token
     if (config.botToken) {
       return this.replaceVariables(config.botToken, inputData);
@@ -126,7 +136,7 @@ export class TelegramNodeExecutor implements NodeExecutor {
       try {
         const credential = await this.credentialService.getCredentialById(
           config.credentialId,
-          inputData._credentialContext
+          inputData._credentialContext,
         );
         const token = credential.data.botToken || credential.data.token;
         if (!token) {
@@ -134,8 +144,12 @@ export class TelegramNodeExecutor implements NodeExecutor {
         }
         return token;
       } catch (error) {
-        this.logger.error(`Failed to get Telegram credential: ${error.message}`);
-        throw new Error(`Failed to retrieve Telegram credentials: ${error.message}`);
+        this.logger.error(
+          `Failed to get Telegram credential: ${error.message}`,
+        );
+        throw new Error(
+          `Failed to retrieve Telegram credentials: ${error.message}`,
+        );
       }
     }
 
@@ -144,7 +158,7 @@ export class TelegramNodeExecutor implements NodeExecutor {
       try {
         const credential = await this.credentialService.getCredentialByService(
           'telegram',
-          inputData._credentialContext
+          inputData._credentialContext,
         );
         const token = credential.data.botToken || credential.data.token;
         if (!token) {
@@ -152,11 +166,15 @@ export class TelegramNodeExecutor implements NodeExecutor {
         }
         return token;
       } catch (error) {
-        this.logger.error(`Failed to get Telegram credential by service: ${error.message}`);
+        this.logger.error(
+          `Failed to get Telegram credential by service: ${error.message}`,
+        );
       }
     }
 
-    throw new Error('No Telegram bot token, credential ID, or valid service credentials provided');
+    throw new Error(
+      'No Telegram bot token, credential ID, or valid service credentials provided',
+    );
   }
 
   private async sendMessage(
@@ -182,14 +200,17 @@ export class TelegramNodeExecutor implements NodeExecutor {
     }
 
     if (config.replyToMessageId) {
-      payload.reply_to_message_id = this.replaceVariables(config.replyToMessageId, inputData);
+      payload.reply_to_message_id = this.replaceVariables(
+        config.replyToMessageId,
+        inputData,
+      );
     }
 
     const response = await lastValueFrom(
       this.httpService.post(
         `https://api.telegram.org/bot${botToken}/sendMessage`,
-        payload
-      )
+        payload,
+      ),
     );
 
     if (!response.data.ok) {
@@ -228,14 +249,17 @@ export class TelegramNodeExecutor implements NodeExecutor {
     }
 
     if (config.replyToMessageId) {
-      payload.reply_to_message_id = this.replaceVariables(config.replyToMessageId, inputData);
+      payload.reply_to_message_id = this.replaceVariables(
+        config.replyToMessageId,
+        inputData,
+      );
     }
 
     const response = await lastValueFrom(
       this.httpService.post(
         `https://api.telegram.org/bot${botToken}/sendPhoto`,
-        payload
-      )
+        payload,
+      ),
     );
 
     if (!response.data.ok) {
@@ -278,14 +302,17 @@ export class TelegramNodeExecutor implements NodeExecutor {
     }
 
     if (config.replyToMessageId) {
-      payload.reply_to_message_id = this.replaceVariables(config.replyToMessageId, inputData);
+      payload.reply_to_message_id = this.replaceVariables(
+        config.replyToMessageId,
+        inputData,
+      );
     }
 
     const response = await lastValueFrom(
       this.httpService.post(
         `https://api.telegram.org/bot${botToken}/sendDocument`,
-        payload
-      )
+        payload,
+      ),
     );
 
     if (!response.data.ok) {
@@ -323,8 +350,8 @@ export class TelegramNodeExecutor implements NodeExecutor {
     const response = await lastValueFrom(
       this.httpService.post(
         `https://api.telegram.org/bot${botToken}/editMessageText`,
-        payload
-      )
+        payload,
+      ),
     );
 
     if (!response.data.ok) {
@@ -352,8 +379,8 @@ export class TelegramNodeExecutor implements NodeExecutor {
     const response = await lastValueFrom(
       this.httpService.post(
         `https://api.telegram.org/bot${botToken}/deleteMessage`,
-        payload
-      )
+        payload,
+      ),
     );
 
     if (!response.data.ok) {

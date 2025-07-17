@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const StartNodeDefinition = new NodeDefinition({
   name: 'Start',
@@ -28,11 +32,12 @@ export const StartNodeDefinition = new NodeDefinition({
 export class StartNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       // Start node simply passes through any input data or creates initial data
-      const outputData = context.inputData.length > 0 ? context.inputData : [{}];
-      
+      const outputData =
+        context.inputData.length > 0 ? context.inputData : [{}];
+
       return {
         success: true,
         data: outputData,
@@ -62,9 +67,9 @@ export class StartNodeExecutor implements INodeExecutor {
       type: 'object',
       properties: {
         manualTrigger: {
-          type: 'boolean'
-        }
-      }
+          type: 'boolean',
+        },
+      },
     };
   }
 }

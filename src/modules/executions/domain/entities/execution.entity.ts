@@ -90,7 +90,7 @@ export class Execution extends BaseEntity {
   @Column()
   userId: string;
 
-  @OneToMany(() => ExecutionLog, log => log.execution, { cascade: true })
+  @OneToMany(() => ExecutionLog, (log) => log.execution, { cascade: true })
   logs: ExecutionLog[];
 
   get isCompleted(): boolean {

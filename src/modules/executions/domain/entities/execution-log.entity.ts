@@ -41,7 +41,9 @@ export class ExecutionLog extends BaseEntity {
   duration?: number;
 
   // Relations
-  @ManyToOne(() => Execution, execution => execution.logs, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Execution, (execution) => execution.logs, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'executionId' })
   execution: Execution;
 

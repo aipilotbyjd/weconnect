@@ -78,7 +78,7 @@ export class GmailNodeExecutor implements NodeExecutor {
       };
     } catch (error) {
       this.logger.error(`Gmail operation failed: ${error.message}`);
-      
+
       return {
         ...inputData,
         gmail: null,
@@ -96,7 +96,7 @@ export class GmailNodeExecutor implements NodeExecutor {
 
   async validate(configuration: Record<string, any>): Promise<boolean> {
     const config = configuration as GmailConfig;
-    
+
     if (!config.operation) return false;
     if (!config.accessToken && !config.credentialId) return false;
 
@@ -114,17 +114,21 @@ export class GmailNodeExecutor implements NodeExecutor {
     }
   }
 
-  private async getAccessToken(config: GmailConfig, inputData: Record<string, any>): Promise<string> {
+  private async getAccessToken(
+    config: GmailConfig,
+    inputData: Record<string, any>,
+  ): Promise<string> {
     if (config.accessToken) {
       return this.replaceVariables(config.accessToken, inputData);
     }
 
     if (config.credentialId) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialById(
-          config.credentialId,
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialById(
+            config.credentialId,
+            inputData._credentialContext,
+          );
         const accessToken = credential.data.access_token;
         if (!accessToken) {
           throw new Error('Gmail credential is missing access_token');
@@ -132,24 +136,29 @@ export class GmailNodeExecutor implements NodeExecutor {
         return accessToken;
       } catch (error) {
         this.logger.error(`Failed to get Gmail credential: ${error.message}`);
-        throw new Error(`Failed to retrieve Gmail credentials: ${error.message}`);
+        throw new Error(
+          `Failed to retrieve Gmail credentials: ${error.message}`,
+        );
       }
     }
 
     // Try to get credential by service name
     if (inputData._credentialContext) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialByService(
-          'gmail',
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialByService(
+            'gmail',
+            inputData._credentialContext,
+          );
         const accessToken = credential.data.access_token;
         if (!accessToken) {
           throw new Error('Gmail credential is missing access_token');
         }
         return accessToken;
       } catch (error) {
-        this.logger.error(`Failed to get Gmail credential by service: ${error.message}`);
+        this.logger.error(
+          `Failed to get Gmail credential by service: ${error.message}`,
+        );
       }
     }
 
@@ -167,17 +176,21 @@ export class GmailNodeExecutor implements NodeExecutor {
 
     // Build email message
     const emailData = {
-      to: to.split(',').map(email => email.trim()),
+      to: to.split(',').map((email) => email.trim()),
       subject,
       [config.isHTML ? 'html' : 'text']: body,
     };
 
     if (config.cc) {
-      emailData['cc'] = this.replaceVariables(config.cc, inputData).split(',').map(email => email.trim());
+      emailData['cc'] = this.replaceVariables(config.cc, inputData)
+        .split(',')
+        .map((email) => email.trim());
     }
 
     if (config.bcc) {
-      emailData['bcc'] = this.replaceVariables(config.bcc, inputData).split(',').map(email => email.trim());
+      emailData['bcc'] = this.replaceVariables(config.bcc, inputData)
+        .split(',')
+        .map((email) => email.trim());
     }
 
     // Create raw email message for Gmail API
@@ -189,11 +202,11 @@ export class GmailNodeExecutor implements NodeExecutor {
         { raw: rawMessage },
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-        }
-      )
+        },
+      ),
     );
 
     return {
@@ -217,10 +230,10 @@ export class GmailNodeExecutor implements NodeExecutor {
         `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}`,
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     const message = response.data;
@@ -229,10 +242,10 @@ export class GmailNodeExecutor implements NodeExecutor {
     return {
       id: message.id,
       threadId: message.threadId,
-      subject: headers.find(h => h.name === 'Subject')?.value || '',
-      from: headers.find(h => h.name === 'From')?.value || '',
-      to: headers.find(h => h.name === 'To')?.value || '',
-      date: headers.find(h => h.name === 'Date')?.value || '',
+      subject: headers.find((h) => h.name === 'Subject')?.value || '',
+      from: headers.find((h) => h.name === 'From')?.value || '',
+      to: headers.find((h) => h.name === 'To')?.value || '',
+      date: headers.find((h) => h.name === 'Date')?.value || '',
       snippet: message.snippet,
       body: this.extractEmailBody(message.payload),
     };
@@ -244,11 +257,11 @@ export class GmailNodeExecutor implements NodeExecutor {
     accessToken: string,
   ): Promise<any> {
     const params = new URLSearchParams();
-    
+
     if (config.query) {
       params.append('q', this.replaceVariables(config.query, inputData));
     }
-    
+
     if (config.maxResults) {
       params.append('maxResults', config.maxResults.toString());
     }
@@ -258,10 +271,10 @@ export class GmailNodeExecutor implements NodeExecutor {
         `https://gmail.googleapis.com/gmail/v1/users/me/messages?${params.toString()}`,
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     return {
@@ -283,10 +296,10 @@ export class GmailNodeExecutor implements NodeExecutor {
         `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}`,
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     return {

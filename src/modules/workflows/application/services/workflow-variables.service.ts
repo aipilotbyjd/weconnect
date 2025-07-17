@@ -1,7 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { WorkflowVariable, VariableType, VariableScope } from '../../domain/entities/workflow-variable.entity';
+import {
+  WorkflowVariable,
+  VariableType,
+  VariableScope,
+} from '../../domain/entities/workflow-variable.entity';
 import { EncryptionService } from '../../../credentials/application/services/encryption.service';
 
 @Injectable()
@@ -33,7 +42,9 @@ export class WorkflowVariablesService {
     });
 
     if (existing) {
-      throw new BadRequestException('Variable with this name already exists in this scope');
+      throw new BadRequestException(
+        'Variable with this name already exists in this scope',
+      );
     }
 
     // Encrypt value if it's a secret
@@ -118,28 +129,36 @@ export class WorkflowVariablesService {
     const query = this.variableRepository.createQueryBuilder('variable');
 
     if (options.workflowId) {
-      query.andWhere('variable.workflowId = :workflowId', { workflowId: options.workflowId });
+      query.andWhere('variable.workflowId = :workflowId', {
+        workflowId: options.workflowId,
+      });
     }
 
     if (options.scope) {
       query.andWhere('variable.scope = :scope', { scope: options.scope });
     }
 
-    query.andWhere('(variable.userId = :userId OR variable.scope IN (:...publicScopes))', {
-      userId: options.userId,
-      publicScopes: [VariableScope.GLOBAL, VariableScope.ORGANIZATION],
-    });
+    query.andWhere(
+      '(variable.userId = :userId OR variable.scope IN (:...publicScopes))',
+      {
+        userId: options.userId,
+        publicScopes: [VariableScope.GLOBAL, VariableScope.ORGANIZATION],
+      },
+    );
 
     if (options.organizationId) {
-      query.andWhere('(variable.organizationId = :organizationId OR variable.organizationId IS NULL)', {
-        organizationId: options.organizationId,
-      });
+      query.andWhere(
+        '(variable.organizationId = :organizationId OR variable.organizationId IS NULL)',
+        {
+          organizationId: options.organizationId,
+        },
+      );
     }
 
     const variables = await query.getMany();
 
     // Hide secret values
-    return variables.map(v => {
+    return variables.map((v) => {
       if (v.isSecret) {
         v.value = '***';
       }
@@ -165,7 +184,7 @@ export class WorkflowVariablesService {
     for (const match of matches) {
       const variablePath = match[1].trim();
       const value = await this.resolveVariable(variablePath, context);
-      
+
       if (value !== undefined) {
         resolvedText = resolvedText.replace(match[0], String(value));
       }
@@ -200,7 +219,11 @@ export class WorkflowVariablesService {
     const variable = await this.variableRepository.findOne({
       where: [
         { name: variableName, workflowId: context.workflowId },
-        { name: variableName, scope: VariableScope.ORGANIZATION, organizationId: context.organizationId },
+        {
+          name: variableName,
+          scope: VariableScope.ORGANIZATION,
+          organizationId: context.organizationId,
+        },
         { name: variableName, scope: VariableScope.GLOBAL },
       ],
       order: {
@@ -229,20 +252,29 @@ export class WorkflowVariablesService {
 
     // Convert to appropriate type
     if (variable.type === VariableType.NUMBER) {
-      return parts.length > 1 ? this.getNestedValue(Number(value), parts.slice(1)) : Number(value);
+      return parts.length > 1
+        ? this.getNestedValue(Number(value), parts.slice(1))
+        : Number(value);
     } else if (variable.type === VariableType.BOOLEAN) {
       const boolValue = value === 'true' || value === '1';
-      return parts.length > 1 ? this.getNestedValue(boolValue, parts.slice(1)) : boolValue;
+      return parts.length > 1
+        ? this.getNestedValue(boolValue, parts.slice(1))
+        : boolValue;
     }
 
-    return parts.length > 1 ? this.getNestedValue(value, parts.slice(1)) : value;
+    return parts.length > 1
+      ? this.getNestedValue(value, parts.slice(1))
+      : value;
   }
 
   private getNestedValue(obj: any, path: string[]): any {
     return path.reduce((current, key) => current?.[key], obj);
   }
 
-  async createSystemVariables(userId: string, organizationId?: string): Promise<void> {
+  async createSystemVariables(
+    userId: string,
+    organizationId?: string,
+  ): Promise<void> {
     const systemVariables = [
       {
         name: 'WORKFLOW_URL',

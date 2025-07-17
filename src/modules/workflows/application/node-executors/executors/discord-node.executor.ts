@@ -6,7 +6,12 @@ import { NodeExecutor } from '../node-executor.interface';
 import { CredentialIntegrationService } from '../../../../credentials/application/services/credential-integration.service';
 
 export interface DiscordConfig {
-  operation: 'sendMessage' | 'sendEmbed' | 'editMessage' | 'deleteMessage' | 'getChannel';
+  operation:
+    | 'sendMessage'
+    | 'sendEmbed'
+    | 'editMessage'
+    | 'deleteMessage'
+    | 'getChannel';
   // Authentication
   webhookUrl?: string;
   botToken?: string;
@@ -100,7 +105,7 @@ export class DiscordNodeExecutor implements NodeExecutor {
       };
     } catch (error) {
       this.logger.error(`Discord operation failed: ${error.message}`);
-      
+
       return {
         ...inputData,
         discord: null,
@@ -118,7 +123,7 @@ export class DiscordNodeExecutor implements NodeExecutor {
 
   async validate(configuration: Record<string, any>): Promise<boolean> {
     const config = configuration as DiscordConfig;
-    
+
     if (!config.operation) return false;
 
     // For webhook operations, webhookUrl is required
@@ -129,7 +134,11 @@ export class DiscordNodeExecutor implements NodeExecutor {
 
     // For bot operations, bot token is required
     const botOps = ['editMessage', 'deleteMessage', 'getChannel'];
-    if (botOps.includes(config.operation) && !config.botToken && !config.credentialId) {
+    if (
+      botOps.includes(config.operation) &&
+      !config.botToken &&
+      !config.credentialId
+    ) {
       return false;
     }
 
@@ -137,7 +146,10 @@ export class DiscordNodeExecutor implements NodeExecutor {
       case 'sendMessage':
         return !!config.content;
       case 'sendEmbed':
-        return !!(config.embed && (config.embed.title || config.embed.description));
+        return !!(
+          config.embed &&
+          (config.embed.title || config.embed.description)
+        );
       case 'editMessage':
         return !!(config.channelId && config.messageId && config.content);
       case 'deleteMessage':
@@ -154,7 +166,7 @@ export class DiscordNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
   ): Promise<any> {
     const webhookUrl = this.replaceVariables(config.webhookUrl!, inputData);
-    
+
     const payload: any = {
       content: this.replaceVariables(config.content!, inputData),
     };
@@ -176,7 +188,7 @@ export class DiscordNodeExecutor implements NodeExecutor {
         headers: {
           'Content-Type': 'application/json',
         },
-      })
+      }),
     );
 
     return {
@@ -192,9 +204,9 @@ export class DiscordNodeExecutor implements NodeExecutor {
     inputData: Record<string, any>,
   ): Promise<any> {
     const webhookUrl = this.replaceVariables(config.webhookUrl!, inputData);
-    
+
     const embed = this.processEmbed(config.embed!, inputData);
-    
+
     const payload: any = {
       embeds: [embed],
     };
@@ -216,7 +228,7 @@ export class DiscordNodeExecutor implements NodeExecutor {
         headers: {
           'Content-Type': 'application/json',
         },
-      })
+      }),
     );
 
     return {
@@ -234,7 +246,7 @@ export class DiscordNodeExecutor implements NodeExecutor {
     const botToken = await this.getBotToken(config, inputData);
     const channelId = this.replaceVariables(config.channelId!, inputData);
     const messageId = this.replaceVariables(config.messageId!, inputData);
-    
+
     const payload: any = {
       content: this.replaceVariables(config.content!, inputData),
     };
@@ -245,11 +257,11 @@ export class DiscordNodeExecutor implements NodeExecutor {
         payload,
         {
           headers: {
-            'Authorization': `Bot ${botToken}`,
+            Authorization: `Bot ${botToken}`,
             'Content-Type': 'application/json',
           },
-        }
-      )
+        },
+      ),
     );
 
     return {
@@ -273,10 +285,10 @@ export class DiscordNodeExecutor implements NodeExecutor {
         `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}`,
         {
           headers: {
-            'Authorization': `Bot ${botToken}`,
+            Authorization: `Bot ${botToken}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     return {
@@ -298,10 +310,10 @@ export class DiscordNodeExecutor implements NodeExecutor {
         `https://discord.com/api/v10/channels/${channelId}`,
         {
           headers: {
-            'Authorization': `Bot ${botToken}`,
+            Authorization: `Bot ${botToken}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     const channel = response.data;
@@ -318,17 +330,21 @@ export class DiscordNodeExecutor implements NodeExecutor {
     };
   }
 
-  private async getBotToken(config: DiscordConfig, inputData: Record<string, any>): Promise<string> {
+  private async getBotToken(
+    config: DiscordConfig,
+    inputData: Record<string, any>,
+  ): Promise<string> {
     if (config.botToken) {
       return this.replaceVariables(config.botToken, inputData);
     }
 
     if (config.credentialId) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialById(
-          config.credentialId,
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialById(
+            config.credentialId,
+            inputData._credentialContext,
+          );
         const token = credential.data.botToken || credential.data.token;
         if (!token) {
           throw new Error('Discord credential is missing botToken or token');
@@ -336,24 +352,29 @@ export class DiscordNodeExecutor implements NodeExecutor {
         return token;
       } catch (error) {
         this.logger.error(`Failed to get Discord credential: ${error.message}`);
-        throw new Error(`Failed to retrieve Discord credentials: ${error.message}`);
+        throw new Error(
+          `Failed to retrieve Discord credentials: ${error.message}`,
+        );
       }
     }
 
     // Try to get credential by service name
     if (inputData._credentialContext) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialByService(
-          'discord',
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialByService(
+            'discord',
+            inputData._credentialContext,
+          );
         const token = credential.data.botToken || credential.data.token;
         if (!token) {
           throw new Error('Discord credential is missing botToken or token');
         }
         return token;
       } catch (error) {
-        this.logger.error(`Failed to get Discord credential by service: ${error.message}`);
+        this.logger.error(
+          `Failed to get Discord credential by service: ${error.message}`,
+        );
       }
     }
 
@@ -368,7 +389,10 @@ export class DiscordNodeExecutor implements NodeExecutor {
     }
 
     if (embed.description) {
-      processedEmbed.description = this.replaceVariables(embed.description, inputData);
+      processedEmbed.description = this.replaceVariables(
+        embed.description,
+        inputData,
+      );
     }
 
     if (embed.color !== undefined) {
@@ -380,7 +404,10 @@ export class DiscordNodeExecutor implements NodeExecutor {
     }
 
     if (embed.timestamp) {
-      processedEmbed.timestamp = this.replaceVariables(embed.timestamp, inputData);
+      processedEmbed.timestamp = this.replaceVariables(
+        embed.timestamp,
+        inputData,
+      );
     }
 
     if (embed.footer) {
@@ -388,7 +415,10 @@ export class DiscordNodeExecutor implements NodeExecutor {
         text: this.replaceVariables(embed.footer.text, inputData),
       };
       if (embed.footer.iconUrl) {
-        processedEmbed.footer.icon_url = this.replaceVariables(embed.footer.iconUrl, inputData);
+        processedEmbed.footer.icon_url = this.replaceVariables(
+          embed.footer.iconUrl,
+          inputData,
+        );
       }
     }
 
@@ -409,10 +439,16 @@ export class DiscordNodeExecutor implements NodeExecutor {
         name: this.replaceVariables(embed.author.name, inputData),
       };
       if (embed.author.iconUrl) {
-        processedEmbed.author.icon_url = this.replaceVariables(embed.author.iconUrl, inputData);
+        processedEmbed.author.icon_url = this.replaceVariables(
+          embed.author.iconUrl,
+          inputData,
+        );
       }
       if (embed.author.url) {
-        processedEmbed.author.url = this.replaceVariables(embed.author.url, inputData);
+        processedEmbed.author.url = this.replaceVariables(
+          embed.author.url,
+          inputData,
+        );
       }
     }
 

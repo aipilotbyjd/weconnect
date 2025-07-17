@@ -18,7 +18,9 @@ import { Workflow } from '../workflows/domain/entities/workflow.entity';
 import { WorkflowNode } from '../workflows/domain/entities/workflow-node.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Execution, ExecutionLog, Workflow, WorkflowNode])],
+  imports: [
+    TypeOrmModule.forFeature([Execution, ExecutionLog, Workflow, WorkflowNode]),
+  ],
   controllers: [ExecutionsController],
   providers: [
     ExecutionsService,

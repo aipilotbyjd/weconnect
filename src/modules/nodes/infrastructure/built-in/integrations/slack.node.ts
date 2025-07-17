@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import { WebClient } from '@slack/web-api';
 
 export const SlackNodeDefinition = new NodeDefinition({
@@ -72,7 +76,8 @@ export class SlackNodeExecutor implements INodeExecutor {
     const startTime = Date.now();
 
     try {
-      const { operation, channel, text, username, attachments } = context.parameters;
+      const { operation, channel, text, username, attachments } =
+        context.parameters;
 
       // Simulate Slack API integration
       // In a real implementation, you would use Slack Web API client
@@ -200,8 +205,7 @@ export class SlackNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

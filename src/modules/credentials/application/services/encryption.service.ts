@@ -7,7 +7,8 @@ export class EncryptionService {
   private readonly encryptionKey: string;
 
   constructor(private configService: ConfigService) {
-    this.encryptionKey = this.configService.get('ENCRYPTION_KEY') || 
+    this.encryptionKey =
+      this.configService.get('ENCRYPTION_KEY') ||
       'default-encryption-key-change-in-production';
   }
 

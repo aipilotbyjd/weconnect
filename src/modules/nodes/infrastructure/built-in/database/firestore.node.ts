@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, Firestore, FieldValue } from 'firebase-admin/firestore';
 
@@ -47,7 +51,14 @@ export const FirestoreNodeDefinition = new NodeDefinition({
       default: '',
       displayOptions: {
         show: {
-          operation: ['getDocument', 'getCollection', 'createDocument', 'updateDocument', 'deleteDocument', 'queryCollection'],
+          operation: [
+            'getDocument',
+            'getCollection',
+            'createDocument',
+            'updateDocument',
+            'deleteDocument',
+            'queryCollection',
+          ],
         },
       },
       required: true,
@@ -147,7 +158,8 @@ export const FirestoreNodeDefinition = new NodeDefinition({
           operation: ['batchWrite'],
         },
       },
-      description: 'Array of batch operations: [{"type": "set|update|delete", "collection": "...", "documentId": "...", "data": {...}}]',
+      description:
+        'Array of batch operations: [{"type": "set|update|delete", "collection": "...", "documentId": "...", "data": {...}}]',
     },
     {
       name: 'transactionOperations',
@@ -170,7 +182,7 @@ export class FirestoreNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.firebase;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -234,7 +246,6 @@ export class FirestoreNodeExecutor implements INodeExecutor {
           collection: context.parameters.collection,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -248,14 +259,14 @@ export class FirestoreNodeExecutor implements INodeExecutor {
 
   private async getDocument(context: NodeExecutionContext): Promise<any> {
     const { collection, documentId } = context.parameters;
-    
+
     const docRef = this.firestore!.collection(collection).doc(documentId);
     const doc = await docRef.get();
-    
+
     if (!doc.exists) {
       throw new Error('Document not found');
     }
-    
+
     return {
       id: doc.id,
       data: doc.data(),
@@ -267,33 +278,35 @@ export class FirestoreNodeExecutor implements INodeExecutor {
 
   private async getCollection(context: NodeExecutionContext): Promise<any> {
     const { collection, orderBy, limit, startAfter } = context.parameters;
-    
+
     let query: any = this.firestore!.collection(collection);
-    
+
     // Apply ordering
     if (orderBy && orderBy.length > 0) {
       orderBy.forEach(([field, direction]: [string, string]) => {
         query = query.orderBy(field, direction as 'asc' | 'desc');
       });
     }
-    
+
     // Apply limit
     if (limit) {
       query = query.limit(limit);
     }
-    
+
     // Apply pagination
     if (startAfter) {
-      const startAfterDoc = await this.firestore!.collection(collection).doc(startAfter).get();
+      const startAfterDoc = await this.firestore!.collection(collection)
+        .doc(startAfter)
+        .get();
       if (startAfterDoc.exists) {
         query = query.startAfter(startAfterDoc);
       }
     }
-    
+
     const snapshot = await query.get();
-    
+
     return {
-      docs: snapshot.docs.map(doc => ({
+      docs: snapshot.docs.map((doc) => ({
         id: doc.id,
         data: doc.data(),
         createTime: doc.createTime,
@@ -306,7 +319,7 @@ export class FirestoreNodeExecutor implements INodeExecutor {
 
   private async createDocument(context: NodeExecutionContext): Promise<any> {
     const { collection, documentId, data } = context.parameters;
-    
+
     let docRef;
     if (documentId) {
       docRef = this.firestore!.collection(collection).doc(documentId);
@@ -314,9 +327,9 @@ export class FirestoreNodeExecutor implements INodeExecutor {
     } else {
       docRef = await this.firestore!.collection(collection).add(data);
     }
-    
+
     const doc = await docRef.get();
-    
+
     return {
       id: doc.id,
       data: doc.data(),
@@ -327,17 +340,17 @@ export class FirestoreNodeExecutor implements INodeExecutor {
 
   private async updateDocument(context: NodeExecutionContext): Promise<any> {
     const { collection, documentId, data, merge } = context.parameters;
-    
+
     const docRef = this.firestore!.collection(collection).doc(documentId);
-    
+
     if (merge) {
       await docRef.set(data, { merge: true });
     } else {
       await docRef.update(data);
     }
-    
+
     const doc = await docRef.get();
-    
+
     return {
       id: doc.id,
       data: doc.data(),
@@ -348,23 +361,23 @@ export class FirestoreNodeExecutor implements INodeExecutor {
 
   private async deleteDocument(context: NodeExecutionContext): Promise<any> {
     const { collection, documentId } = context.parameters;
-    
+
     const docRef = this.firestore!.collection(collection).doc(documentId);
     const doc = await docRef.get();
-    
+
     if (!doc.exists) {
       throw new Error('Document not found');
     }
-    
+
     const docData = {
       id: doc.id,
       data: doc.data(),
       createTime: doc.createTime,
       updateTime: doc.updateTime,
     };
-    
+
     await docRef.delete();
-    
+
     return {
       deleted: true,
       document: docData,
@@ -372,41 +385,46 @@ export class FirestoreNodeExecutor implements INodeExecutor {
   }
 
   private async queryCollection(context: NodeExecutionContext): Promise<any> {
-    const { collection, queryFilters, orderBy, limit, startAfter } = context.parameters;
-    
+    const { collection, queryFilters, orderBy, limit, startAfter } =
+      context.parameters;
+
     let query: any = this.firestore!.collection(collection);
-    
+
     // Apply filters
     if (queryFilters && queryFilters.length > 0) {
-      queryFilters.forEach(([field, operator, value]: [string, string, any]) => {
-        query = query.where(field, operator as any, value);
-      });
+      queryFilters.forEach(
+        ([field, operator, value]: [string, string, any]) => {
+          query = query.where(field, operator as any, value);
+        },
+      );
     }
-    
+
     // Apply ordering
     if (orderBy && orderBy.length > 0) {
       orderBy.forEach(([field, direction]: [string, string]) => {
         query = query.orderBy(field, direction as 'asc' | 'desc');
       });
     }
-    
+
     // Apply limit
     if (limit) {
       query = query.limit(limit);
     }
-    
+
     // Apply pagination
     if (startAfter) {
-      const startAfterDoc = await this.firestore!.collection(collection).doc(startAfter).get();
+      const startAfterDoc = await this.firestore!.collection(collection)
+        .doc(startAfter)
+        .get();
       if (startAfterDoc.exists) {
         query = query.startAfter(startAfterDoc);
       }
     }
-    
+
     const snapshot = await query.get();
-    
+
     return {
-      docs: snapshot.docs.map(doc => ({
+      docs: snapshot.docs.map((doc) => ({
         id: doc.id,
         data: doc.data(),
         createTime: doc.createTime,
@@ -419,13 +437,13 @@ export class FirestoreNodeExecutor implements INodeExecutor {
 
   private async batchWrite(context: NodeExecutionContext): Promise<any> {
     const { batchOperations } = context.parameters;
-    
+
     const batch = this.firestore!.batch();
-    
+
     for (const operation of batchOperations) {
       const { type, collection, documentId, data } = operation;
       const docRef = this.firestore!.collection(collection).doc(documentId);
-      
+
       switch (type) {
         case 'set':
           batch.set(docRef, data);
@@ -440,9 +458,9 @@ export class FirestoreNodeExecutor implements INodeExecutor {
           throw new Error(`Unsupported batch operation: ${type}`);
       }
     }
-    
+
     await batch.commit();
-    
+
     return {
       success: true,
       operationsCount: batchOperations.length,
@@ -451,14 +469,14 @@ export class FirestoreNodeExecutor implements INodeExecutor {
 
   private async runTransaction(context: NodeExecutionContext): Promise<any> {
     const { transactionOperations } = context.parameters;
-    
+
     const result = await this.firestore!.runTransaction(async (transaction) => {
       const results: any[] = [];
-      
+
       for (const operation of transactionOperations) {
         const { type, collection, documentId, data } = operation;
         const docRef = this.firestore!.collection(collection).doc(documentId);
-        
+
         switch (type) {
           case 'get':
             const doc = await transaction.get(docRef);
@@ -484,10 +502,10 @@ export class FirestoreNodeExecutor implements INodeExecutor {
             throw new Error(`Unsupported transaction operation: ${type}`);
         }
       }
-      
+
       return results;
     });
-    
+
     return {
       success: true,
       results: result,
@@ -503,8 +521,7 @@ export class FirestoreNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

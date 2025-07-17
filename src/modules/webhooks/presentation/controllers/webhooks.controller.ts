@@ -1,5 +1,26 @@
-import { Controller, Get, Post, Delete, Param, Body, UseGuards, Req, Headers, All, UseFilters, UseInterceptors, UsePipes, ValidationPipe, BadRequestException } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+  Headers,
+  All,
+  UseFilters,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe,
+  BadRequestException,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { WebhooksService } from '../../application/services/webhooks.service';
@@ -9,14 +30,18 @@ import { CreateWebhookDto } from '../dto/create-webhook.dto';
 @ApiTags('webhooks')
 @Controller('webhooks')
 export class WebhooksController {
-  constructor(private readonly webhooksService: WebhooksService) { }
+  constructor(private readonly webhooksService: WebhooksService) {}
 
   @Post('workflows/:workflowId')
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Create webhook for workflow' })
-  @ApiResponse({ status: 201, description: 'Webhook created successfully', type: Webhook })
+  @ApiResponse({
+    status: 201,
+    description: 'Webhook created successfully',
+    type: Webhook,
+  })
   @ApiResponse({ status: 400, description: 'Bad request - invalid input' })
   createWebhook(
     @Param('workflowId') workflowId: string,
@@ -29,14 +54,22 @@ export class WebhooksController {
     if (!req.user || !req.user.id) {
       throw new BadRequestException('User authentication required');
     }
-    return this.webhooksService.createWebhook(workflowId, createWebhookDto.name, req.user.id);
+    return this.webhooksService.createWebhook(
+      workflowId,
+      createWebhookDto.name,
+      req.user.id,
+    );
   }
 
   @Get()
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get all webhooks for current user' })
-  @ApiResponse({ status: 200, description: 'Webhooks retrieved successfully', type: [Webhook] })
+  @ApiResponse({
+    status: 200,
+    description: 'Webhooks retrieved successfully',
+    type: [Webhook],
+  })
   findAll(@Req() req: any): Promise<Webhook[]> {
     return this.webhooksService.findAll(req.user.id);
   }
@@ -55,7 +88,10 @@ export class WebhooksController {
   @ApiOperation({ summary: 'Trigger webhook by path' })
   @ApiResponse({ status: 200, description: 'Webhook triggered successfully' })
   @ApiResponse({ status: 404, description: 'Webhook not found' })
-  @ApiResponse({ status: 400, description: 'Method not allowed or workflow inactive' })
+  @ApiResponse({
+    status: 400,
+    description: 'Method not allowed or workflow inactive',
+  })
   @ApiResponse({ status: 429, description: 'Too many requests' })
   async triggerWebhook(
     @Param('path') path: string,
@@ -70,7 +106,8 @@ export class WebhooksController {
 
     // Validate request size
     const contentLength = parseInt(headers['content-length'] || '0');
-    if (contentLength > 10 * 1024 * 1024) { // 10MB limit
+    if (contentLength > 10 * 1024 * 1024) {
+      // 10MB limit
       throw new Error('Request payload too large');
     }
 
@@ -87,17 +124,24 @@ export class WebhooksController {
       path,
       req.method,
       this.sanitizeHeaders(headers),
-      enrichedBody
+      enrichedBody,
     );
   }
 
   private isValidWebhookPath(path: string): boolean {
     // Only allow alphanumeric, hyphens, and underscores
-    return /^[a-zA-Z0-9-_]+$/.test(path) && path.length >= 8 && path.length <= 64;
+    return (
+      /^[a-zA-Z0-9-_]+$/.test(path) && path.length >= 8 && path.length <= 64
+    );
   }
 
   private sanitizeHeaders(headers: any): Record<string, string> {
-    const allowedHeaders = ['content-type', 'user-agent', 'x-webhook-signature', 'x-webhook-signature-256'];
+    const allowedHeaders = [
+      'content-type',
+      'user-agent',
+      'x-webhook-signature',
+      'x-webhook-signature-256',
+    ];
     const sanitized: Record<string, string> = {};
 
     for (const key of allowedHeaders) {

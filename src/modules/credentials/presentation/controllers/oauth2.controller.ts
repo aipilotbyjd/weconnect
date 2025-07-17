@@ -10,7 +10,12 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { OAuth2Service } from '../../application/services/oauth2.service';
@@ -35,7 +40,8 @@ export class OAuth2Controller {
     name: 'scopes',
     required: false,
     description: 'Comma-separated list of scopes',
-    example: 'https://www.googleapis.com/auth/gmail.readonly,https://www.googleapis.com/auth/calendar',
+    example:
+      'https://www.googleapis.com/auth/gmail.readonly,https://www.googleapis.com/auth/calendar',
   })
   async googleAuth(
     @Req() req: RequestWithUser,
@@ -44,7 +50,7 @@ export class OAuth2Controller {
   ) {
     const userId = req.user.id;
     const scopeArray = scopes
-      ? scopes.split(',').map(s => s.trim())
+      ? scopes.split(',').map((s) => s.trim())
       : [
           'https://www.googleapis.com/auth/gmail.readonly',
           'https://www.googleapis.com/auth/gmail.send',
@@ -87,7 +93,9 @@ export class OAuth2Controller {
       const tokens = await this.oauth2Service.getTokens(code);
 
       // Get user info from Google
-      const userInfo = await this.oauth2Service.getUserInfo(tokens.access_token);
+      const userInfo = await this.oauth2Service.getUserInfo(
+        tokens.access_token,
+      );
 
       // Create or update credential
       await this.credentialsService.createOAuth2Credential(
@@ -115,14 +123,13 @@ export class OAuth2Controller {
     @Query('credentialId') credentialId: string,
   ) {
     const userId = req.user.id;
-    
+
     // Verify the credential belongs to the user
     await this.credentialsService.findOne(credentialId, userId);
-    
+
     // Refresh the token
-    const updatedCredential = await this.credentialsService.refreshOAuth2Token(
-      credentialId,
-    );
+    const updatedCredential =
+      await this.credentialsService.refreshOAuth2Token(credentialId);
 
     return {
       success: true,
@@ -176,7 +183,7 @@ export class OAuth2Controller {
     // Use service-specific scope defaults or custom scopes
     const serviceName = this.getServiceNameForProvider(provider, scopes);
     const authUrl = this.oauth2Service.generateAuthUrl(serviceName, state);
-    
+
     res.redirect(authUrl);
   }
 
@@ -203,12 +210,15 @@ export class OAuth2Controller {
       const { userId } = stateData;
 
       // Exchange code for tokens
-      const tokens = await this.oauth2Service.exchangeCodeForTokens(code, provider);
+      const tokens = await this.oauth2Service.exchangeCodeForTokens(
+        code,
+        provider,
+      );
 
       // Get user info based on provider
       let userInfo: any = {};
       let serviceName = provider;
-      
+
       switch (provider) {
         case 'google':
           userInfo = await this.oauth2Service.getUserInfo(tokens.access_token);
@@ -237,10 +247,14 @@ export class OAuth2Controller {
       );
 
       // Redirect to frontend success page
-      res.redirect(`${process.env.FRONTEND_URL}/credentials?status=success&provider=${provider}`);
+      res.redirect(
+        `${process.env.FRONTEND_URL}/credentials?status=success&provider=${provider}`,
+      );
     } catch (error) {
       this.logger.error(`${provider} OAuth2 callback error:`, error);
-      res.redirect(`${process.env.FRONTEND_URL}/credentials?status=error&provider=${provider}`);
+      res.redirect(
+        `${process.env.FRONTEND_URL}/credentials?status=error&provider=${provider}`,
+      );
     }
   }
 
@@ -253,12 +267,17 @@ export class OAuth2Controller {
   }
 
   // Helper methods
-  private getServiceNameForProvider(provider: string, customScopes?: string): string {
+  private getServiceNameForProvider(
+    provider: string,
+    customScopes?: string,
+  ): string {
     const serviceMap: Record<string, string> = {
-      'google': customScopes?.includes('gmail') ? 'gmailOAuth2Api' : 'googleSheetsOAuth2Api',
-      'github': 'github',
-      'slack': 'slack',
-      'discord': 'discord',
+      google: customScopes?.includes('gmail')
+        ? 'gmailOAuth2Api'
+        : 'googleSheetsOAuth2Api',
+      github: 'github',
+      slack: 'slack',
+      discord: 'discord',
     };
 
     return serviceMap[provider] || provider;
@@ -267,8 +286,8 @@ export class OAuth2Controller {
   private async getGitHubUserInfo(accessToken: string): Promise<any> {
     const response = await fetch('https://api.github.com/user', {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Accept': 'application/vnd.github.v3+json',
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/vnd.github.v3+json',
       },
     });
 
@@ -289,7 +308,7 @@ export class OAuth2Controller {
   private async getSlackUserInfo(accessToken: string): Promise<any> {
     const response = await fetch('https://slack.com/api/auth.test', {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
@@ -310,7 +329,7 @@ export class OAuth2Controller {
   private async getDiscordUserInfo(accessToken: string): Promise<any> {
     const response = await fetch('https://discord.com/api/users/@me', {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 

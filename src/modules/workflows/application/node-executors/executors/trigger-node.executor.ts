@@ -12,7 +12,7 @@ export class TriggerNodeExecutor implements NodeExecutor {
     executionId: string,
   ): Promise<Record<string, any>> {
     this.logger.log(`Executing trigger node: ${node.name}`);
-    
+
     // Pass through input data for trigger nodes
     return {
       ...inputData,

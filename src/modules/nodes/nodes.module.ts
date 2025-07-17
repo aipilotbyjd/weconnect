@@ -7,13 +7,7 @@ import { AIAgentsModule } from '../ai-agents/ai-agents.module';
 @Module({
   imports: [AIAgentsModule],
   controllers: [NodesController],
-  providers: [
-    NodeRegistryService,
-    BuiltInNodesService,
-  ],
-  exports: [
-    NodeRegistryService,
-    BuiltInNodesService,
-  ],
+  providers: [NodeRegistryService, BuiltInNodesService],
+  exports: [NodeRegistryService, BuiltInNodesService],
 })
 export class NodesModule {}

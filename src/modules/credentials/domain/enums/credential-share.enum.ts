@@ -44,16 +44,18 @@ export function hasRequiredPermission(
 ): boolean {
   const requiredLevel = getPermissionLevel(requiredPermission);
   return userPermissions.some(
-    permission => getPermissionLevel(permission) >= requiredLevel
+    (permission) => getPermissionLevel(permission) >= requiredLevel,
   );
 }
 
-export function getHighestPermission(permissions: SharePermission[]): SharePermission | null {
+export function getHighestPermission(
+  permissions: SharePermission[],
+): SharePermission | null {
   if (!permissions.length) return null;
-  
+
   let highest = permissions[0];
   let highestLevel = getPermissionLevel(highest);
-  
+
   for (const permission of permissions) {
     const level = getPermissionLevel(permission);
     if (level > highestLevel) {
@@ -61,17 +63,19 @@ export function getHighestPermission(permissions: SharePermission[]): SharePermi
       highestLevel = level;
     }
   }
-  
+
   return highest;
 }
 
-export function getAllowedPermissions(currentPermissions: SharePermission[]): SharePermission[] {
+export function getAllowedPermissions(
+  currentPermissions: SharePermission[],
+): SharePermission[] {
   const highestLevel = getHighestPermission(currentPermissions);
   if (!highestLevel) return [];
-  
+
   const maxLevel = getPermissionLevel(highestLevel);
-  
+
   return Object.values(SharePermission).filter(
-    permission => getPermissionLevel(permission) <= maxLevel
+    (permission) => getPermissionLevel(permission) <= maxLevel,
   );
 }

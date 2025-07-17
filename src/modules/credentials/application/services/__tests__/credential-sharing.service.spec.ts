@@ -5,7 +5,10 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CredentialSharingService } from '../credential-sharing.service';
 import { Credential } from '../../../domain/entities/credential.entity';
 import { CredentialShare } from '../../../domain/entities/credential-share.entity';
-import { SharePermission, ShareStatus } from '../../../domain/enums/credential-share.enum';
+import {
+  SharePermission,
+  ShareStatus,
+} from '../../../domain/enums/credential-share.enum';
 
 describe('CredentialSharingService', () => {
   let service: CredentialSharingService;
@@ -104,7 +107,7 @@ describe('CredentialSharingService', () => {
       credentialRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.shareCredential('user-1', createShareDto)
+        service.shareCredential('user-1', createShareDto),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -119,7 +122,7 @@ describe('CredentialSharingService', () => {
       shareRepository.findOne.mockResolvedValue(mockShare as any); // Existing share
 
       await expect(
-        service.shareCredential('user-1', createShareDto)
+        service.shareCredential('user-1', createShareDto),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -142,7 +145,11 @@ describe('CredentialSharingService', () => {
         ...updateDto,
       } as any);
 
-      const result = await service.updateShare('share-123', 'user-1', updateDto);
+      const result = await service.updateShare(
+        'share-123',
+        'user-1',
+        updateDto,
+      );
 
       expect(shareRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'share-123' },
@@ -165,7 +172,7 @@ describe('CredentialSharingService', () => {
       shareRepository.findOne.mockResolvedValue(shareWithCredential as any);
 
       await expect(
-        service.updateShare('share-123', 'user-1', updateDto)
+        service.updateShare('share-123', 'user-1', updateDto),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -186,7 +193,7 @@ describe('CredentialSharingService', () => {
         expect.objectContaining({
           status: ShareStatus.REVOKED,
           revokedByUserId: 'user-1',
-        })
+        }),
       );
     });
 
@@ -212,9 +219,9 @@ describe('CredentialSharingService', () => {
 
       shareRepository.findOne.mockResolvedValue(shareWithCredential as any);
 
-      await expect(
-        service.revokeShare('share-123', 'user-3')
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.revokeShare('share-123', 'user-3')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -225,7 +232,7 @@ describe('CredentialSharingService', () => {
       const result = await service.hasPermission(
         'cred-123',
         'user-1',
-        SharePermission.MANAGE
+        SharePermission.MANAGE,
       );
 
       expect(result).toBe(true);
@@ -242,7 +249,7 @@ describe('CredentialSharingService', () => {
       const result = await service.hasPermission(
         'cred-123',
         'user-2',
-        SharePermission.READ
+        SharePermission.READ,
       );
 
       expect(result).toBe(true);
@@ -258,7 +265,7 @@ describe('CredentialSharingService', () => {
       const result = await service.hasPermission(
         'cred-123',
         'user-2',
-        SharePermission.WRITE
+        SharePermission.WRITE,
       );
 
       expect(result).toBe(false);
@@ -275,7 +282,7 @@ describe('CredentialSharingService', () => {
       const result = await service.hasPermission(
         'cred-123',
         'user-2',
-        SharePermission.READ
+        SharePermission.READ,
       );
 
       expect(result).toBe(false);
@@ -304,7 +311,7 @@ describe('CredentialSharingService', () => {
       };
 
       credentialRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as any
+        mockQueryBuilder as any,
       );
 
       const result = await service.getAccessibleCredentials('user-1');
@@ -315,7 +322,7 @@ describe('CredentialSharingService', () => {
         expect.arrayContaining([
           expect.objectContaining({ id: 'cred-123' }),
           expect.objectContaining({ id: 'cred-456' }),
-        ])
+        ]),
       );
     });
 
@@ -334,7 +341,7 @@ describe('CredentialSharingService', () => {
       };
 
       credentialRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as any
+        mockQueryBuilder as any,
       );
 
       const result = await service.getAccessibleCredentials('user-1');
@@ -376,7 +383,7 @@ describe('CredentialSharingService', () => {
         expect.objectContaining({
           status: ShareStatus.ACTIVE,
         }),
-        { status: ShareStatus.EXPIRED }
+        { status: ShareStatus.EXPIRED },
       );
     });
   });

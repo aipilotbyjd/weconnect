@@ -71,13 +71,17 @@ export class MetricsService {
       };
     }
 
-    const successfulExecutions = metrics.filter(m => m.success).length;
-    const failedExecutions = metrics.filter(m => !m.success).length;
-    const durations = metrics.map(m => m.duration).sort((a, b) => a - b);
+    const successfulExecutions = metrics.filter((m) => m.success).length;
+    const failedExecutions = metrics.filter((m) => !m.success).length;
+    const durations = metrics.map((m) => m.duration).sort((a, b) => a - b);
     const totalDuration = durations.reduce((sum, d) => sum + d, 0);
-    const totalItemsProcessed = metrics.reduce((sum, m) => sum + m.itemsProcessed, 0);
+    const totalItemsProcessed = metrics.reduce(
+      (sum, m) => sum + m.itemsProcessed,
+      0,
+    );
 
-    const timeRangeHours = (timeRange.end.getTime() - timeRange.start.getTime()) / (1000 * 60 * 60);
+    const timeRangeHours =
+      (timeRange.end.getTime() - timeRange.start.getTime()) / (1000 * 60 * 60);
 
     return {
       totalExecutions: metrics.length,
@@ -110,8 +114,8 @@ export class MetricsService {
 
     const errorMessageCounts = new Map<string, number>();
     metrics
-      .filter(m => !m.success && m.errorMessage)
-      .forEach(m => {
+      .filter((m) => !m.success && m.errorMessage)
+      .forEach((m) => {
         const count = errorMessageCounts.get(m.errorMessage!) || 0;
         errorMessageCounts.set(m.errorMessage!, count + 1);
       });
@@ -123,8 +127,10 @@ export class MetricsService {
 
     return {
       executionCount: metrics.length,
-      averageDuration: metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length || 0,
-      successRate: (metrics.filter(m => m.success).length / metrics.length) * 100 || 0,
+      averageDuration:
+        metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length || 0,
+      successRate:
+        (metrics.filter((m) => m.success).length / metrics.length) * 100 || 0,
       errorMessages,
     };
   }
@@ -145,9 +151,10 @@ export class MetricsService {
     });
   }
 
-  async getSystemMetrics(
-    timeRange: { start: Date; end: Date },
-  ): Promise<SystemMetric[]> {
+  async getSystemMetrics(timeRange: {
+    start: Date;
+    end: Date;
+  }): Promise<SystemMetric[]> {
     return this.systemMetricRepository.find({
       where: {
         recordedAt: Between(timeRange.start, timeRange.end),
@@ -156,24 +163,33 @@ export class MetricsService {
     });
   }
 
-  async getDashboardStats(userId?: string, organizationId?: string): Promise<{
+  async getDashboardStats(
+    userId?: string,
+    organizationId?: string,
+  ): Promise<{
     totalWorkflows: number;
     totalExecutions: number;
     successRate: number;
     averageExecutionTime: number;
     executionsLast24h: number;
     topWorkflows: Array<{ workflowId: string; executionCount: number }>;
-    recentErrors: Array<{ workflowId: string; errorMessage: string; recordedAt: Date }>;
+    recentErrors: Array<{
+      workflowId: string;
+      errorMessage: string;
+      recordedAt: Date;
+    }>;
   }> {
     const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
+
     const query = this.executionMetricRepository.createQueryBuilder('metric');
-    
+
     if (userId) {
       query.andWhere('metric.userId = :userId', { userId });
     }
     if (organizationId) {
-      query.andWhere('metric.organizationId = :organizationId', { organizationId });
+      query.andWhere('metric.organizationId = :organizationId', {
+        organizationId,
+      });
     }
 
     // Get total unique workflows
@@ -182,9 +198,7 @@ export class MetricsService {
       .getRawOne();
 
     // Get total executions
-    const totalExecutions = await query
-      .select('COUNT(*)', 'count')
-      .getRawOne();
+    const totalExecutions = await query.select('COUNT(*)', 'count').getRawOne();
 
     // Get success rate
     const successCount = await query
@@ -226,13 +240,15 @@ export class MetricsService {
     return {
       totalWorkflows: parseInt(totalWorkflows.count) || 0,
       totalExecutions: parseInt(totalExecutions.count) || 0,
-      successRate: totalExecutions.count > 0 
-        ? (parseInt(successCount.count) / parseInt(totalExecutions.count)) * 100 
-        : 0,
+      successRate:
+        totalExecutions.count > 0
+          ? (parseInt(successCount.count) / parseInt(totalExecutions.count)) *
+            100
+          : 0,
       averageExecutionTime: parseFloat(avgTime.avg) || 0,
       executionsLast24h: parseInt(executions24h.count) || 0,
       topWorkflows,
-      recentErrors: recentErrors.map(e => ({
+      recentErrors: recentErrors.map((e) => ({
         workflowId: e.workflowId,
         errorMessage: e.errorMessage || 'Unknown error',
         recordedAt: e.recordedAt,
@@ -250,13 +266,13 @@ export class MetricsService {
     let totalIdle = 0;
     let totalTick = 0;
 
-    cpus.forEach(cpu => {
+    cpus.forEach((cpu) => {
       for (const type in cpu.times) {
         totalTick += cpu.times[type as keyof typeof cpu.times];
       }
       totalIdle += cpu.times.idle;
     });
 
-    return 100 - ~~(100 * totalIdle / totalTick);
+    return 100 - ~~((100 * totalIdle) / totalTick);
   }
 }

@@ -42,7 +42,9 @@ export class WorkflowExecutionLog extends BaseEntity {
   executionTime?: number;
 
   // Relations
-  @ManyToOne(() => WorkflowExecution, execution => execution.logs, { onDelete: 'CASCADE' })
+  @ManyToOne(() => WorkflowExecution, (execution) => execution.logs, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'executionId' })
   execution: WorkflowExecution;
 

@@ -11,9 +11,18 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
-import { AIAgentService, CreateAIAgentDto, UpdateAIAgentDto } from '../../application/services/ai-agent.service';
+import {
+  AIAgentService,
+  CreateAIAgentDto,
+  UpdateAIAgentDto,
+} from '../../application/services/ai-agent.service';
 import { AIProviderService } from '../../application/services/ai-provider.service';
 import { AIToolService } from '../../application/services/ai-tool.service';
 import { AIAgentExecutorService } from '../../application/services/ai-agent-executor.service';
@@ -80,7 +89,7 @@ export class AIAgentController {
   async getAllAgents(@Query('search') search?: string) {
     try {
       let agents;
-      
+
       if (search) {
         agents = await this.agentService.searchAgents(search);
       } else {
@@ -191,7 +200,10 @@ export class AIAgentController {
     @Query('limit') limit: number = 50,
   ) {
     try {
-      const executions = await this.executorService.getExecutionHistory(id, limit);
+      const executions = await this.executorService.getExecutionHistory(
+        id,
+        limit,
+      );
       return {
         success: true,
         data: executions,

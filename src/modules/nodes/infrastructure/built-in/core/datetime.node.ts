@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const DateTimeNodeDefinition = new NodeDefinition({
   name: 'DateTime',
@@ -42,7 +46,15 @@ export const DateTimeNodeDefinition = new NodeDefinition({
       description: 'Date to process (leave empty for current date)',
       displayOptions: {
         show: {
-          operation: ['format', 'parse', 'add', 'subtract', 'timezone', 'startOf', 'endOf'],
+          operation: [
+            'format',
+            'parse',
+            'add',
+            'subtract',
+            'timezone',
+            'startOf',
+            'endOf',
+          ],
         },
       },
     },
@@ -192,7 +204,7 @@ export const DateTimeNodeDefinition = new NodeDefinition({
 export class DateTimeNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const {
         operation,
@@ -225,26 +237,37 @@ export class DateTimeNodeExecutor implements INodeExecutor {
             result = this.formatDate(dateToProcess, format, customFormat);
             break;
           case 'parse':
-            result = this.parseDate(dateToProcess, inputFormat || item.inputFormat);
+            result = this.parseDate(
+              dateToProcess,
+              inputFormat || item.inputFormat,
+            );
             break;
           case 'add':
-            result = this.addTime(dateToProcess, amount || item.amount, unit || item.unit);
+            result = this.addTime(
+              dateToProcess,
+              amount || item.amount,
+              unit || item.unit,
+            );
             break;
           case 'subtract':
-            result = this.subtractTime(dateToProcess, amount || item.amount, unit || item.unit);
+            result = this.subtractTime(
+              dateToProcess,
+              amount || item.amount,
+              unit || item.unit,
+            );
             break;
           case 'difference':
             result = this.calculateDifference(
               dateToProcess,
               compareDate || item.compareDate,
-              unit || item.unit
+              unit || item.unit,
             );
             break;
           case 'timezone':
             result = this.convertTimezone(
               dateToProcess,
               fromTimezone || item.fromTimezone,
-              toTimezone || item.toTimezone
+              toTimezone || item.toTimezone,
             );
             break;
           case 'startOf':
@@ -257,7 +280,7 @@ export class DateTimeNodeExecutor implements INodeExecutor {
             result = this.isBetween(
               dateToProcess,
               startDate || item.startDate,
-              endDate || item.endDate
+              endDate || item.endDate,
             );
             break;
           default:
@@ -287,7 +310,10 @@ export class DateTimeNodeExecutor implements INodeExecutor {
     }
   }
 
-  private getCurrentDateTime(format: string = 'iso', customFormat?: string): any {
+  private getCurrentDateTime(
+    format: string = 'iso',
+    customFormat?: string,
+  ): any {
     const now = new Date();
     const formatted = this.formatDateString(now, format, customFormat);
 
@@ -310,7 +336,11 @@ export class DateTimeNodeExecutor implements INodeExecutor {
     };
   }
 
-  private formatDate(inputDate: string, format: string = 'iso', customFormat?: string): any {
+  private formatDate(
+    inputDate: string,
+    format: string = 'iso',
+    customFormat?: string,
+  ): any {
     if (!inputDate) {
       throw new Error('Input date is required');
     }
@@ -401,7 +431,11 @@ export class DateTimeNodeExecutor implements INodeExecutor {
     };
   }
 
-  private calculateDifference(inputDate: string, compareDate: string, unit: string = 'days'): any {
+  private calculateDifference(
+    inputDate: string,
+    compareDate: string,
+    unit: string = 'days',
+  ): any {
     if (!inputDate || !compareDate) {
       throw new Error('Both input date and compare date are required');
     }
@@ -429,7 +463,11 @@ export class DateTimeNodeExecutor implements INodeExecutor {
     };
   }
 
-  private convertTimezone(inputDate: string, fromTimezone: string, toTimezone: string): any {
+  private convertTimezone(
+    inputDate: string,
+    fromTimezone: string,
+    toTimezone: string,
+  ): any {
     if (!inputDate) {
       throw new Error('Input date is required');
     }
@@ -498,7 +536,11 @@ export class DateTimeNodeExecutor implements INodeExecutor {
     };
   }
 
-  private isBetween(inputDate: string, startDate: string, endDate: string): any {
+  private isBetween(
+    inputDate: string,
+    startDate: string,
+    endDate: string,
+  ): any {
     if (!inputDate || !startDate || !endDate) {
       throw new Error('Input date, start date, and end date are required');
     }
@@ -507,11 +549,16 @@ export class DateTimeNodeExecutor implements INodeExecutor {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    if (isNaN(date.getTime()) || isNaN(start.getTime()) || isNaN(end.getTime())) {
+    if (
+      isNaN(date.getTime()) ||
+      isNaN(start.getTime()) ||
+      isNaN(end.getTime())
+    ) {
       throw new Error('Invalid date format');
     }
 
-    const isBetween = date.getTime() >= start.getTime() && date.getTime() <= end.getTime();
+    const isBetween =
+      date.getTime() >= start.getTime() && date.getTime() <= end.getTime();
 
     return {
       operation: 'isBetween',
@@ -525,7 +572,11 @@ export class DateTimeNodeExecutor implements INodeExecutor {
   }
 
   // Helper methods
-  private formatDateString(date: Date, format: string, customFormat?: string): string {
+  private formatDateString(
+    date: Date,
+    format: string,
+    customFormat?: string,
+  ): string {
     switch (format) {
       case 'iso':
         return date.toISOString();
@@ -538,9 +589,15 @@ export class DateTimeNodeExecutor implements INodeExecutor {
       case 'DD/MM/YYYY':
         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
       case 'MMMM DD, YYYY':
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
       case 'custom':
-        return customFormat ? this.applyCustomFormat(date, customFormat) : date.toISOString();
+        return customFormat
+          ? this.applyCustomFormat(date, customFormat)
+          : date.toISOString();
       default:
         return date.toISOString();
     }
@@ -566,7 +623,7 @@ export class DateTimeNodeExecutor implements INodeExecutor {
         date.setMonth(date.getMonth() + amount);
         break;
       case 'weeks':
-        date.setDate(date.getDate() + (amount * 7));
+        date.setDate(date.getDate() + amount * 7);
         break;
       case 'days':
         date.setDate(date.getDate() + amount);
@@ -679,7 +736,9 @@ export class DateTimeNodeExecutor implements INodeExecutor {
 
   private getWeekOfYear(date: Date): number {
     const start = new Date(date.getFullYear(), 0, 1);
-    const days = Math.floor((date.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+    const days = Math.floor(
+      (date.getTime() - start.getTime()) / (24 * 60 * 60 * 1000),
+    );
     return Math.ceil((days + start.getDay() + 1) / 7);
   }
 
@@ -692,8 +751,7 @@ export class DateTimeNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

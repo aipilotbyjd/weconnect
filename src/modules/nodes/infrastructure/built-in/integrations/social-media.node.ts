@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import axios from 'axios';
 
 export const SocialMediaNodeDefinition = new NodeDefinition({
@@ -240,11 +244,11 @@ export const SocialMediaNodeDefinition = new NodeDefinition({
 export class SocialMediaNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       const { operation } = context.parameters;
       const credentials = context.credentials?.socialMediaCredentials;
-      
+
       if (!credentials) {
         throw new Error('Social media credentials are required');
       }
@@ -308,7 +312,7 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
 
   private async postContent(context: NodeExecutionContext, credentials: any) {
     const { content, mediaUrls, hashtags } = context.parameters;
-    
+
     const postData = {
       text: content + (hashtags ? ` ${hashtags}` : ''),
       media: mediaUrls || [],
@@ -327,13 +331,15 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
       case 'linkedin':
         return await this.postToLinkedIn(postData, credentials);
       default:
-        throw new Error(`Posting not supported for platform: ${credentials.platform}`);
+        throw new Error(
+          `Posting not supported for platform: ${credentials.platform}`,
+        );
     }
   }
 
   private async getPosts(context: NodeExecutionContext, credentials: any) {
     const { limit, dateRange, includeReplies } = context.parameters;
-    
+
     // Mock implementation
     const posts: any[] = [];
     for (let i = 0; i < (limit || 10); i++) {
@@ -353,9 +359,9 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
 
   private async getMetrics(context: NodeExecutionContext, credentials: any) {
     const { metricTypes, dateRange } = context.parameters;
-    
+
     const metrics = {};
-    
+
     metricTypes.forEach((metricConfig: any) => {
       const metric = metricConfig.metric;
       // Mock data generation
@@ -397,7 +403,7 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
 
   private async searchContent(context: NodeExecutionContext, credentials: any) {
     const { searchQuery, limit } = context.parameters;
-    
+
     // Mock search results
     const results: any[] = [];
     for (let i = 0; i < (limit || 10); i++) {
@@ -417,7 +423,7 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
 
   private async getFollowers(context: NodeExecutionContext, credentials: any) {
     const { limit } = context.parameters;
-    
+
     // Mock followers list
     const followers: any[] = [];
     for (let i = 0; i < (limit || 10); i++) {
@@ -437,7 +443,7 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
 
   private async followUser(context: NodeExecutionContext, credentials: any) {
     const { username } = context.parameters;
-    
+
     return {
       action: 'follow',
       username,
@@ -449,7 +455,7 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
 
   private async unfollowUser(context: NodeExecutionContext, credentials: any) {
     const { username } = context.parameters;
-    
+
     return {
       action: 'unfollow',
       username,
@@ -461,7 +467,7 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
 
   private async deletePost(context: NodeExecutionContext, credentials: any) {
     const { postId } = context.parameters;
-    
+
     return {
       action: 'delete',
       postId,
@@ -473,7 +479,7 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
 
   private async schedulePost(context: NodeExecutionContext, credentials: any) {
     const { content, mediaUrls, hashtags, scheduledTime } = context.parameters;
-    
+
     return {
       action: 'schedule',
       postId: `scheduled_${Date.now()}`,
@@ -532,8 +538,7 @@ export class SocialMediaNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

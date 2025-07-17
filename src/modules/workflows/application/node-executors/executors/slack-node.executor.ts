@@ -6,7 +6,12 @@ import { NodeExecutor } from '../node-executor.interface';
 import { CredentialIntegrationService } from '../../../../credentials/application/services/credential-integration.service';
 
 export interface SlackConfig {
-  operation: 'sendMessage' | 'getChannelInfo' | 'listChannels' | 'deleteMessage' | 'uploadFile';
+  operation:
+    | 'sendMessage'
+    | 'getChannelInfo'
+    | 'listChannels'
+    | 'deleteMessage'
+    | 'uploadFile';
   // Authentication
   token?: string;
   credentialId?: string;
@@ -83,7 +88,7 @@ export class SlackNodeExecutor implements NodeExecutor {
       };
     } catch (error) {
       this.logger.error(`Slack operation failed: ${error.message}`);
-      
+
       return {
         ...inputData,
         slack: null,
@@ -101,7 +106,7 @@ export class SlackNodeExecutor implements NodeExecutor {
 
   async validate(configuration: Record<string, any>): Promise<boolean> {
     const config = configuration as SlackConfig;
-    
+
     if (!config.operation) return false;
     if (!config.token && !config.credentialId) return false;
 
@@ -121,34 +126,43 @@ export class SlackNodeExecutor implements NodeExecutor {
     }
   }
 
-  private async getToken(config: SlackConfig, inputData: Record<string, any>): Promise<string> {
+  private async getToken(
+    config: SlackConfig,
+    inputData: Record<string, any>,
+  ): Promise<string> {
     if (config.token) {
       return this.replaceVariables(config.token, inputData);
     }
 
     if (config.credentialId) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialById(
-          config.credentialId,
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialById(
+            config.credentialId,
+            inputData._credentialContext,
+          );
         return credential.data.token || credential.data.bot_token;
       } catch (error) {
         this.logger.error(`Failed to get Slack credential: ${error.message}`);
-        throw new Error(`Failed to retrieve Slack credentials: ${error.message}`);
+        throw new Error(
+          `Failed to retrieve Slack credentials: ${error.message}`,
+        );
       }
     }
 
     // Try to get credential by service name
     if (inputData._credentialContext) {
       try {
-        const credential = await this.credentialIntegrationService.getCredentialByService(
-          'slack',
-          inputData._credentialContext
-        );
+        const credential =
+          await this.credentialIntegrationService.getCredentialByService(
+            'slack',
+            inputData._credentialContext,
+          );
         return credential.data.token || credential.data.bot_token;
       } catch (error) {
-        this.logger.error(`Failed to get Slack credential by service: ${error.message}`);
+        this.logger.error(
+          `Failed to get Slack credential by service: ${error.message}`,
+        );
       }
     }
 
@@ -190,16 +204,12 @@ export class SlackNodeExecutor implements NodeExecutor {
     }
 
     const response = await lastValueFrom(
-      this.httpService.post(
-        'https://slack.com/api/chat.postMessage',
-        payload,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
+      this.httpService.post('https://slack.com/api/chat.postMessage', payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }),
     );
 
     if (!response.data.ok) {
@@ -227,10 +237,10 @@ export class SlackNodeExecutor implements NodeExecutor {
         `https://slack.com/api/conversations.info?channel=${encodeURIComponent(channel)}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     if (!response.data.ok) {
@@ -265,10 +275,10 @@ export class SlackNodeExecutor implements NodeExecutor {
         'https://slack.com/api/conversations.list?types=public_channel,private_channel',
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-        }
-      )
+        },
+      ),
     );
 
     if (!response.data.ok) {
@@ -307,11 +317,11 @@ export class SlackNodeExecutor implements NodeExecutor {
         },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-        }
-      )
+        },
+      ),
     );
 
     if (!response.data.ok) {
@@ -331,23 +341,35 @@ export class SlackNodeExecutor implements NodeExecutor {
     token: string,
   ): Promise<any> {
     const formData = new FormData();
-    
-    formData.append('channels', this.replaceVariables(config.channel!, inputData));
+
+    formData.append(
+      'channels',
+      this.replaceVariables(config.channel!, inputData),
+    );
 
     if (config.title) {
       formData.append('title', this.replaceVariables(config.title, inputData));
     }
 
     if (config.fileName) {
-      formData.append('filename', this.replaceVariables(config.fileName, inputData));
+      formData.append(
+        'filename',
+        this.replaceVariables(config.fileName, inputData),
+      );
     }
 
     if (config.fileType) {
-      formData.append('filetype', this.replaceVariables(config.fileType, inputData));
+      formData.append(
+        'filetype',
+        this.replaceVariables(config.fileType, inputData),
+      );
     }
 
     if (config.initialComment) {
-      formData.append('initial_comment', this.replaceVariables(config.initialComment, inputData));
+      formData.append(
+        'initial_comment',
+        this.replaceVariables(config.initialComment, inputData),
+      );
     }
 
     // Handle file content
@@ -361,15 +383,11 @@ export class SlackNodeExecutor implements NodeExecutor {
     }
 
     const response = await lastValueFrom(
-      this.httpService.post(
-        'https://slack.com/api/files.upload',
-        formData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        }
-      )
+      this.httpService.post('https://slack.com/api/files.upload', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
     );
 
     if (!response.data.ok) {

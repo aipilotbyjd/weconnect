@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import axios, { AxiosInstance } from 'axios';
 
 export const WhatsAppBusinessNodeDefinition = new NodeDefinition({
@@ -45,7 +49,13 @@ export const WhatsAppBusinessNodeDefinition = new NodeDefinition({
       type: 'string',
       displayOptions: {
         show: {
-          operation: ['sendText', 'sendTemplate', 'sendMedia', 'sendLocation', 'sendContact'],
+          operation: [
+            'sendText',
+            'sendTemplate',
+            'sendMedia',
+            'sendLocation',
+            'sendContact',
+          ],
         },
       },
       required: true,
@@ -282,7 +292,7 @@ export class WhatsAppBusinessNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.whatsappBusiness;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -298,7 +308,7 @@ export class WhatsAppBusinessNodeExecutor implements INodeExecutor {
       this.client = axios.create({
         baseURL: `https://graph.facebook.com/v18.0/${credentials.phoneNumberId}`,
         headers: {
-          'Authorization': `Bearer ${credentials.accessToken}`,
+          Authorization: `Bearer ${credentials.accessToken}`,
           'Content-Type': 'application/json',
         },
         timeout: 30000,
@@ -345,7 +355,6 @@ export class WhatsAppBusinessNodeExecutor implements INodeExecutor {
           recipient: context.parameters.to,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -374,8 +383,11 @@ export class WhatsAppBusinessNodeExecutor implements INodeExecutor {
     return response.data;
   }
 
-  private async sendTemplateMessage(context: NodeExecutionContext): Promise<any> {
-    const { to, templateName, templateLanguage, templateParameters } = context.parameters;
+  private async sendTemplateMessage(
+    context: NodeExecutionContext,
+  ): Promise<any> {
+    const { to, templateName, templateLanguage, templateParameters } =
+      context.parameters;
 
     const payload: any = {
       messaging_product: 'whatsapp',
@@ -406,7 +418,8 @@ export class WhatsAppBusinessNodeExecutor implements INodeExecutor {
   }
 
   private async sendMediaMessage(context: NodeExecutionContext): Promise<any> {
-    const { to, mediaType, mediaUrl, mediaCaption, mediaFilename } = context.parameters;
+    const { to, mediaType, mediaUrl, mediaCaption, mediaFilename } =
+      context.parameters;
 
     const mediaObject: any = {
       link: mediaUrl,
@@ -432,7 +445,8 @@ export class WhatsAppBusinessNodeExecutor implements INodeExecutor {
   }
 
   private async sendLocation(context: NodeExecutionContext): Promise<any> {
-    const { to, latitude, longitude, locationName, locationAddress } = context.parameters;
+    const { to, latitude, longitude, locationName, locationAddress } =
+      context.parameters;
 
     const location: any = {
       latitude: latitude,
@@ -499,7 +513,7 @@ export class WhatsAppBusinessNodeExecutor implements INodeExecutor {
     const mediaClient = axios.create({
       baseURL: 'https://graph.facebook.com/v18.0',
       headers: {
-        'Authorization': this.client!.defaults.headers['Authorization'],
+        Authorization: this.client!.defaults.headers['Authorization'],
       },
     });
 
@@ -523,8 +537,7 @@ export class WhatsAppBusinessNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

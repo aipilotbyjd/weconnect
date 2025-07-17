@@ -8,7 +8,7 @@ import { NodeExecutor } from '../node-executor.interface';
 export class HttpRequestNodeExecutor implements NodeExecutor {
   private readonly logger = new Logger(HttpRequestNodeExecutor.name);
 
-  constructor(private httpService: HttpService) { }
+  constructor(private httpService: HttpService) {}
 
   async execute(
     node: WorkflowNode,

@@ -4,11 +4,7 @@ import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class ApiKeyRateLimitGuard extends ThrottlerGuard {
-  constructor(
-    options: any,
-    storageService: any,
-    reflector: Reflector,
-  ) {
+  constructor(options: any, storageService: any, reflector: Reflector) {
     super(options, storageService, reflector);
   }
 
@@ -18,7 +14,7 @@ export class ApiKeyRateLimitGuard extends ThrottlerGuard {
     if (apiKey) {
       return `api-key:${apiKey}`;
     }
-    
+
     // Fallback to IP address
     return req.ip;
   }
@@ -34,14 +30,14 @@ export class ApiKeyRateLimitGuard extends ThrottlerGuard {
     if (apiKey) {
       return {
         limit: 1000, // 1000 requests
-        ttl: 3600,   // per hour
+        ttl: 3600, // per hour
       };
     }
 
     // Default limits for JWT auth
     return {
-      limit: 100,  // 100 requests
-      ttl: 60,     // per minute
+      limit: 100, // 100 requests
+      ttl: 60, // per minute
     };
   }
 }

@@ -6,7 +6,10 @@ import { InjectQueue } from '@nestjs/bull';
 import { Repository } from 'typeorm';
 import { WORKFLOW_NODE_QUEUE, NodeJobType } from '../constants';
 import { WorkflowNode } from '../../../domain/entities/workflow-node.entity';
-import { WorkflowExecutionLog, LogLevel } from '../../../domain/entities/workflow-execution-log.entity';
+import {
+  WorkflowExecutionLog,
+  LogLevel,
+} from '../../../domain/entities/workflow-execution-log.entity';
 import { WorkflowExecutionService } from '../../../application/services/workflow-execution.service';
 
 interface NodeExecutionJobData {
@@ -33,7 +36,13 @@ export class WorkflowNodeProcessor {
 
   @Process(NodeJobType.EXECUTE)
   async handleExecuteNode(job: Job<NodeExecutionJobData>) {
-    const { nodeId, executionId, inputData, visitedNodes = [], retryCount = 0 } = job.data;
+    const {
+      nodeId,
+      executionId,
+      inputData,
+      visitedNodes = [],
+      retryCount = 0,
+    } = job.data;
     this.logger.log(`Executing node ${nodeId} for execution ${executionId}`);
 
     try {
@@ -83,17 +92,19 @@ export class WorkflowNodeProcessor {
       // Handle retries with exponential backoff
       if (retryCount < 3) {
         const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
-        
+
         await this.nodeQueue.add(
           NodeJobType.RETRY,
-          { 
-            ...job.data, 
-            retryCount: retryCount + 1 
+          {
+            ...job.data,
+            retryCount: retryCount + 1,
           },
-          { delay }
+          { delay },
         );
-        
-        this.logger.log(`Scheduling retry ${retryCount + 1} for node ${nodeId} in ${delay}ms`);
+
+        this.logger.log(
+          `Scheduling retry ${retryCount + 1} for node ${nodeId} in ${delay}ms`,
+        );
         return;
       }
 

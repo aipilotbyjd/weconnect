@@ -7,15 +7,8 @@ import { UnifiedNodeExecutionModule } from './node-execution/unified-node-execut
 
 @Global()
 @Module({
-  imports: [
-    ConfigModule,
-    UnifiedNodeExecutionModule,
-  ],
-  providers: [
-    LoggerService,
-    ValidationService,
-    GlobalExceptionFilter,
-  ],
+  imports: [ConfigModule, UnifiedNodeExecutionModule],
+  providers: [LoggerService, ValidationService, GlobalExceptionFilter],
   exports: [
     LoggerService,
     ValidationService,

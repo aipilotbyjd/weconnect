@@ -1,5 +1,9 @@
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 import { WebClient } from '@slack/web-api';
 
 export const SlackNodeDefinition = new NodeDefinition({
@@ -53,7 +57,18 @@ export const SlackNodeDefinition = new NodeDefinition({
       type: 'string',
       displayOptions: {
         show: {
-          operation: ['sendMessage', 'updateMessage', 'deleteMessage', 'uploadFile', 'getChannelInfo', 'inviteToChannel', 'addReaction', 'removeReaction', 'pinMessage', 'unpinMessage'],
+          operation: [
+            'sendMessage',
+            'updateMessage',
+            'deleteMessage',
+            'uploadFile',
+            'getChannelInfo',
+            'inviteToChannel',
+            'addReaction',
+            'removeReaction',
+            'pinMessage',
+            'unpinMessage',
+          ],
         },
       },
       required: true,
@@ -92,7 +107,14 @@ export const SlackNodeDefinition = new NodeDefinition({
       type: 'string',
       displayOptions: {
         show: {
-          operation: ['updateMessage', 'deleteMessage', 'addReaction', 'removeReaction', 'pinMessage', 'unpinMessage'],
+          operation: [
+            'updateMessage',
+            'deleteMessage',
+            'addReaction',
+            'removeReaction',
+            'pinMessage',
+            'unpinMessage',
+          ],
         },
       },
       required: true,
@@ -344,7 +366,7 @@ export class SlackNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
     const credentials = context.credentials?.slack;
-    
+
     if (!credentials) {
       return {
         success: false,
@@ -424,7 +446,6 @@ export class SlackNodeExecutor implements INodeExecutor {
           channel: context.parameters.channel,
         },
       };
-
     } catch (error) {
       return {
         success: false,
@@ -455,7 +476,8 @@ export class SlackNodeExecutor implements INodeExecutor {
     };
 
     if (blocks && blocks.length > 0) options.blocks = blocks;
-    if (attachments && attachments.length > 0) options.attachments = attachments;
+    if (attachments && attachments.length > 0)
+      options.attachments = attachments;
     if (threadTs) options.thread_ts = threadTs;
     if (asUser) options.as_user = true;
     if (username) options.username = username;
@@ -467,7 +489,8 @@ export class SlackNodeExecutor implements INodeExecutor {
   }
 
   private async updateMessage(context: NodeExecutionContext): Promise<any> {
-    const { channel, messageTs, text, blocks, attachments } = context.parameters;
+    const { channel, messageTs, text, blocks, attachments } =
+      context.parameters;
 
     const options: any = {
       channel: channel,
@@ -476,7 +499,8 @@ export class SlackNodeExecutor implements INodeExecutor {
     };
 
     if (blocks && blocks.length > 0) options.blocks = blocks;
-    if (attachments && attachments.length > 0) options.attachments = attachments;
+    if (attachments && attachments.length > 0)
+      options.attachments = attachments;
 
     const result = await this.client!.chat.update(options);
     return result;
@@ -517,7 +541,8 @@ export class SlackNodeExecutor implements INodeExecutor {
     };
 
     if (blocks && blocks.length > 0) options.blocks = blocks;
-    if (attachments && attachments.length > 0) options.attachments = attachments;
+    if (attachments && attachments.length > 0)
+      options.attachments = attachments;
     if (threadTs) options.thread_ts = threadTs;
     if (asUser) options.as_user = true;
     if (username) options.username = username;
@@ -695,8 +720,7 @@ export class SlackNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

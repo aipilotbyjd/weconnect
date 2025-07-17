@@ -1,11 +1,19 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { MetricsService } from '../../application/services/metrics.service';
 import { ExecutionCleanupService } from '../../../workflows/application/services/execution-cleanup.service';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { WORKFLOW_EXECUTION_QUEUE, WORKFLOW_NODE_QUEUE } from '../../../workflows/infrastructure/queues/constants';
+import {
+  WORKFLOW_EXECUTION_QUEUE,
+  WORKFLOW_NODE_QUEUE,
+} from '../../../workflows/infrastructure/queues/constants';
 
 @ApiTags('monitoring')
 @Controller('monitoring')
@@ -31,11 +39,12 @@ export class MonitoringController {
   @ApiOperation({ summary: 'Health check for the application' })
   @ApiResponse({ status: 200, description: 'Application is healthy' })
   async healthCheck() {
-    const [workflowQueueHealth, nodeQueueHealth, executionStats] = await Promise.all([
-      this.getQueueHealth(this.workflowQueue, 'workflow'),
-      this.getQueueHealth(this.nodeQueue, 'node'),
-      this.executionCleanupService.getExecutionStatistics(),
-    ]);
+    const [workflowQueueHealth, nodeQueueHealth, executionStats] =
+      await Promise.all([
+        this.getQueueHealth(this.workflowQueue, 'workflow'),
+        this.getQueueHealth(this.nodeQueue, 'node'),
+        this.executionCleanupService.getExecutionStatistics(),
+      ]);
 
     return {
       status: 'ok',
@@ -124,7 +133,7 @@ export class MonitoringController {
         queue.getJobs(['delayed']),
       ]);
 
-      const activeJobDetails = active.map(job => ({
+      const activeJobDetails = active.map((job) => ({
         id: job.id,
         name: job.name,
         data: job.data,
@@ -132,7 +141,7 @@ export class MonitoringController {
         processedOn: job.processedOn,
       }));
 
-      const failedJobDetails = failed.map(job => ({
+      const failedJobDetails = failed.map((job) => ({
         id: job.id,
         name: job.name,
         failedReason: job.failedReason,

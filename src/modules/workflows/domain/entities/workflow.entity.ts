@@ -1,4 +1,11 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  Index,
+} from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { WorkflowNode } from './workflow-node.entity';
@@ -19,7 +26,10 @@ export enum WorkflowStatus {
 @Index(['organizationId', 'status'])
 @Index(['createdAt'])
 export class Workflow extends BaseEntity {
-  @ApiProperty({ description: 'Workflow name', example: 'Email Marketing Campaign' })
+  @ApiProperty({
+    description: 'Workflow name',
+    example: 'Email Marketing Campaign',
+  })
   @Column()
   name: string;
 
@@ -61,7 +71,10 @@ export class Workflow extends BaseEntity {
   userId: string;
 
   // Organization relationship
-  @ApiProperty({ type: () => Organization, description: 'Organization this workflow belongs to' })
+  @ApiProperty({
+    type: () => Organization,
+    description: 'Organization this workflow belongs to',
+  })
   @ManyToOne(() => Organization, (org) => org.workflows)
   @JoinColumn({ name: 'organizationId' })
   organization: Organization;
@@ -70,15 +83,21 @@ export class Workflow extends BaseEntity {
   organizationId: string;
 
   @ApiProperty({ type: () => [WorkflowNode], description: 'Workflow nodes' })
-  @OneToMany(() => WorkflowNode, node => node.workflow, { cascade: true })
+  @OneToMany(() => WorkflowNode, (node) => node.workflow, { cascade: true })
   nodes: WorkflowNode[];
 
-  @ApiProperty({ type: () => [WorkflowExecution], description: 'Workflow executions' })
-  @OneToMany(() => WorkflowExecution, execution => execution.workflow)
+  @ApiProperty({
+    type: () => [WorkflowExecution],
+    description: 'Workflow executions',
+  })
+  @OneToMany(() => WorkflowExecution, (execution) => execution.workflow)
   executions: WorkflowExecution[];
 
-  @ApiProperty({ type: () => [WorkflowVersion], description: 'Workflow versions' })
-  @OneToMany(() => WorkflowVersion, version => version.workflow)
+  @ApiProperty({
+    type: () => [WorkflowVersion],
+    description: 'Workflow versions',
+  })
+  @OneToMany(() => WorkflowVersion, (version) => version.workflow)
   versions: WorkflowVersion[];
 
   // Workflow sharing settings

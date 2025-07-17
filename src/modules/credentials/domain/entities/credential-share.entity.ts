@@ -65,7 +65,7 @@ export class CredentialShare {
   updatedAt: Date;
 
   // Relations
-  @ManyToOne(() => Credential, credential => credential.shares, {
+  @ManyToOne(() => Credential, (credential) => credential.shares, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'credentialId' })
@@ -132,7 +132,7 @@ export class CredentialShare {
   }
 
   getPermissionNames(): string[] {
-    return this.permissions.map(permission => {
+    return this.permissions.map((permission) => {
       switch (permission) {
         case SharePermission.READ:
           return 'Read';

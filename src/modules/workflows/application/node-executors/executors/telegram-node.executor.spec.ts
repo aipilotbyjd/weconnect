@@ -205,8 +205,12 @@ describe('TelegramNodeExecutor', () => {
       );
 
       expect(result.telegram).toBeNull();
-      expect(result.telegramError).toContain('Telegram API error: Unauthorized');
-      expect(result._telegram.error).toContain('Telegram API error: Unauthorized');
+      expect(result.telegramError).toContain(
+        'Telegram API error: Unauthorized',
+      );
+      expect(result._telegram.error).toContain(
+        'Telegram API error: Unauthorized',
+      );
     });
 
     it('should delete a message successfully', async () => {

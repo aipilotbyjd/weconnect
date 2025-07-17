@@ -1,11 +1,16 @@
 // import * as Jimp from 'jimp'; // Commented out for compilation
 import { NodeDefinition } from '../../../domain/entities/node-definition.entity';
-import { INodeExecutor, NodeExecutionContext, NodeExecutionResult } from '../../../../../core/abstracts/base-node.interface';
+import {
+  INodeExecutor,
+  NodeExecutionContext,
+  NodeExecutionResult,
+} from '../../../../../core/abstracts/base-node.interface';
 
 export const ImageProcessingNodeDefinition = new NodeDefinition({
   name: 'ImageProcessing',
   displayName: 'Image Processing',
-  description: 'Performs image manipulation operations like resize, crop, and convert',
+  description:
+    'Performs image manipulation operations like resize, crop, and convert',
   version: 1,
   group: ['media'],
   icon: 'fa:image',
@@ -86,20 +91,33 @@ export const ImageProcessingNodeDefinition = new NodeDefinition({
 export class ImageProcessingNodeExecutor implements INodeExecutor {
   async execute(context: NodeExecutionContext): Promise<NodeExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
-      const { operation, inputImage, outputImage, width, height, format } = context.parameters;
-      
+      const { operation, inputImage, outputImage, width, height, format } =
+        context.parameters;
+
       // Mock implementation - in real scenario, you would use jimp or similar library
       // const image = await Jimp.read(inputImage);
-      
+
       let result: any;
       switch (operation) {
         case 'resize':
-          result = { operation: 'resize', width, height, inputImage, outputImage };
+          result = {
+            operation: 'resize',
+            width,
+            height,
+            inputImage,
+            outputImage,
+          };
           break;
         case 'crop':
-          result = { operation: 'crop', width, height, inputImage, outputImage };
+          result = {
+            operation: 'crop',
+            width,
+            height,
+            inputImage,
+            outputImage,
+          };
           break;
         case 'convert':
           result = { operation: 'convert', format, inputImage, outputImage };
@@ -137,8 +155,7 @@ export class ImageProcessingNodeExecutor implements INodeExecutor {
     return {
       type: 'object',
       properties: {},
-      required: []
+      required: [],
     };
   }
-
 }

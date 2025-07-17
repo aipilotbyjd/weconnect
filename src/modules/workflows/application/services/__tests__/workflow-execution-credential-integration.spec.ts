@@ -6,7 +6,10 @@ import { WorkflowCredentialContextService } from '../../../../credentials/applic
 import { NodeExecutorFactory } from '../../node-executors/node-executor.factory';
 import { WorkflowExecution } from '../../../domain/entities/workflow-execution.entity';
 import { WorkflowExecutionLog } from '../../../domain/entities/workflow-execution-log.entity';
-import { WorkflowNode, NodeType } from '../../../domain/entities/workflow-node.entity';
+import {
+  WorkflowNode,
+  NodeType,
+} from '../../../domain/entities/workflow-node.entity';
 import { NodeExecutor } from '../../node-executors/node-executor.interface';
 
 describe('WorkflowExecutionService - Credential Integration', () => {
@@ -118,14 +121,16 @@ describe('WorkflowExecutionService - Credential Integration', () => {
 
       executionRepository.findOne.mockResolvedValue(execution as any);
       credentialContextService.createContext.mockReturnValue(credentialContext);
-      credentialContextService.injectContext.mockReturnValue(contextualInputData);
+      credentialContextService.injectContext.mockReturnValue(
+        contextualInputData,
+      );
       mockNodeExecutor.execute.mockResolvedValue(nodeResult);
       logRepository.save.mockResolvedValue({} as any);
 
       const result = await service.executeNode(
         node as WorkflowNode,
         'exec-123',
-        inputData
+        inputData,
       );
 
       expect(executionRepository.findOne).toHaveBeenCalledWith({
@@ -138,18 +143,18 @@ describe('WorkflowExecutionService - Credential Integration', () => {
         'workflow-123',
         'exec-123',
         'node-1',
-        'org-123'
+        'org-123',
       );
 
       expect(credentialContextService.injectContext).toHaveBeenCalledWith(
         inputData,
-        credentialContext
+        credentialContext,
       );
 
       expect(mockNodeExecutor.execute).toHaveBeenCalledWith(
         node,
         contextualInputData,
-        'exec-123'
+        'exec-123',
       );
 
       expect(result).toEqual(nodeResult);
@@ -194,14 +199,16 @@ describe('WorkflowExecutionService - Credential Integration', () => {
 
       executionRepository.findOne.mockResolvedValue(execution as any);
       credentialContextService.createContext.mockReturnValue(credentialContext);
-      credentialContextService.injectContext.mockReturnValue(contextualInputData);
+      credentialContextService.injectContext.mockReturnValue(
+        contextualInputData,
+      );
       mockNodeExecutor.execute.mockResolvedValue({ data: 'processed' });
       logRepository.save.mockResolvedValue({} as any);
 
       const result = await service.executeNode(
         node as WorkflowNode,
         'exec-123',
-        inputData
+        inputData,
       );
 
       expect(credentialContextService.createContext).toHaveBeenCalledWith(
@@ -209,7 +216,7 @@ describe('WorkflowExecutionService - Credential Integration', () => {
         'workflow-123',
         'exec-123',
         'node-1',
-        'org-123'
+        'org-123',
       );
 
       expect(result).toEqual({ data: 'processed' });
@@ -226,7 +233,7 @@ describe('WorkflowExecutionService - Credential Integration', () => {
       executionRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.executeNode(node as WorkflowNode, 'invalid-exec', {})
+        service.executeNode(node as WorkflowNode, 'invalid-exec', {}),
       ).rejects.toThrow('Execution invalid-exec not found');
     });
 
@@ -254,8 +261,12 @@ describe('WorkflowExecutionService - Credential Integration', () => {
       };
 
       executionRepository.findOne.mockResolvedValue(execution as any);
-      credentialContextService.createContext.mockReturnValue({ userId: 'user-123' } as any);
-      credentialContextService.injectContext.mockReturnValue(contextualInputData);
+      credentialContextService.createContext.mockReturnValue({
+        userId: 'user-123',
+      } as any);
+      credentialContextService.injectContext.mockReturnValue(
+        contextualInputData,
+      );
       mockNodeExecutor.execute.mockResolvedValue({ result: 'success' });
       logRepository.save.mockResolvedValue({} as any);
 
