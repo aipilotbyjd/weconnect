@@ -5,17 +5,17 @@ import { ExecutionGateway } from './execution-gateway';
 import { ExecutionEventService } from './execution-event.service';
 
 @Module({
-    imports: [
-        JwtModule.registerAsync({
-            imports: [ConfigModule],
-            useFactory: async (configService: ConfigService) => ({
-                secret: configService.get<string>('jwt.secret'),
-                signOptions: { expiresIn: configService.get<string>('jwt.expiresIn') },
-            }),
-            inject: [ConfigService],
-        }),
-    ],
-    providers: [ExecutionGateway, ExecutionEventService],
-    exports: [ExecutionGateway, ExecutionEventService],
+  imports: [
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret'),
+        signOptions: { expiresIn: configService.get<string>('jwt.expiresIn') },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+  providers: [ExecutionGateway, ExecutionEventService],
+  exports: [ExecutionGateway, ExecutionEventService],
 })
-export class ExecutionWebSocketModule { }
+export class ExecutionWebSocketModule {}

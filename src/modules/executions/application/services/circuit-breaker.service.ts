@@ -71,7 +71,7 @@ export class CircuitBreakerService {
     } catch (error) {
       this.onFailure(key, stats, config);
       
-      if (fallback && stats.state === CircuitState.OPEN) {
+      if (fallback) {
         this.logger.warn(`Using fallback for ${key} due to circuit breaker`);
         return await fallback();
       }

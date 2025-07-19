@@ -171,9 +171,9 @@ export class ExecutionsController {
   })
   getWorkflowExecutions(
     @Param('workflowId') workflowId: string,
-    @Query('status') status?: string,
-    @Query('limit') limit?: number,
     @Req() req: any,
+    @Query('status') status?: string,
+    @Query('limit') limit?: string,
   ) {
     // This would need to be implemented in the service
     // return this.executionsService.findWorkflowExecutions(workflowId, req.user.id, { status, limit });

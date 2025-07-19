@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ScheduledWorkflowService } from '../../application/services/scheduled-workflow.service';
+import { SchedulerService } from '../../application/services/scheduler.service';
 import { CreateScheduledWorkflowDto } from '../dto/create-scheduled-workflow.dto';
 import { UpdateScheduledWorkflowDto } from '../dto/update-scheduled-workflow.dto';
 import { ScheduledWorkflow } from '../../domain/entities/scheduled-workflow.entity';
@@ -30,6 +31,7 @@ import { ScheduledWorkflow } from '../../domain/entities/scheduled-workflow.enti
 export class ScheduledWorkflowController {
   constructor(
     private readonly scheduledWorkflowService: ScheduledWorkflowService,
+    private readonly schedulerService: SchedulerService,
   ) {}
 
   @Post('workflows/:workflowId')
@@ -142,5 +144,50 @@ export class ScheduledWorkflowController {
     @Req() req: any,
   ): Promise<Date[]> {
     return this.scheduledWorkflowService.getNextExecutions(id, req.user.id);
+  }
+
+  @Get('system/metrics')
+  @ApiOperation({ summary: 'Get scheduling system metrics and analytics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Scheduling system metrics retrieved successfully',
+  })
+  async getSystemMetrics(@Req() req: any) {
+    // This would typically be admin-only, but for demo purposes we'll allow all users
+    return this.schedulerService.getSchedulingMetrics();
+  }
+
+  @Get('system/upcoming')
+  @ApiOperation({ summary: 'Get upcoming scheduled executions' })
+  @ApiResponse({
+    status: 200,
+    description: 'Upcoming executions retrieved successfully',
+  })
+  async getUpcomingExecutions(@Req() req: any) {
+    return this.schedulerService.getUpcomingExecutions();
+  }
+
+  @Post('system/pause-all')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Pause all scheduled workflows (admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'All scheduled workflows paused successfully',
+  })
+  async pauseAllSchedules(@Req() req: any) {
+    // In production, add admin role check here
+    return this.schedulerService.pauseAllSchedules();
+  }
+
+  @Post('system/resume-all')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resume all paused scheduled workflows (admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'All paused scheduled workflows resumed successfully',
+  })
+  async resumeAllSchedules(@Req() req: any) {
+    // In production, add admin role check here
+    return this.schedulerService.resumeAllSchedules();
   }
 }

@@ -9,6 +9,10 @@ import { ScheduledWorkflowController } from './presentation/controllers/schedule
 import { Workflow } from '../workflows/domain/entities/workflow.entity';
 import { WorkflowExecution } from '../workflows/domain/entities/workflow-execution.entity';
 import { WORKFLOW_EXECUTION_QUEUE } from '../workflows/infrastructure/queues/constants';
+// Import enhanced execution services
+import { CircuitBreakerService } from '../executions/application/services/circuit-breaker.service';
+import { PerformanceMonitorService } from '../executions/application/services/performance-monitor.service';
+import { ExecutionWebSocketModule } from '../executions/infrastructure/websocket/execution-websocket.module';
 
 @Module({
   imports: [
@@ -17,9 +21,19 @@ import { WORKFLOW_EXECUTION_QUEUE } from '../workflows/infrastructure/queues/con
     BullModule.registerQueue({
       name: WORKFLOW_EXECUTION_QUEUE,
     }),
+    ExecutionWebSocketModule,
   ],
   controllers: [ScheduledWorkflowController],
-  providers: [SchedulerService, ScheduledWorkflowService],
-  exports: [ScheduledWorkflowService],
+  providers: [
+    SchedulerService, 
+    ScheduledWorkflowService,
+    CircuitBreakerService,
+    PerformanceMonitorService,
+  ],
+  exports: [
+    ScheduledWorkflowService,
+    CircuitBreakerService,
+    PerformanceMonitorService,
+  ],
 })
 export class SchedulerModule {}

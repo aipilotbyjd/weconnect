@@ -30,6 +30,11 @@ import { TelegramNodeExecutor } from '../../application/node-executors/executors
 import { GitHubNodeExecutor } from '../../application/node-executors/executors/github-node.executor';
 import { GoogleSheetsNodeExecutor } from '../../application/node-executors/executors/google-sheets-node.executor';
 import { TrelloNodeExecutor } from '../../application/node-executors/executors/trello-node.executor';
+// Enhanced execution services
+import { RetryService } from '../../../executions/application/services/retry.service';
+import { CircuitBreakerService } from '../../../executions/application/services/circuit-breaker.service';
+import { PerformanceMonitorService } from '../../../executions/application/services/performance-monitor.service';
+import { ExecutionWebSocketModule } from '../../../executions/infrastructure/websocket/execution-websocket.module';
 
 @Module({
   imports: [
@@ -64,6 +69,7 @@ import { TrelloNodeExecutor } from '../../application/node-executors/executors/t
     ),
     HttpModule,
     CredentialsModule,
+    ExecutionWebSocketModule,
   ],
   providers: [
     WorkflowExecutionProcessor,
@@ -84,7 +90,16 @@ import { TrelloNodeExecutor } from '../../application/node-executors/executors/t
     GitHubNodeExecutor,
     GoogleSheetsNodeExecutor,
     TrelloNodeExecutor,
+    // Enhanced execution services
+    RetryService,
+    CircuitBreakerService,
+    PerformanceMonitorService,
   ],
-  exports: [BullModule],
+  exports: [
+    BullModule,
+    RetryService,
+    CircuitBreakerService,
+    PerformanceMonitorService,
+  ],
 })
-export class WorkflowQueueModule {}
+export class WorkflowQueueModule { }

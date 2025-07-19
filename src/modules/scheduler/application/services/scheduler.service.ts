@@ -19,6 +19,9 @@ import {
   WorkflowJobType,
 } from '../../../workflows/infrastructure/queues/constants';
 import { ExecutionMode } from '../../../workflows/domain/entities/workflow-execution.entity';
+import { CircuitBreakerService } from '../../../executions/application/services/circuit-breaker.service';
+import { PerformanceMonitorService } from '../../../executions/application/services/performance-monitor.service';
+import { ExecutionEventService } from '../../../executions/infrastructure/websocket/execution-event.service';
 const cronParser = require('cron-parser');
 
 @Injectable()
@@ -31,7 +34,13 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
     private schedulerRegistry: SchedulerRegistry,
     @InjectQueue(WORKFLOW_EXECUTION_QUEUE)
     private workflowQueue: Queue,
-  ) {}
+    private circuitBreakerService: CircuitBreakerService,
+    private performanceMonitor: PerformanceMonitorService,
+    private executionEventService: ExecutionEventService,
+  ) {
+    // Initialize circuit breakers for scheduling services
+    this.initializeCircuitBreakers();
+  }
 
   async onModuleInit() {
     this.logger.log('Initializing scheduled workflows...');
@@ -97,57 +106,114 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
   private async executeScheduledWorkflow(scheduledWorkflow: ScheduledWorkflow) {
     this.logger.log(`Executing scheduled workflow: ${scheduledWorkflow.name}`);
+    
+    const circuitKey = `scheduled-workflow:${scheduledWorkflow.workflowId}`;
+    const startTime = Date.now();
 
     try {
-      // Add workflow execution to queue
-      const job = await this.workflowQueue.add(
-        WorkflowJobType.EXECUTE_WORKFLOW,
-        {
-          workflowId: scheduledWorkflow.workflowId,
-          userId: scheduledWorkflow.userId,
-          inputData: scheduledWorkflow.inputData || {},
-          mode: ExecutionMode.SCHEDULED,
-          scheduledWorkflowId: scheduledWorkflow.id,
-        },
-        {
-          priority: 0,
-          attempts: 3,
-          backoff: {
-            type: 'exponential',
-            delay: 5000,
-          },
-        },
+      // Start performance monitoring
+      this.performanceMonitor.startExecutionMonitoring(
+        `scheduled-${scheduledWorkflow.id}`,
+        0 // No queue time for scheduled executions
       );
 
-      // Update execution stats
-      const nextExecution = this.getNextExecutionTime(
-        scheduledWorkflow.cronExpression,
-        scheduledWorkflow.timezone,
+      // Execute with circuit breaker protection
+      const job = await this.circuitBreakerService.execute(
+        circuitKey,
+        async () => {
+          return await this.workflowQueue.add(
+            WorkflowJobType.EXECUTE_WORKFLOW,
+            {
+              workflowId: scheduledWorkflow.workflowId,
+              userId: scheduledWorkflow.userId,
+              inputData: scheduledWorkflow.inputData || {},
+              mode: ExecutionMode.SCHEDULED,
+              scheduledWorkflowId: scheduledWorkflow.id,
+            },
+            {
+              priority: 0,
+              attempts: 3,
+              backoff: {
+                type: 'exponential',
+                delay: 5000,
+              },
+            },
+          );
+        },
+        async () => {
+          // Fallback: Log the failure and increment failure count
+          this.logger.warn(`Circuit breaker activated for scheduled workflow ${scheduledWorkflow.id}`);
+          await this.scheduledWorkflowRepository.update(scheduledWorkflow.id, {
+            failureCount: () => 'failure_count + 1',
+          });
+          return null;
+        }
       );
 
-      const updates: any = {
-        lastExecutionAt: new Date(),
-        lastExecutionId: job.id.toString(),
-        executionCount: () => 'execution_count + 1',
-      };
+      if (job) {
+        // Emit real-time event for scheduled execution
+        this.executionEventService.emitExecutionStarted(
+          job.id.toString(),
+          scheduledWorkflow.workflowId,
+          scheduledWorkflow.userId
+        );
 
-      if (nextExecution) {
-        updates.nextExecutionAt = nextExecution;
+        // Update execution stats
+        const nextExecution = this.getNextExecutionTime(
+          scheduledWorkflow.cronExpression,
+          scheduledWorkflow.timezone,
+        );
+
+        const updates: any = {
+          lastExecutionAt: new Date(),
+          lastExecutionId: job.id.toString(),
+          executionCount: () => 'execution_count + 1',
+        };
+
+        if (nextExecution) {
+          updates.nextExecutionAt = nextExecution;
+        }
+
+        await this.scheduledWorkflowRepository.update(
+          scheduledWorkflow.id,
+          updates,
+        );
+
+        // End performance monitoring
+        const metrics = this.performanceMonitor.endExecutionMonitoring(`scheduled-${scheduledWorkflow.id}`);
+        if (metrics) {
+          this.executionEventService.emitExecutionMetrics({
+            executionId: job.id.toString(),
+            metrics: {
+              executionTime: metrics.duration,
+              memoryUsage: metrics.memoryUsage.rss,
+              queueTime: 0,
+            },
+            timestamp: new Date(),
+          });
+        }
+
+        this.logger.log(`Successfully queued scheduled workflow ${scheduledWorkflow.name} (Job ID: ${job.id})`);
       }
-
-      await this.scheduledWorkflowRepository.update(
-        scheduledWorkflow.id,
-        updates,
-      );
     } catch (error) {
       this.logger.error(
         `Failed to execute scheduled workflow ${scheduledWorkflow.id}:`,
         error,
       );
 
+      // Emit failure event
+      this.executionEventService.emitExecutionFailed(
+        `scheduled-${scheduledWorkflow.id}`,
+        scheduledWorkflow.userId,
+        error.message
+      );
+
       await this.scheduledWorkflowRepository.update(scheduledWorkflow.id, {
         failureCount: () => 'failure_count + 1',
       });
+
+      // End performance monitoring on error
+      this.performanceMonitor.endExecutionMonitoring(`scheduled-${scheduledWorkflow.id}`);
     }
   }
 
@@ -206,6 +272,91 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
       schedule.status = ScheduleStatus.ACTIVE;
       await this.scheduledWorkflowRepository.save(schedule);
       await this.scheduleWorkflow(schedule);
+    }
+  }
+
+  private initializeCircuitBreakers() {
+    // Register circuit breakers for scheduled workflow services
+    this.circuitBreakerService.registerCircuit(
+      'scheduled-workflow-queue',
+      CircuitBreakerService.DEFAULT_CONFIG,
+    );
+    
+    this.circuitBreakerService.registerCircuit(
+      'scheduled-workflow-database',
+      CircuitBreakerService.DATABASE_CONFIG,
+    );
+  }
+
+  // Enhanced methods for monitoring and analytics
+  async getSchedulingMetrics(): Promise<any> {
+    const activeSchedules = await this.scheduledWorkflowRepository.count({
+      where: { status: ScheduleStatus.ACTIVE },
+    });
+
+    const pausedSchedules = await this.scheduledWorkflowRepository.count({
+      where: { status: ScheduleStatus.PAUSED },
+    });
+
+    const totalExecutions = await this.scheduledWorkflowRepository
+      .createQueryBuilder('schedule')
+      .select('SUM(schedule.executionCount)', 'total')
+      .getRawOne();
+
+    const totalFailures = await this.scheduledWorkflowRepository
+      .createQueryBuilder('schedule')
+      .select('SUM(schedule.failureCount)', 'total')
+      .getRawOne();
+
+    return {
+      activeSchedules,
+      pausedSchedules,
+      totalExecutions: parseInt(totalExecutions.total) || 0,
+      totalFailures: parseInt(totalFailures.total) || 0,
+      systemMetrics: this.performanceMonitor.collectSystemMetrics(),
+      circuitBreakers: this.circuitBreakerService.getAllStats(),
+    };
+  }
+
+  async getUpcomingExecutions(limit: number = 10): Promise<any[]> {
+    const activeSchedules = await this.scheduledWorkflowRepository.find({
+      where: { status: ScheduleStatus.ACTIVE },
+      relations: ['workflow'],
+      order: { nextExecutionAt: 'ASC' },
+      take: limit,
+    });
+
+    return activeSchedules.map(schedule => ({
+      id: schedule.id,
+      name: schedule.name,
+      workflowName: schedule.workflow?.name,
+      nextExecutionAt: schedule.nextExecutionAt,
+      cronExpression: schedule.cronExpression,
+      timezone: schedule.timezone,
+    }));
+  }
+
+  async pauseAllSchedules(): Promise<void> {
+    this.logger.warn('Pausing all scheduled workflows due to system maintenance');
+    
+    const activeSchedules = await this.scheduledWorkflowRepository.find({
+      where: { status: ScheduleStatus.ACTIVE },
+    });
+
+    for (const schedule of activeSchedules) {
+      await this.pauseSchedule(schedule.id);
+    }
+  }
+
+  async resumeAllSchedules(): Promise<void> {
+    this.logger.log('Resuming all paused scheduled workflows');
+    
+    const pausedSchedules = await this.scheduledWorkflowRepository.find({
+      where: { status: ScheduleStatus.PAUSED },
+    });
+
+    for (const schedule of pausedSchedules) {
+      await this.resumeSchedule(schedule.id);
     }
   }
 }
