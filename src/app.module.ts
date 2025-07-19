@@ -68,7 +68,7 @@ import redisConfig from './config/redis.config';
     SchedulerModule,
     MonitoringModule,
     WorkflowsModule,
-    ExecutionsModule,
+    ExecutionsModule, // Now includes enhanced execution engine
     WebhooksModule,
   ],
   controllers: [AppController],
