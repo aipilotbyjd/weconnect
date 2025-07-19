@@ -27,7 +27,7 @@ import { StartExecutionUseCase } from '../use-cases/start-execution.use-case';
 import { RetryService, RetryConfig } from './retry.service';
 import { CircuitBreakerService } from './circuit-breaker.service';
 import { PerformanceMonitorService } from './performance-monitor.service';
-import { ExecutionEventService } from '../infrastructure/websocket/execution-event.service';
+import { ExecutionEventService } from '../../infrastructure/websocket/execution-event.service';
 
 @Injectable()
 export class ExecutionsService {
@@ -53,7 +53,7 @@ export class ExecutionsService {
   ) {
     // Initialize circuit breakers for different services
     this.initializeCircuitBreakers();
-    
+
     // Set default execution limits
     this.setDefaultExecutionLimits();
   }
@@ -192,7 +192,7 @@ export class ExecutionsService {
     } finally {
       // Clean up tracking
       this.untrackActiveExecution(execution.userId, executionId);
-      
+
       // End performance monitoring
       const metrics = this.performanceMonitor.endExecutionMonitoring(executionId);
       if (metrics) {
@@ -386,7 +386,6 @@ export class ExecutionsService {
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-}
 
   private async executeNodeWithRetry(
     node: WorkflowNode,
@@ -399,7 +398,7 @@ export class ExecutionsService {
     try {
       // Get retry configuration based on node type
       const retryConfig = this.getRetryConfigForNode(node);
-      
+
       const result = await this.retryService.executeWithRetry(
         () => this.executeNode(node, inputData, executionId),
         retryConfig,
@@ -443,7 +442,7 @@ export class ExecutionsService {
 
   private async handleWorkflowFallback(execution: Execution): Promise<void> {
     this.logger.warn(`Using fallback for workflow ${execution.workflowId}`);
-    
+
     execution.status = ExecutionStatus.FAILED;
     execution.errorMessage = 'Circuit breaker activated - workflow temporarily unavailable';
     execution.finishedAt = new Date();
@@ -452,7 +451,7 @@ export class ExecutionsService {
       : 0;
 
     await this.executionRepository.save(execution);
-    
+
     this.executionEventService.emitExecutionFailed(
       execution.id,
       execution.userId,
@@ -528,12 +527,12 @@ export class ExecutionsService {
       'http-requests',
       CircuitBreakerService.API_CONFIG,
     );
-    
+
     this.circuitBreakerService.registerCircuit(
       'email-service',
       CircuitBreakerService.API_CONFIG,
     );
-    
+
     this.circuitBreakerService.registerCircuit(
       'database',
       CircuitBreakerService.DATABASE_CONFIG,
@@ -588,7 +587,7 @@ export class ExecutionsService {
     await this.executionRepository.save(execution);
 
     await this.addLog(id, LogLevel.INFO, 'Execution paused by user');
-    
+
     this.executionEventService.emitExecutionUpdate({
       executionId: id,
       status: ExecutionStatus.PENDING,
@@ -621,3 +620,4 @@ export class ExecutionsService {
 
     return execution;
   }
+}

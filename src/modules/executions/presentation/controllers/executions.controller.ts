@@ -27,7 +27,7 @@ import { ExecutionLog } from '../../domain/entities/execution-log.entity';
 @UseGuards(AuthGuard('jwt'))
 @Controller('executions')
 export class ExecutionsController {
-  constructor(private readonly executionsService: ExecutionsService) {}
+  constructor(private readonly executionsService: ExecutionsService) { }
 
   @Post('workflows/:workflowId/start')
   @ApiOperation({ summary: 'Start workflow execution' })
@@ -102,7 +102,7 @@ export class ExecutionsController {
   ): Promise<Execution> {
     return this.executionsService.cancelExecution(id, req.user.id);
   }
-}
+
   @Get(':id/metrics')
   @ApiOperation({ summary: 'Get detailed execution metrics' })
   @ApiResponse({
