@@ -14,7 +14,5 @@ export default registerAs(
     synchronize: process.env.NODE_ENV === 'development',
     logging: process.env.NODE_ENV === 'development',
     autoLoadEntities: true,
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
   }),
 );
