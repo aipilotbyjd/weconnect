@@ -67,9 +67,8 @@ weconnect/
 
 ### Prerequisites
 - Node.js 20+
-- Docker & Docker Compose
-- MongoDB 7+
-- Redis 7+
+- Docker & Docker Compose (for MongoDB & Redis services only)
+- npm or yarn
 
 ### Development Setup
 
@@ -84,41 +83,38 @@ weconnect/
    npm install
    ```
 
-3. **Set up environment**
+3. **Start development environment**
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-4. **Start development environment**
-   ```bash
-   # Using Docker (recommended)
-   docker-compose up --build -d
+   # Quick start (recommended) - starts services and app
+   npm run dev:full
    
-   # Or locally
-   npm run start:dev
+   # Or manually
+   npm run services:up    # Start MongoDB & Redis
+   npm run start:dev      # Start NestJS app
    ```
 
-5. **Access the application**
+4. **Access the application**
    - API: http://localhost:3000
    - MongoDB GUI: http://localhost:8080 (admin/admin)
    - Redis GUI: http://localhost:8081
 
+> **Note**: WeConnect now runs natively on your machine while using Docker only for external services (MongoDB, Redis). See [SETUP.md](SETUP.md) for detailed setup instructions.
+
 ### Production Deployment
 
-1. **Create secrets**
+1. **Start services**
    ```bash
-   mkdir secrets
-   echo "your-secure-password" > secrets/db_password.txt
+   docker-compose up -d
    ```
 
-2. **Deploy with Docker**
+2. **Build and start application**
    ```bash
-   docker-compose -f docker-compose.yml up --build -d
+   npm run build
+   npm run start:prod
    ```
 
-3. **Access via Nginx**
-   - Application: http://localhost
+3. **Access the application**
+   - Application: http://localhost:3000
 
 ## 📚 Node Types
 

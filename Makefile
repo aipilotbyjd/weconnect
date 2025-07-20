@@ -40,34 +40,21 @@ format: ## Format code
 typecheck: ## Run TypeScript type checking
 	npm run typecheck
 
-# Docker commands
-up: ## Start development environment with Docker
-	docker-compose up --build -d
+# Service commands (Redis, MongoDB, etc.)
+services-up: ## Start external services (Redis, MongoDB)
+	docker-compose up -d
 
-down: ## Stop development environment
+services-down: ## Stop external services
 	docker-compose down
 
-logs: ## View application logs
-	docker-compose logs -f app
-
-logs-all: ## View all service logs
+services-logs: ## View service logs
 	docker-compose logs -f
 
-shell: ## Get shell access to app container
-	docker-compose exec app sh
+services-restart: ## Restart services
+	docker-compose restart
 
-restart: ## Restart the application
-	docker-compose restart app
-
-# Production commands
-prod-up: ## Start production environment
-	docker-compose -f docker-compose.yml up --build -d
-
-prod-down: ## Stop production environment
-	docker-compose -f docker-compose.yml down
-
-prod-logs: ## View production logs
-	docker-compose -f docker-compose.yml logs -f
+services-status: ## Show service status
+	docker-compose ps
 
 # Database commands
 seed: ## Seed database with sample data
@@ -86,12 +73,10 @@ redis: ## Connect to Redis CLI
 clean: ## Clean build artifacts and dependencies
 	npm run clean
 	docker-compose down -v
-	docker system prune -f
 
 clean-all: ## Clean everything including node_modules
 	npm run clean:all
 	docker-compose down -v --remove-orphans
-	docker system prune -af
 
 deps-check: ## Check dependencies
 	npm run deps:check
@@ -106,22 +91,20 @@ deps-audit: ## Audit dependencies for security issues
 health: ## Check application health
 	curl -f http://localhost:3000/health || echo "Application not responding"
 
-status: ## Show service status
-	docker-compose ps
-
 # Development workflow
-setup: install up seed ## Complete development setup
+setup: install services-up seed ## Complete development setup
 	@echo ""
 	@echo "🎉 WeConnect development environment is ready!"
 	@echo ""
 	@echo "📋 Services:"
-	@echo "  • Application: http://localhost:3000"
+	@echo "  • MongoDB: localhost:27017"
+	@echo "  • Redis: localhost:6379"
 	@echo "  • MongoDB GUI: http://localhost:8080 (admin/admin)"
 	@echo "  • Redis GUI: http://localhost:8081"
 	@echo ""
-	@echo "🔑 Login credentials:"
-	@echo "  • Admin: admin@weconnect.dev / admin123"
-	@echo "  • Demo:  demo@weconnect.dev / demo123"
+	@echo "🚀 Start the application:"
+	@echo "  • Development: npm run start:dev"
+	@echo "  • Production: npm run start:prod"
 	@echo ""
 	@echo "📚 Available commands: make help"
 
@@ -138,7 +121,7 @@ restore: ## Restore MongoDB data (requires BACKUP_FILE variable)
 	@echo "Restore completed"
 
 # Monitoring
-monitor: ## Show real-time container stats
+monitor: ## Show real-time service stats
 	docker stats $(shell docker-compose ps -q)
 
 # Security
@@ -153,7 +136,7 @@ docs: ## Generate API documentation
 	@echo "Documentation available at: http://localhost:3000/api"
 
 # Quick commands for common workflows
-quick-start: up logs ## Quick start with logs
-quick-restart: down up logs ## Quick restart with logs
-quick-test: up test down ## Quick test run
-quick-deploy: build prod-up prod-logs ## Quick production deployment
+quick-start: services-up dev ## Quick start services and app
+quick-restart: services-restart ## Quick restart services
+quick-test: services-up test ## Quick test run with services
+quick-deploy: build services-up ## Quick deployment setup

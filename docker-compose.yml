@@ -1,62 +1,16 @@
 services:
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: weconnect-nginx-prod
-    ports:
-      - '80:80'
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    networks:
-      - weconnect-network
-    depends_on:
-      app:
-        condition: service_healthy
-    restart: unless-stopped
-
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
-    container_name: weconnect-app-prod
-    restart: unless-stopped
-    secrets:
-      - db_password
-    env_file:
-      - .env # Load application config from .env file
-    environment:
-      # Override hosts for Docker's internal network
-      DB_HOST: mongodb
-      REDIS_HOST: redis
-      # Point to the secret file for the password
-      DB_PASSWORD_FILE: /run/secrets/db_password
-    networks:
-      - weconnect-network
-    healthcheck:
-      test: 'node -e "require(''http'').get(''http://localhost:3000'', { timeout: 2000 }, (res) => res.statusCode === 200 ? process.exit(0) : process.exit(1)).on(''error'', () => process.exit(1))"'
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
   mongodb:
     image: mongo:7-jammy
-    container_name: weconnect-mongodb-prod
-    secrets:
-      - db_password
+    container_name: weconnect-mongodb
+    ports:
+      - '27017:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: weconnect
-      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/db_password
+      MONGO_INITDB_ROOT_PASSWORD: weconnect123
       MONGO_INITDB_DATABASE: weconnect
     volumes:
       - mongodb_data:/data/db
-    networks:
-      - weconnect-network
     healthcheck:
       test: ['CMD', 'mongosh', '--eval', 'db.adminCommand("ping")']
       interval: 10s
@@ -66,12 +20,12 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: weconnect-redis-prod
+    container_name: weconnect-redis
+    ports:
+      - '6379:6379'
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
-    networks:
-      - weconnect-network
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
@@ -79,14 +33,36 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # Optional: MongoDB GUI for development
+  mongo-express:
+    image: mongo-express:latest
+    container_name: weconnect-mongo-express
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: weconnect
+      ME_CONFIG_MONGODB_ADMINPASSWORD: weconnect123
+      ME_CONFIG_MONGODB_URL: mongodb://weconnect:weconnect123@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    ports:
+      - '8080:8081'
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  # Optional: Redis GUI for development
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: weconnect-redis-gui
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - '8081:8081'
+    depends_on:
+      - redis
+    restart: unless-stopped
+
 volumes:
   mongodb_data:
   redis_data:
 
-networks:
-  weconnect-network:
-    driver: bridge
 
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
