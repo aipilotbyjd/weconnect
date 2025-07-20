@@ -1,18 +1,10 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-  ManyToMany,
-  JoinTable,
+  Index,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../../../auth/domain/entities/user.entity';
-import { Workflow } from '../../../workflows/domain/entities/workflow.entity';
-import { Credential } from '../../../credentials/domain/entities/credential.entity';
-import { OrganizationMember } from './organization-member.entity';
+import { BaseEntity } from '../../../../core/abstracts/base.entity';
 
 export enum OrganizationPlan {
   FREE = 'free',
@@ -35,11 +27,10 @@ export interface PlanLimits {
 }
 
 @Entity('organizations')
-export class Organization {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+@Index(['slug'], { unique: true })
+export class Organization extends BaseEntity {
 
-  @Column({ unique: true })
+  @Column()
   slug: string;
 
   @Column()
@@ -61,10 +52,10 @@ export class Organization {
   })
   plan: OrganizationPlan;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ nullable: true })
   planLimits: PlanLimits;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ nullable: true })
   customSettings?: Record<string, any>;
 
   @Column({ default: true })
@@ -76,44 +67,33 @@ export class Organization {
   @Column({ nullable: true })
   stripeSubscriptionId?: string;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ nullable: true })
   trialEndsAt?: Date;
 
   @Column({ default: 0 })
   currentMonthExecutions: number;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ nullable: true })
   executionResetDate?: Date;
 
-  // Relations
+  // Store related entity IDs as arrays
   @ApiProperty({
-    type: () => [OrganizationMember],
-    description: 'Organization members',
+    description: 'Organization member IDs',
   })
-  @OneToMany(() => OrganizationMember, (member) => member.organization, {
-    cascade: true,
-  })
-  members: OrganizationMember[];
+  @Column({ type: 'array', default: [] })
+  memberIds: string[];
 
   @ApiProperty({
-    type: () => [Workflow],
-    description: 'Organization workflows',
+    description: 'Organization workflow IDs',
   })
-  @OneToMany(() => Workflow, (workflow) => workflow.organization)
-  workflows: Workflow[];
+  @Column({ type: 'array', default: [] })
+  workflowIds: string[];
 
   @ApiProperty({
-    type: () => [Credential],
-    description: 'Organization credentials',
+    description: 'Organization credential IDs',
   })
-  @OneToMany(() => Credential, (credential) => credential.organization)
-  credentials: Credential[];
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Column({ type: 'array', default: [] })
+  credentialIds: string[];
 
   // Helper method to get plan limits
   getPlanLimits(): PlanLimits {

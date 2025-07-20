@@ -2,15 +2,12 @@ import {
   Entity,
   Column,
   BeforeInsert,
-  OneToMany,
-  ManyToOne,
-  JoinColumn,
+  Index,
+  ObjectId,
 } from 'typeorm';
 import { BaseEntity } from '../../../../core/abstracts/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import * as bcrypt from 'bcryptjs';
-import { OrganizationMember } from '../../../organizations/domain/entities/organization-member.entity';
-import { Organization } from '../../../organizations/domain/entities/organization.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -18,12 +15,13 @@ export enum UserRole {
 }
 
 @Entity('users')
+@Index(['email'], { unique: true })
 export class User extends BaseEntity {
   @ApiProperty({
     description: 'User email address',
     example: 'user@example.com',
   })
-  @Column({ unique: true })
+  @Column()
   email: string;
 
   @ApiProperty({ description: 'User first name', example: 'John' })
@@ -50,24 +48,19 @@ export class User extends BaseEntity {
   isActive: boolean;
 
   @ApiProperty({ description: 'Last login timestamp' })
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ nullable: true })
   lastLoginAt?: Date;
 
-  // Current active organization
+  // Current active organization - store as ObjectId string
   @Column({ nullable: true })
   currentOrganizationId?: string;
 
-  @ManyToOne(() => Organization, { nullable: true })
-  @JoinColumn({ name: 'currentOrganizationId' })
-  currentOrganization?: Organization;
-
-  // Organization memberships
+  // Organization memberships - store as array of ObjectId strings
   @ApiProperty({
-    type: () => [OrganizationMember],
-    description: 'User organization memberships',
+    description: 'User organization membership IDs',
   })
-  @OneToMany(() => OrganizationMember, (member) => member.user)
-  organizationMemberships: OrganizationMember[];
+  @Column({ type: 'array', default: [] })
+  organizationMembershipIds: string[];
 
   @Column({ nullable: true })
   profilePicture?: string;
@@ -75,7 +68,7 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   timezone?: string;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ nullable: true })
   preferences?: Record<string, any>;
 
   @BeforeInsert()

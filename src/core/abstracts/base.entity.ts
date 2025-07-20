@@ -1,29 +1,35 @@
 import {
-  PrimaryGeneratedColumn,
+  ObjectIdColumn,
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
   Column,
+  ObjectId,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 export abstract class BaseEntity {
   @ApiProperty({ description: 'Unique identifier' })
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @ObjectIdColumn()
+  _id: ObjectId;
+
+  @ApiProperty({ description: 'String representation of ID' })
+  get id(): string {
+    return this._id.toString();
+  }
 
   @ApiProperty({ description: 'Creation timestamp' })
-  @CreateDateColumn({ type: 'timestamp with time zone' })
+  @CreateDateColumn()
   createdAt: Date;
 
   @ApiProperty({ description: 'Last update timestamp' })
-  @UpdateDateColumn({ type: 'timestamp with time zone' })
+  @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamp with time zone', nullable: true })
+  @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
 
   @ApiProperty({ description: 'Version for optimistic locking' })
-  @Column({ type: 'int', default: 1 })
+  @Column({ default: 1 })
   version: number;
 }

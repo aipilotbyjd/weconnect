@@ -33,3 +33,14 @@ prod-down: ## 🛑 Stop production environment
 
 help: ## 📖 Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+# --- 
+Database ---
+db-seed: ## 🌱 Seed the database with initial data
+	docker-compose exec app npm run db:seed
+
+db-shell: ## 🗄️ Connect to MongoDB shell
+	docker-compose exec mongodb mongosh -u weconnect -p weconnect123 --authenticationDatabase admin weconnect
+
+db-gui: ## 🖥️ Open MongoDB GUI (Mongo Express)
+	@echo "Opening Mongo Express at http://localhost:8080"
+	@echo "Username: admin, Password: admin"

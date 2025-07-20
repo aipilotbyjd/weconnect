@@ -27,5 +27,6 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`🚀 WeConnect API running on: http://localhost:${port}`);
   console.log(`📖 API Documentation: http://localhost:${port}/api/docs`);
+  console.log(`🗄️ Database: MongoDB on ${process.env.DB_HOST}:${process.env.DB_PORT}`);
 }
 bootstrap();
