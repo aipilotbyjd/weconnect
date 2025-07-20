@@ -23,6 +23,8 @@
     "services:down": "docker-compose down",
     "services:logs": "docker-compose logs -f",
     "services:restart": "docker-compose restart",
+    "services:redis-only": "docker-compose -f docker-compose.redis-only.yml up -d",
+    "services:setup-local": "powershell -ExecutionPolicy Bypass -File scripts/setup-local-services.ps1",
     "dev:full": "node scripts/start-dev.js",
     "deps:check": "node scripts/analyze-dependencies.js",
     "deps:update": "npm update",
