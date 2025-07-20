@@ -1,6 +1,5 @@
-import { Entity, Column, Index, CreateDateColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 
 export enum AuditAction {
   CREATE = 'create',
@@ -15,54 +14,54 @@ export enum AuditAction {
   API_ACCESS = 'api_access',
 }
 
-@Entity('audit_logs')
-@Index(['userId', 'createdAt'])
-@Index(['entityType', 'entityId'])
-@Index(['action', 'createdAt'])
-export class AuditLog extends BaseEntity {
+@Schema({ collection: 'audit_logs' })
+export class AuditLog extends BaseSchema {
   @ApiProperty({ description: 'Action performed', enum: AuditAction })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: AuditAction,
   })
   action: AuditAction;
 
   @ApiProperty({ description: 'Entity type affected' })
-  @Column()
+  @Prop()
   entityType: string;
 
   @ApiProperty({ description: 'Entity ID affected' })
-  @Column()
+  @Prop()
   entityId: string;
 
   @ApiProperty({ description: 'User who performed the action' })
-  @Column()
+  @Prop()
   userId: string;
 
   @ApiProperty({ description: 'User email for quick reference' })
-  @Column()
+  @Prop()
   userEmail: string;
 
   @ApiProperty({ description: 'IP address' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   ipAddress?: string;
 
   @ApiProperty({ description: 'User agent' })
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   userAgent?: string;
 
   @ApiProperty({ description: 'Changes made (for updates)' })
-  @Column({ type: 'jsonb', nullable: true })
+  @Prop({ type: 'jsonb', nullable: true })
   changes?: Record<string, any>;
 
   @ApiProperty({ description: 'Additional metadata' })
-  @Column({ type: 'jsonb', nullable: true })
+  @Prop({ type: 'jsonb', nullable: true })
   metadata?: Record<string, any>;
 
   @ApiProperty({ description: 'Organization ID' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   organizationId?: string;
 
   @CreateDateColumn()
   performedAt: Date;
 }
+
+
+export const AuditLogSchema = SchemaFactory.createForClass(AuditLog);

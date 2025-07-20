@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 import { Workflow } from './workflow.entity';
 import { WorkflowExecutionLog } from './workflow-execution-log.entity';
 
@@ -22,10 +21,10 @@ export enum ExecutionMode {
   TEST = 'test',
 }
 
-@Entity('workflow_executions')
-export class WorkflowExecution extends BaseEntity {
+@Schema({ collection: 'workflow_executions' })
+export class WorkflowExecution extends BaseSchema {
   @ApiProperty({ description: 'Execution status', enum: ExecutionStatus })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: ExecutionStatus,
     default: ExecutionStatus.PENDING,
@@ -33,38 +32,38 @@ export class WorkflowExecution extends BaseEntity {
   status: ExecutionStatus;
 
   @ApiProperty({ description: 'Execution mode', enum: ExecutionMode })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: ExecutionMode,
   })
   mode: ExecutionMode;
 
   @ApiProperty({ description: 'Start time' })
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   startedAt?: Date;
 
   @ApiProperty({ description: 'End time' })
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   finishedAt?: Date;
 
   @ApiProperty({ description: 'Execution data' })
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   data: Record<string, any>;
 
   @ApiProperty({ description: 'Execution error' })
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   error?: Record<string, any>;
 
   @ApiProperty({ description: 'Execution metadata' })
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   metadata: Record<string, any>;
 
   @ApiProperty({ description: 'Retry count' })
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   retryCount: number;
 
   @ApiProperty({ description: 'Current node ID' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   currentNodeId?: string;
 
   // Relations
@@ -72,7 +71,7 @@ export class WorkflowExecution extends BaseEntity {
   @JoinColumn({ name: 'workflowId' })
   workflow: Workflow;
 
-  @Column()
+  @Prop()
   workflowId: string;
 
   @OneToMany(() => WorkflowExecutionLog, (log) => log.execution, {
@@ -80,3 +79,6 @@ export class WorkflowExecution extends BaseEntity {
   })
   logs: WorkflowExecutionLog[];
 }
+
+
+export const WorkflowExecutionSchema = SchemaFactory.createForClass(WorkflowExecution);

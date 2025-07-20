@@ -1,14 +1,5 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  Index,
-} from 'typeorm';
-import { Credential } from './credential.entity';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { Credential } from './credential.entity';
 import {
   RotationStatus,
   RotationType,
@@ -24,60 +15,56 @@ export interface RotationPolicy {
   autoRotate: boolean;
 }
 
-@Entity('credential_rotations')
-@Index(['credentialId', 'status'])
-@Index(['nextRotationAt'])
-@Index(['scheduledAt'])
-@Index(['createdByUserId'])
+@Schema({ collection: 'credential_rotations' })
 export class CredentialRotation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('uuid')
+  @Prop('uuid')
   credentialId: string;
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: RotationType,
     default: RotationType.MANUAL,
   })
   rotationType: RotationType;
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: RotationStatus,
     default: RotationStatus.SCHEDULED,
   })
   status: RotationStatus;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Prop({ type: 'jsonb', nullable: true })
   policy: RotationPolicy;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   scheduledAt: Date;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   nextRotationAt: Date;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   startedAt: Date;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   completedAt: Date;
 
-  @Column('uuid', { nullable: true })
+  @Prop('uuid', { nullable: true })
   newCredentialId: string;
 
-  @Column('uuid')
+  @Prop('uuid')
   createdByUserId: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   error: string;
 
-  @Column({ type: 'integer', nullable: true })
+  @Prop({ type: 'integer', nullable: true })
   executionTimeMs: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Prop({ type: 'jsonb', nullable: true })
   metadata: Record<string, any>;
 
   @CreateDateColumn()
@@ -225,3 +212,6 @@ export class CredentialRotation {
     return this.completedAt.getTime() - this.startedAt.getTime();
   }
 }
+
+
+export const CredentialRotationSchema = SchemaFactory.createForClass(CredentialRotation);

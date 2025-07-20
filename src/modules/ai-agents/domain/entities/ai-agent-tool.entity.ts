@@ -1,22 +1,24 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { AIAgent } from './ai-agent.entity';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { AIAgent } from './ai-agent.entity';
 
-@Entity('ai_agent_tools')
-export class AIAgentTool extends BaseEntity {
+@Schema({ collection: 'ai_agent_tools' })
+export class AIAgentTool extends BaseSchema {
   @ManyToOne(() => AIAgent, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'agentId' })
   agent: AIAgent;
 
-  @Column()
+  @Prop()
   agentId: string;
 
-  @Column()
+  @Prop()
   name: string;
 
-  @Column()
+  @Prop()
   description: string;
 
-  @Column({ type: 'json', default: {} })
+  @Prop({ type: 'json', default: {} })
   configuration: Record<string, any>;
 }
+
+
+export const AIAgentToolSchema = SchemaFactory.createForClass(AIAgentTool);

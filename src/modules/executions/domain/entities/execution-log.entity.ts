@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 import { Execution } from './execution.entity';
 
 export enum LogLevel {
@@ -10,10 +9,10 @@ export enum LogLevel {
   ERROR = 'error',
 }
 
-@Entity('execution_logs')
-export class ExecutionLog extends BaseEntity {
+@Schema({ collection: 'execution_logs' })
+export class ExecutionLog extends BaseSchema {
   @ApiProperty({ description: 'Log level', enum: LogLevel })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: LogLevel,
     default: LogLevel.INFO,
@@ -21,23 +20,23 @@ export class ExecutionLog extends BaseEntity {
   level: LogLevel;
 
   @ApiProperty({ description: 'Log message' })
-  @Column({ type: 'text' })
+  @Prop({ type: 'text' })
   message: string;
 
   @ApiProperty({ description: 'Node ID that generated this log' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   nodeId?: string;
 
   @ApiProperty({ description: 'Node name' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   nodeName?: string;
 
   @ApiProperty({ description: 'Additional log data' })
-  @Column({ type: 'jsonb', default: {} })
+  @Prop({ type: 'jsonb', default: {} })
   data: Record<string, any>;
 
   @ApiProperty({ description: 'Execution duration for this step in ms' })
-  @Column({ type: 'int', nullable: true })
+  @Prop({ type: 'int', nullable: true })
   duration?: number;
 
   // Relations
@@ -47,6 +46,9 @@ export class ExecutionLog extends BaseEntity {
   @JoinColumn({ name: 'executionId' })
   execution: Execution;
 
-  @Column()
+  @Prop()
   executionId: string;
 }
+
+
+export const ExecutionLogSchema = SchemaFactory.createForClass(ExecutionLog);

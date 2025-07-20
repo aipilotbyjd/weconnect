@@ -1,14 +1,5 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
-  Unique,
-} from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../../../auth/domain/entities/user.entity';
 import { Organization } from './organization.entity';
 
@@ -46,7 +37,7 @@ export interface RolePermissions {
   canDeleteExecutions: boolean;
 }
 
-@Entity('organization_members')
+@Schema({ collection: 'organization_members' })
 @Unique(['organization', 'user'])
 export class OrganizationMember {
   @PrimaryGeneratedColumn('uuid')
@@ -62,7 +53,7 @@ export class OrganizationMember {
   @JoinColumn()
   organization: Organization;
 
-  @Column()
+  @Prop()
   organizationId: string;
 
   @ApiProperty({ type: () => User, description: 'User who is a member' })
@@ -72,35 +63,35 @@ export class OrganizationMember {
   @JoinColumn()
   user: User;
 
-  @Column()
+  @Prop()
   userId: string;
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: OrganizationRole,
     default: OrganizationRole.MEMBER,
   })
   role: OrganizationRole;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   invitedBy?: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   inviteToken?: string;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Prop({ nullable: true, type: 'timestamp' })
   inviteExpiresAt?: Date;
 
-  @Column({ default: false })
+  @Prop({ default: false })
   inviteAccepted: boolean;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Prop({ nullable: true, type: 'timestamp' })
   acceptedAt?: Date;
 
-  @Column({ default: true })
+  @Prop({ default: true })
   isActive: boolean;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Prop({ nullable: true, type: 'timestamp' })
   lastActiveAt?: Date;
 
   @CreateDateColumn()
@@ -198,3 +189,6 @@ export class OrganizationMember {
     return permissions[permission];
   }
 }
+
+
+export const OrganizationMemberSchema = SchemaFactory.createForClass(OrganizationMember);

@@ -1,13 +1,5 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  CreateDateColumn,
-  UpdateDateColumn,
-  Index,
-} from 'typeorm';
-import { Workflow } from '../../../workflows/domain/entities/workflow.entity';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { Workflow } from '../../../workflows/domain/entities/workflow.entity';
 
 export enum ScheduleStatus {
   ACTIVE = 'active',
@@ -15,53 +7,52 @@ export enum ScheduleStatus {
   DELETED = 'deleted',
 }
 
-@Entity('scheduled_workflows')
-@Index(['workflowId', 'status'])
+@Schema({ collection: 'scheduled_workflows' })
 export class ScheduledWorkflow {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Prop()
   workflowId: string;
 
   @ManyToOne(() => Workflow, { onDelete: 'CASCADE' })
   workflow: Workflow;
 
-  @Column()
+  @Prop()
   name: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   description: string;
 
-  @Column()
+  @Prop()
   cronExpression: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   timezone: string;
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: ScheduleStatus,
     default: ScheduleStatus.ACTIVE,
   })
   status: ScheduleStatus;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Prop({ type: 'jsonb', nullable: true })
   inputData: Record<string, any>;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   lastExecutionId: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   lastExecutionAt: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   nextExecutionAt: Date;
 
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   executionCount: number;
 
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   failureCount: number;
 
   @CreateDateColumn()
@@ -70,9 +61,12 @@ export class ScheduledWorkflow {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column()
+  @Prop()
   userId: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   organizationId: string;
 }
+
+
+export const ScheduledWorkflowSchema = SchemaFactory.createForClass(ScheduledWorkflow);

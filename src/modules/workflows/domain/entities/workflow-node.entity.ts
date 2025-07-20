@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 import { Workflow } from './workflow.entity';
 import { WorkflowNodeConnection } from './workflow-node-connection.entity';
 
@@ -22,33 +21,33 @@ export enum NodeType {
   AI_AGENT = 'ai-agent',
 }
 
-@Entity('workflow_nodes')
-export class WorkflowNode extends BaseEntity {
+@Schema({ collection: 'workflow_nodes' })
+export class WorkflowNode extends BaseSchema {
   @ApiProperty({ description: 'Node name', example: 'Send Welcome Email' })
-  @Column()
+  @Prop()
   name: string;
 
   @ApiProperty({ description: 'Node type', enum: NodeType })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: NodeType,
   })
   type: NodeType;
 
   @ApiProperty({ description: 'Node configuration JSON' })
-  @Column({ type: 'jsonb', default: {} })
+  @Prop({ type: 'jsonb', default: {} })
   configuration: Record<string, any>;
 
   @ApiProperty({ description: 'Node position in workflow canvas' })
-  @Column({ type: 'jsonb', default: { x: 0, y: 0 } })
+  @Prop({ type: 'jsonb', default: { x: 0, y: 0 } })
   position: { x: number; y: number };
 
   @ApiProperty({ description: 'Whether node is enabled' })
-  @Column({ default: true })
+  @Prop({ default: true })
   isEnabled: boolean;
 
   @ApiProperty({ description: 'Node execution order' })
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   executionOrder: number;
 
   // Relations
@@ -62,7 +61,7 @@ export class WorkflowNode extends BaseEntity {
   @JoinColumn({ name: 'workflowId' })
   workflow: Workflow;
 
-  @Column()
+  @Prop()
   workflowId: string;
 
   @ApiProperty({
@@ -85,3 +84,6 @@ export class WorkflowNode extends BaseEntity {
   )
   incomingConnections: WorkflowNodeConnection[];
 }
+
+
+export const WorkflowNodeSchema = SchemaFactory.createForClass(WorkflowNode);

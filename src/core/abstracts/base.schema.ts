@@ -1,17 +1,11 @@
-import {
-  ObjectIdColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  Column,
-  ObjectId,
-} from 'typeorm';
+import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { Document, Types } from 'mongoose';
 
-export abstract class BaseEntity {
+@Schema({ timestamps: true })
+export abstract class BaseSchema extends Document {
   @ApiProperty({ description: 'Unique identifier' })
-  @ObjectIdColumn()
-  _id: ObjectId;
+  _id: Types.ObjectId;
 
   @ApiProperty({ description: 'String representation of ID' })
   get id(): string {
@@ -19,17 +13,15 @@ export abstract class BaseEntity {
   }
 
   @ApiProperty({ description: 'Creation timestamp' })
-  @CreateDateColumn()
   createdAt: Date;
 
   @ApiProperty({ description: 'Last update timestamp' })
-  @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn({ nullable: true })
+  @Prop({ default: null })
   deletedAt?: Date;
 
   @ApiProperty({ description: 'Version for optimistic locking' })
-  @Column({ default: 1 })
+  @Prop({ default: 1 })
   version: number;
 }

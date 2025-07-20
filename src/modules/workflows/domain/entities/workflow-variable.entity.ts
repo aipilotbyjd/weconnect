@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne, JoinColumn, Index, Unique } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 import { Workflow } from './workflow.entity';
 
 export enum VariableType {
@@ -17,20 +16,18 @@ export enum VariableScope {
   ORGANIZATION = 'organization',
 }
 
-@Entity('workflow_variables')
-@Index(['workflowId', 'name'], { unique: true })
-@Index(['organizationId', 'name', 'scope'])
-export class WorkflowVariable extends BaseEntity {
+@Schema({ collection: 'workflow_variables' })
+export class WorkflowVariable extends BaseSchema {
   @ApiProperty({ description: 'Variable name' })
-  @Column()
+  @Prop()
   name: string;
 
   @ApiProperty({ description: 'Variable value' })
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   value: string;
 
   @ApiProperty({ description: 'Variable type', enum: VariableType })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: VariableType,
     default: VariableType.STRING,
@@ -38,7 +35,7 @@ export class WorkflowVariable extends BaseEntity {
   type: VariableType;
 
   @ApiProperty({ description: 'Variable scope', enum: VariableScope })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: VariableScope,
     default: VariableScope.WORKFLOW,
@@ -46,15 +43,15 @@ export class WorkflowVariable extends BaseEntity {
   scope: VariableScope;
 
   @ApiProperty({ description: 'Variable description' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   description?: string;
 
   @ApiProperty({ description: 'Is secret/encrypted' })
-  @Column({ default: false })
+  @Prop({ default: false })
   isSecret: boolean;
 
   @ApiProperty({ description: 'Is system variable' })
-  @Column({ default: false })
+  @Prop({ default: false })
   isSystem: boolean;
 
   // Relations
@@ -62,12 +59,15 @@ export class WorkflowVariable extends BaseEntity {
   @JoinColumn({ name: 'workflowId' })
   workflow?: Workflow;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   workflowId?: string;
 
-  @Column()
+  @Prop()
   userId: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   organizationId?: string;
 }
+
+
+export const WorkflowVariableSchema = SchemaFactory.createForClass(WorkflowVariable);

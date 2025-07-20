@@ -1,7 +1,5 @@
-import { Entity, Column } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-
-export interface NodeProperty {
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';export interface NodeProperty {
   name: string;
   displayName: string;
   type: 'string' | 'number' | 'boolean' | 'options' | 'collection' | 'json';
@@ -29,57 +27,57 @@ export interface NodeCredential {
   };
 }
 
-@Entity('node_definitions')
-export class NodeDefinition extends BaseEntity {
-  @Column()
+@Schema({ collection: 'node_definitions' })
+export class NodeDefinition extends BaseSchema {
+  @Prop()
   name: string;
 
-  @Column()
+  @Prop()
   displayName: string;
 
-  @Column()
+  @Prop()
   description: string;
 
-  @Column()
+  @Prop()
   declare version: number;
 
-  @Column('simple-array')
+  @Prop('simple-array')
   group: string[];
 
-  @Column()
+  @Prop()
   icon: string;
 
-  @Column('json')
+  @Prop('json')
   defaults: {
     name: string;
     color: string;
   };
 
-  @Column('simple-array')
+  @Prop('simple-array')
   inputs: string[];
 
-  @Column('simple-array')
+  @Prop('simple-array')
   outputs: string[];
 
-  @Column('json', { nullable: true })
+  @Prop('json', { nullable: true })
   credentials?: NodeCredential[];
 
-  @Column('json')
+  @Prop('json')
   properties: NodeProperty[];
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   subtitle?: string;
 
-  @Column({ default: false })
+  @Prop({ default: false })
   isCustom: boolean;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   packageName?: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   packageVersion?: string;
 
-  @Column({ default: true })
+  @Prop({ default: true })
   isActive: boolean;
 
   constructor(partial: Partial<NodeDefinition> = {}) {
@@ -87,3 +85,6 @@ export class NodeDefinition extends BaseEntity {
     Object.assign(this, partial);
   }
 }
+
+
+export const NodeDefinitionSchema = SchemaFactory.createForClass(NodeDefinition);

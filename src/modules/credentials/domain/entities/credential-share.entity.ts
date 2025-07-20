@@ -1,34 +1,22 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  Index,
-} from 'typeorm';
-import { Credential } from './credential.entity';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { Credential } from './credential.entity';
 import { SharePermission, ShareStatus } from '../enums/credential-share.enum';
 
-@Entity('credential_shares')
-@Index(['credentialId', 'sharedWithUserId', 'status'])
-@Index(['sharedByUserId'])
-@Index(['expiresAt'])
+@Schema({ collection: 'credential_shares' })
 export class CredentialShare {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('uuid')
+  @Prop('uuid')
   credentialId: string;
 
-  @Column('uuid')
+  @Prop('uuid')
   sharedByUserId: string;
 
-  @Column('uuid')
+  @Prop('uuid')
   sharedWithUserId: string;
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: SharePermission,
     array: true,
@@ -36,26 +24,26 @@ export class CredentialShare {
   })
   permissions: SharePermission[];
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: ShareStatus,
     default: ShareStatus.ACTIVE,
   })
   status: ShareStatus;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   expiresAt: Date;
 
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   note: string;
 
-  @Column({ type: 'timestamp with time zone' })
+  @Prop({ type: 'timestamp with time zone' })
   sharedAt: Date;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   revokedAt: Date;
 
-  @Column('uuid', { nullable: true })
+  @Prop('uuid', { nullable: true })
   revokedByUserId: string;
 
   @CreateDateColumn()
@@ -148,3 +136,6 @@ export class CredentialShare {
     });
   }
 }
+
+
+export const CredentialShareSchema = SchemaFactory.createForClass(CredentialShare);

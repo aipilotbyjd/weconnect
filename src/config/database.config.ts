@@ -1,18 +1,9 @@
 import { registerAs } from '@nestjs/config';
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { MongooseModuleOptions } from '@nestjs/mongoose';
 
 export default registerAs(
   'database',
-  (): TypeOrmModuleOptions => ({
-    type: 'mongodb',
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '27017', 10),
-    username: process.env.DB_USERNAME || 'weconnect',
-    password: process.env.DB_PASSWORD || 'weconnect123',
-    database: process.env.DB_DATABASE || 'weconnect',
-    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: process.env.NODE_ENV === 'development',
-    logging: process.env.NODE_ENV === 'development',
-    autoLoadEntities: true,
+  (): MongooseModuleOptions => ({
+    uri: `mongodb://${process.env.DB_USERNAME || 'weconnect'}:${process.env.DB_PASSWORD || 'weconnect123'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '27017'}/${process.env.DB_DATABASE || 'weconnect'}?authSource=admin`,
   }),
 );

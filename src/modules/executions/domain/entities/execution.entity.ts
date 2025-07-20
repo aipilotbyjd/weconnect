@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 import { Workflow } from '../../../workflows/domain/entities/workflow.entity';
 import { User } from '../../../auth/domain/entities/user.entity';
 import { ExecutionLog } from './execution-log.entity';
@@ -21,10 +20,10 @@ export enum ExecutionMode {
   TEST = 'test',
 }
 
-@Entity('executions')
-export class Execution extends BaseEntity {
+@Schema({ collection: 'executions' })
+export class Execution extends BaseSchema {
   @ApiProperty({ description: 'Execution status', enum: ExecutionStatus })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: ExecutionStatus,
     default: ExecutionStatus.PENDING,
@@ -32,7 +31,7 @@ export class Execution extends BaseEntity {
   status: ExecutionStatus;
 
   @ApiProperty({ description: 'Execution mode', enum: ExecutionMode })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: ExecutionMode,
     default: ExecutionMode.MANUAL,
@@ -40,39 +39,39 @@ export class Execution extends BaseEntity {
   mode: ExecutionMode;
 
   @ApiProperty({ description: 'Execution start time' })
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   startedAt?: Date;
 
   @ApiProperty({ description: 'Execution finish time' })
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Prop({ type: 'timestamp with time zone', nullable: true })
   finishedAt?: Date;
 
   @ApiProperty({ description: 'Execution duration in milliseconds' })
-  @Column({ type: 'int', nullable: true })
+  @Prop({ type: 'int', nullable: true })
   duration?: number;
 
   @ApiProperty({ description: 'Execution input data' })
-  @Column({ type: 'jsonb', default: {} })
+  @Prop({ type: 'jsonb', default: {} })
   inputData: Record<string, any>;
 
   @ApiProperty({ description: 'Execution output data' })
-  @Column({ type: 'jsonb', default: {} })
+  @Prop({ type: 'jsonb', default: {} })
   outputData: Record<string, any>;
 
   @ApiProperty({ description: 'Error message if execution failed' })
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   errorMessage?: string;
 
   @ApiProperty({ description: 'Error stack trace' })
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   errorStack?: string;
 
   @ApiProperty({ description: 'Current executing node ID' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   currentNodeId?: string;
 
   @ApiProperty({ description: 'Execution progress (0-100)' })
-  @Column({ type: 'int', default: 0 })
+  @Prop({ type: 'int', default: 0 })
   progress: number;
 
   // Relations
@@ -80,14 +79,14 @@ export class Execution extends BaseEntity {
   @JoinColumn({ name: 'workflowId' })
   workflow: Workflow;
 
-  @Column()
+  @Prop()
   workflowId: string;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column()
+  @Prop()
   userId: string;
 
   @OneToMany(() => ExecutionLog, (log) => log.execution, { cascade: true })
@@ -106,3 +105,6 @@ export class Execution extends BaseEntity {
     return this.status === ExecutionStatus.RUNNING;
   }
 }
+
+
+export const ExecutionSchema = SchemaFactory.createForClass(Execution);

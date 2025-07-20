@@ -1,60 +1,59 @@
-import { Entity, Column, Index, CreateDateColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 
-@Entity('execution_metrics')
-@Index(['workflowId', 'createdAt'])
-@Index(['nodeId', 'createdAt'])
-@Index(['executionId'])
-export class ExecutionMetric extends BaseEntity {
+@Schema({ collection: 'execution_metrics' })
+export class ExecutionMetric extends BaseSchema {
   @ApiProperty({ description: 'Workflow ID' })
-  @Column()
+  @Prop()
   workflowId: string;
 
   @ApiProperty({ description: 'Execution ID' })
-  @Column()
+  @Prop()
   executionId: string;
 
   @ApiProperty({ description: 'Node ID (optional)' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   nodeId?: string;
 
   @ApiProperty({ description: 'Execution duration in milliseconds' })
-  @Column()
+  @Prop()
   duration: number;
 
   @ApiProperty({ description: 'Memory usage in bytes' })
-  @Column({ type: 'bigint', nullable: true })
+  @Prop({ type: 'bigint', nullable: true })
   memoryUsage?: number;
 
   @ApiProperty({ description: 'CPU usage percentage' })
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  @Prop({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   cpuUsage?: number;
 
   @ApiProperty({ description: 'Number of items processed' })
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   itemsProcessed: number;
 
   @ApiProperty({ description: 'Was execution successful' })
-  @Column()
+  @Prop()
   success: boolean;
 
   @ApiProperty({ description: 'Error message if failed' })
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   errorMessage?: string;
 
   @ApiProperty({ description: 'Execution mode' })
-  @Column()
+  @Prop()
   mode: string;
 
   @ApiProperty({ description: 'User ID' })
-  @Column()
+  @Prop()
   userId: string;
 
   @ApiProperty({ description: 'Organization ID' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   organizationId?: string;
 
   @CreateDateColumn()
   recordedAt: Date;
 }
+
+
+export const ExecutionMetricSchema = SchemaFactory.createForClass(ExecutionMetric);

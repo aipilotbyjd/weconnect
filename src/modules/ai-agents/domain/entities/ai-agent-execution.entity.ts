@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { AIAgent } from './ai-agent.entity';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { AIAgent } from './ai-agent.entity';
 
 export enum ExecutionStatus {
   PENDING = 'pending',
@@ -10,49 +9,52 @@ export enum ExecutionStatus {
   CANCELLED = 'cancelled',
 }
 
-@Entity('ai_agent_executions')
-export class AIAgentExecution extends BaseEntity {
+@Schema({ collection: 'ai_agent_executions' })
+export class AIAgentExecution extends BaseSchema {
   @ManyToOne(() => AIAgent, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'agentId' })
   agent: AIAgent;
 
-  @Column()
+  @Prop()
   agentId: string;
 
-  @Column()
+  @Prop()
   workflowExecutionId: string;
 
-  @Column()
+  @Prop()
   nodeId: string;
 
-  @Column({ type: 'json' })
+  @Prop({ type: 'json' })
   inputData: any;
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   outputData: any;
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: ExecutionStatus,
     default: ExecutionStatus.PENDING,
   })
   status: ExecutionStatus;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   error: string;
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   metadata: any;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   tokensUsed: number;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   executionTime: number;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   startedAt: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   completedAt: Date;
 }
+
+
+export const AIAgentExecutionSchema = SchemaFactory.createForClass(AIAgentExecution);

@@ -1,13 +1,5 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  Index,
-  CreateDateColumn,
-} from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 import { Workflow } from './workflow.entity';
 import { User } from '../../../auth/domain/entities/user.entity';
 import { Organization } from '../../../organizations/domain/entities/organization.entity';
@@ -25,18 +17,17 @@ export enum ShareType {
   PUBLIC_LINK = 'public_link',
 }
 
-@Entity('workflow_shares')
-@Index(['workflowId', 'sharedWithId', 'shareType'], { unique: true })
-export class WorkflowShare extends BaseEntity {
+@Schema({ collection: 'workflow_shares' })
+export class WorkflowShare extends BaseSchema {
   @ApiProperty({ description: 'Share type', enum: ShareType })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: ShareType,
   })
   shareType: ShareType;
 
   @ApiProperty({ description: 'Permission level', enum: SharePermission })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: SharePermission,
     default: SharePermission.VIEW,
@@ -44,23 +35,23 @@ export class WorkflowShare extends BaseEntity {
   permission: SharePermission;
 
   @ApiProperty({ description: 'Share expiration date' })
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   expiresAt?: Date;
 
   @ApiProperty({ description: 'Public share token' })
-  @Column({ nullable: true, unique: true })
+  @Prop({ nullable: true, unique: true })
   shareToken?: string;
 
   @ApiProperty({ description: 'Share message/note' })
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   message?: string;
 
   @ApiProperty({ description: 'Number of times accessed' })
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   accessCount: number;
 
   @ApiProperty({ description: 'Last accessed timestamp' })
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   lastAccessedAt?: Date;
 
   // Relations
@@ -68,19 +59,22 @@ export class WorkflowShare extends BaseEntity {
   @JoinColumn({ name: 'workflowId' })
   workflow: Workflow;
 
-  @Column()
+  @Prop()
   workflowId: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sharedById' })
   sharedBy: User;
 
-  @Column()
+  @Prop()
   sharedById: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   sharedWithId?: string; // User ID or Organization ID
 
   @CreateDateColumn()
   sharedAt: Date;
 }
+
+
+export const WorkflowShareSchema = SchemaFactory.createForClass(WorkflowShare);

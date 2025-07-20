@@ -1,12 +1,7 @@
-import {
-  Entity,
-  Column,
-  BeforeInsert,
-  Index,
-  ObjectId,
-} from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
 import { ApiProperty } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 
 export enum UserRole {
@@ -14,64 +9,56 @@ export enum UserRole {
   USER = 'user',
 }
 
-@Entity('users')
-@Index(['email'], { unique: true })
-export class User extends BaseEntity {
+@Schema({ collection: 'users' })
+export class User extends BaseSchema {
   @ApiProperty({
     description: 'User email address',
     example: 'user@example.com',
   })
-  @Column()
+  @Prop({ required: true, unique: true, index: true })
   email: string;
 
   @ApiProperty({ description: 'User first name', example: 'John' })
-  @Column()
+  @Prop({ required: true })
   firstName: string;
 
   @ApiProperty({ description: 'User last name', example: 'Doe' })
-  @Column()
+  @Prop({ required: true })
   lastName: string;
 
-  @Column()
+  @Prop({ required: true })
   password: string;
 
   @ApiProperty({ description: 'User role', enum: UserRole })
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.USER,
-  })
+  @Prop({ enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
   @ApiProperty({ description: 'Whether user is active' })
-  @Column({ default: true })
+  @Prop({ default: true })
   isActive: boolean;
 
   @ApiProperty({ description: 'Last login timestamp' })
-  @Column({ nullable: true })
+  @Prop()
   lastLoginAt?: Date;
 
-  // Current active organization - store as ObjectId string
-  @Column({ nullable: true })
-  currentOrganizationId?: string;
+  @Prop({ type: Types.ObjectId })
+  currentOrganizationId?: Types.ObjectId;
 
-  // Organization memberships - store as array of ObjectId strings
   @ApiProperty({
     description: 'User organization membership IDs',
   })
-  @Column({ type: 'array', default: [] })
-  organizationMembershipIds: string[];
+  @Prop({ type: [Types.ObjectId], default: [] })
+  organizationMembershipIds: Types.ObjectId[];
 
-  @Column({ nullable: true })
+  @Prop()
   profilePicture?: string;
 
-  @Column({ nullable: true })
+  @Prop()
   timezone?: string;
 
-  @Column({ nullable: true })
+  @Prop({ type: Object })
   preferences?: Record<string, any>;
 
-  @BeforeInsert()
   async hashPassword() {
     if (this.password) {
       this.password = await bcrypt.hash(this.password, 12);
@@ -86,3 +73,14 @@ export class User extends BaseEntity {
     return `${this.firstName} ${this.lastName}`;
   }
 }
+
+export const UserSchema = SchemaFactory.createForClass(User);
+
+// Add pre-save middleware for password hashing
+UserSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    const user = this as any;
+    await user.hashPassword();
+  }
+  next();
+});

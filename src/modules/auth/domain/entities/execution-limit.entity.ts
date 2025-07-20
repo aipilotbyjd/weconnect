@@ -1,6 +1,5 @@
-import { Entity, Column, Index } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 
 export enum LimitType {
   USER = 'user',
@@ -14,52 +13,54 @@ export enum LimitPeriod {
   MONTHLY = 'monthly',
 }
 
-@Entity('execution_limits')
-@Index(['entityId', 'entityType'])
-export class ExecutionLimit extends BaseEntity {
+@Schema({ collection: 'execution_limits' })
+export class ExecutionLimit extends BaseSchema {
   @ApiProperty({ description: 'Entity ID (user, org, or API key)' })
-  @Column()
+  @Prop()
   entityId: string;
 
   @ApiProperty({ description: 'Entity type', enum: LimitType })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: LimitType,
   })
   entityType: LimitType;
 
   @ApiProperty({ description: 'Limit period', enum: LimitPeriod })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: LimitPeriod,
   })
   period: LimitPeriod;
 
   @ApiProperty({ description: 'Maximum executions allowed' })
-  @Column()
+  @Prop()
   maxExecutions: number;
 
   @ApiProperty({ description: 'Maximum execution time in milliseconds' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   maxExecutionTime?: number;
 
   @ApiProperty({ description: 'Maximum memory usage in MB' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   maxMemoryUsage?: number;
 
   @ApiProperty({ description: 'Maximum concurrent executions' })
-  @Column({ default: 5 })
+  @Prop({ default: 5 })
   maxConcurrentExecutions: number;
 
   @ApiProperty({ description: 'Current usage count for this period' })
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   currentUsage: number;
 
   @ApiProperty({ description: 'Period start timestamp' })
-  @Column({ type: 'timestamp' })
+  @Prop({ type: 'timestamp' })
   periodStart: Date;
 
   @ApiProperty({ description: 'Is limit active' })
-  @Column({ default: true })
+  @Prop({ default: true })
   isActive: boolean;
 }
+
+
+export const ExecutionLimitSchema = SchemaFactory.createForClass(ExecutionLimit);

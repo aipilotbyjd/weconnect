@@ -1,62 +1,52 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  Index,
-  BeforeInsert,
-} from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 import { User } from './user.entity';
 import * as crypto from 'crypto';
 
-@Entity('api_keys')
-@Index(['key'], { unique: true })
-@Index(['userId'])
-export class ApiKey extends BaseEntity {
+@Schema({ collection: 'api_keys' })
+export class ApiKey extends BaseSchema {
   @ApiProperty({ description: 'API key name' })
-  @Column()
+  @Prop()
   name: string;
 
   @ApiProperty({ description: 'API key (hashed)' })
-  @Column({ unique: true })
+  @Prop({ unique: true })
   key: string;
 
   @ApiProperty({ description: 'Key prefix for identification' })
-  @Column()
+  @Prop()
   prefix: string;
 
   @ApiProperty({ description: 'Last 4 characters of key' })
-  @Column()
+  @Prop()
   lastFour: string;
 
   @ApiProperty({ description: 'Permissions/scopes' })
-  @Column({ type: 'jsonb', default: [] })
+  @Prop({ type: 'jsonb', default: [] })
   scopes: string[];
 
   @ApiProperty({ description: 'IP whitelist' })
-  @Column({ type: 'jsonb', nullable: true })
+  @Prop({ type: 'jsonb', nullable: true })
   ipWhitelist?: string[];
 
   @ApiProperty({ description: 'Expiration date' })
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   expiresAt?: Date;
 
   @ApiProperty({ description: 'Last used timestamp' })
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   lastUsedAt?: Date;
 
   @ApiProperty({ description: 'Usage count' })
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   usageCount: number;
 
   @ApiProperty({ description: 'Rate limit per hour' })
-  @Column({ default: 1000 })
+  @Prop({ default: 1000 })
   rateLimit: number;
 
   @ApiProperty({ description: 'Is active' })
-  @Column({ default: true })
+  @Prop({ default: true })
   isActive: boolean;
 
   // Relations
@@ -64,10 +54,10 @@ export class ApiKey extends BaseEntity {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column()
+  @Prop()
   userId: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   organizationId?: string;
 
   // Methods
@@ -89,3 +79,6 @@ export class ApiKey extends BaseEntity {
     return crypto.createHash('sha256').update(key).digest('hex');
   }
 }
+
+
+export const ApiKeySchema = SchemaFactory.createForClass(ApiKey);

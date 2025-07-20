@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 import { WorkflowExecution } from './workflow-execution.entity';
 import { WorkflowNode } from './workflow-node.entity';
 
@@ -11,10 +10,10 @@ export enum LogLevel {
   ERROR = 'error',
 }
 
-@Entity('workflow_execution_logs')
-export class WorkflowExecutionLog extends BaseEntity {
+@Schema({ collection: 'workflow_execution_logs' })
+export class WorkflowExecutionLog extends BaseSchema {
   @ApiProperty({ description: 'Log level', enum: LogLevel })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: LogLevel,
     default: LogLevel.INFO,
@@ -22,23 +21,23 @@ export class WorkflowExecutionLog extends BaseEntity {
   level: LogLevel;
 
   @ApiProperty({ description: 'Log message' })
-  @Column({ type: 'text' })
+  @Prop({ type: 'text' })
   message: string;
 
   @ApiProperty({ description: 'Log data' })
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   data?: Record<string, any>;
 
   @ApiProperty({ description: 'Node input data' })
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   nodeInput?: Record<string, any>;
 
   @ApiProperty({ description: 'Node output data' })
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   nodeOutput?: Record<string, any>;
 
   @ApiProperty({ description: 'Execution time in ms' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   executionTime?: number;
 
   // Relations
@@ -48,13 +47,16 @@ export class WorkflowExecutionLog extends BaseEntity {
   @JoinColumn({ name: 'executionId' })
   execution: WorkflowExecution;
 
-  @Column()
+  @Prop()
   executionId: string;
 
   @ManyToOne(() => WorkflowNode, { nullable: true })
   @JoinColumn({ name: 'nodeId' })
   node?: WorkflowNode;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   nodeId?: string;
 }
+
+
+export const WorkflowExecutionLogSchema = SchemaFactory.createForClass(WorkflowExecutionLog);

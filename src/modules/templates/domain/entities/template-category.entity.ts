@@ -1,36 +1,28 @@
-import {
-  Entity,
-  Column,
-  ManyToMany,
-  Tree,
-  TreeChildren,
-  TreeParent,
-} from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { WorkflowTemplate } from './workflow-template.entity';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { WorkflowTemplate } from './workflow-template.entity';
 
-@Entity('template_categories')
+@Schema({ collection: 'template_categories' })
 @Tree('closure-table')
-export class TemplateCategory extends BaseEntity {
-  @Column()
+export class TemplateCategory extends BaseSchema {
+  @Prop()
   name: string;
 
-  @Column({ unique: true })
+  @Prop({ unique: true })
   slug: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   description?: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   icon?: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   color?: string;
 
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   displayOrder: number;
 
-  @Column({ default: true })
+  @Prop({ default: true })
   isActive: boolean;
 
   @TreeChildren()
@@ -42,3 +34,6 @@ export class TemplateCategory extends BaseEntity {
   @ManyToMany(() => WorkflowTemplate, (template) => template.categories)
   templates: WorkflowTemplate[];
 }
+
+
+export const TemplateCategorySchema = SchemaFactory.createForClass(TemplateCategory);

@@ -1,10 +1,7 @@
-import {
-  Entity,
-  Column,
-  Index,
-} from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { Types } from 'mongoose';
 
 export enum OrganizationPlan {
   FREE = 'free',
@@ -26,74 +23,68 @@ export interface PlanLimits {
   prioritySupport: boolean;
 }
 
-@Entity('organizations')
-@Index(['slug'], { unique: true })
-export class Organization extends BaseEntity {
+@Schema({ collection: 'organizations' })
+export class Organization extends BaseSchema {
 
-  @Column()
+  @Prop({ required: true, unique: true, index: true })
   slug: string;
 
-  @Column()
+  @Prop({ required: true })
   name: string;
 
-  @Column({ nullable: true })
+  @Prop()
   description?: string;
 
-  @Column({ nullable: true })
+  @Prop()
   logo?: string;
 
-  @Column({ nullable: true })
+  @Prop()
   website?: string;
 
-  @Column({
-    type: 'enum',
-    enum: OrganizationPlan,
-    default: OrganizationPlan.FREE,
-  })
+  @Prop({ enum: OrganizationPlan, default: OrganizationPlan.FREE })
   plan: OrganizationPlan;
 
-  @Column({ nullable: true })
-  planLimits: PlanLimits;
+  @Prop({ type: Object })
+  planLimits?: PlanLimits;
 
-  @Column({ nullable: true })
+  @Prop({ type: Object })
   customSettings?: Record<string, any>;
 
-  @Column({ default: true })
+  @Prop({ default: true })
   isActive: boolean;
 
-  @Column({ nullable: true })
+  @Prop()
   stripeCustomerId?: string;
 
-  @Column({ nullable: true })
+  @Prop()
   stripeSubscriptionId?: string;
 
-  @Column({ nullable: true })
+  @Prop()
   trialEndsAt?: Date;
 
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   currentMonthExecutions: number;
 
-  @Column({ nullable: true })
+  @Prop()
   executionResetDate?: Date;
 
-  // Store related entity IDs as arrays
   @ApiProperty({
     description: 'Organization member IDs',
   })
-  @Column({ type: 'array', default: [] })
-  memberIds: string[];
+  @Prop({ type: [Types.ObjectId], default: [] })
+  memberIds: Types.ObjectId[];
 
   @ApiProperty({
     description: 'Organization workflow IDs',
   })
-  @Column({ type: 'array', default: [] })
-  workflowIds: string[];
+  @Prop({ type: [Types.ObjectId], default: [] })
+  workflowIds: Types.ObjectId[];
 
   @ApiProperty({
     description: 'Organization credential IDs',
   })
-  @Column({ type: 'array', default: [] })
-  credentialIds: string[];
+  @Prop({ type: [Types.ObjectId], default: [] })
+  credentialIds: Types.ObjectId[];
 
   // Helper method to get plan limits
   getPlanLimits(): PlanLimits {
@@ -168,3 +159,5 @@ export class Organization extends BaseEntity {
     return true;
   }
 }
+
+export const OrganizationSchema = SchemaFactory.createForClass(Organization);

@@ -1,14 +1,5 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  OneToMany,
-  JoinColumn,
-  ManyToMany,
-  JoinTable,
-} from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { User } from '../../../auth/domain/entities/user.entity';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { User } from '../../../auth/domain/entities/user.entity';
 import { Organization } from '../../../organizations/domain/entities/organization.entity';
 import { TemplateCategory } from './template-category.entity';
 import { TemplateReview } from './template-review.entity';
@@ -34,35 +25,35 @@ export enum TemplateTier {
   ENTERPRISE = 'enterprise',
 }
 
-@Entity('workflow_templates')
-export class WorkflowTemplate extends BaseEntity {
-  @Column()
+@Schema({ collection: 'workflow_templates' })
+export class WorkflowTemplate extends BaseSchema {
+  @Prop()
   name: string;
 
-  @Column({ unique: true })
+  @Prop({ unique: true })
   slug: string;
 
-  @Column({ type: 'text' })
+  @Prop({ type: 'text' })
   description: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   longDescription?: string;
 
-  @Column({ type: 'json' })
+  @Prop({ type: 'json' })
   workflowDefinition: {
     nodes: any[];
     connections: any[];
     settings: Record<string, any>;
   };
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   requiredCredentials?: {
     type: string;
     name: string;
     description: string;
   }[];
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   variables?: {
     name: string;
     type: string;
@@ -71,43 +62,43 @@ export class WorkflowTemplate extends BaseEntity {
     description?: string;
   }[];
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: TemplateStatus,
     default: TemplateStatus.DRAFT,
   })
   status: TemplateStatus;
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: TemplateVisibility,
     default: TemplateVisibility.PRIVATE,
   })
   visibility: TemplateVisibility;
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: TemplateTier,
     default: TemplateTier.FREE,
   })
   tier: TemplateTier;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Prop({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   price: number;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   iconUrl?: string;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   previewUrl?: string;
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   screenshots?: string[];
 
-  @Column({ type: 'json' })
+  @Prop({ type: 'json' })
   tags: string[];
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   metadata?: {
     version: string;
     author: string;
@@ -117,34 +108,34 @@ export class WorkflowTemplate extends BaseEntity {
     videoUrl?: string;
   };
 
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   usageCount: number;
 
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   downloadCount: number;
 
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   viewCount: number;
 
-  @Column({ type: 'float', default: 0 })
+  @Prop({ type: 'float', default: 0 })
   averageRating: number;
 
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   reviewCount: number;
 
-  @Column({ default: false })
+  @Prop({ default: false })
   isFeatured: boolean;
 
-  @Column({ default: false })
+  @Prop({ default: false })
   isOfficial: boolean;
 
-  @Column({ default: true })
+  @Prop({ default: true })
   isActive: boolean;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   rejectionReason?: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   publishedAt?: Date;
 
   // Relations
@@ -152,14 +143,14 @@ export class WorkflowTemplate extends BaseEntity {
   @JoinColumn()
   creator: User;
 
-  @Column()
+  @Prop()
   creatorId: string;
 
   @ManyToOne(() => Organization, { nullable: true })
   @JoinColumn()
   organization?: Organization;
 
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   organizationId?: string;
 
   @ManyToMany(() => TemplateCategory, (category) => category.templates)
@@ -207,3 +198,6 @@ export class WorkflowTemplate extends BaseEntity {
       this.reviewCount > 0 ? totalRating / this.reviewCount : 0;
   }
 }
+
+
+export const WorkflowTemplateSchema = SchemaFactory.createForClass(WorkflowTemplate);

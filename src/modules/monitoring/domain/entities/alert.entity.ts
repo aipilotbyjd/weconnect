@@ -1,6 +1,5 @@
-import { Entity, Column, Index, CreateDateColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 
 export enum AlertType {
   CRITICAL_JOB_FAILURE = 'critical_job_failure',
@@ -25,19 +24,17 @@ export enum AlertStatus {
   RESOLVED = 'resolved',
 }
 
-@Entity('alerts')
-@Index(['type', 'createdAt'])
-@Index(['status', 'severity'])
-export class Alert extends BaseEntity {
+@Schema({ collection: 'alerts' })
+export class Alert extends BaseSchema {
   @ApiProperty({ description: 'Alert type', enum: AlertType })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: AlertType,
   })
   type: AlertType;
 
   @ApiProperty({ description: 'Alert severity', enum: AlertSeverity })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: AlertSeverity,
     default: AlertSeverity.ERROR,
@@ -45,45 +42,48 @@ export class Alert extends BaseEntity {
   severity: AlertSeverity;
 
   @ApiProperty({ description: 'Alert status', enum: AlertStatus })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: AlertStatus,
   })
   status: AlertStatus;
 
   @ApiProperty({ description: 'Alert title' })
-  @Column()
+  @Prop()
   title: string;
 
   @ApiProperty({ description: 'Alert message' })
-  @Column({ type: 'text' })
+  @Prop({ type: 'text' })
   message: string;
 
   @ApiProperty({ description: 'Alert metadata' })
-  @Column({ type: 'jsonb', nullable: true })
+  @Prop({ type: 'jsonb', nullable: true })
   metadata?: Record<string, any>;
 
   @ApiProperty({ description: 'Channels notified' })
-  @Column({ type: 'jsonb', default: [] })
+  @Prop({ type: 'jsonb', default: [] })
   channelsNotified: string[];
 
   @ApiProperty({ description: 'Acknowledged by user ID' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   acknowledgedBy?: string;
 
   @ApiProperty({ description: 'Acknowledged at timestamp' })
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   acknowledgedAt?: Date;
 
   @ApiProperty({ description: 'Resolved by user ID' })
-  @Column({ nullable: true })
+  @Prop({ nullable: true })
   resolvedBy?: string;
 
   @ApiProperty({ description: 'Resolved at timestamp' })
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   resolvedAt?: Date;
 
   @ApiProperty({ description: 'Resolution notes' })
-  @Column({ type: 'text', nullable: true })
+  @Prop({ type: 'text', nullable: true })
   resolutionNotes?: string;
 }
+
+
+export const AlertSchema = SchemaFactory.createForClass(Alert);

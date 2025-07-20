@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { AIAgent } from './ai-agent.entity';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { AIAgent } from './ai-agent.entity';
 
 export enum MemoryType {
   CONVERSATION = 'conversation',
@@ -9,30 +8,33 @@ export enum MemoryType {
   VECTOR = 'vector',
 }
 
-@Entity('ai_agent_memory')
-export class AIAgentMemory extends BaseEntity {
+@Schema({ collection: 'ai_agent_memory' })
+export class AIAgentMemory extends BaseSchema {
   @ManyToOne(() => AIAgent, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'agentId' })
   agent: AIAgent;
 
-  @Column()
+  @Prop()
   agentId: string;
 
-  @Column()
+  @Prop()
   sessionId: string;
 
-  @Column({
+  @Prop({
     type: 'enum',
     enum: MemoryType,
   })
   type: MemoryType;
 
-  @Column()
+  @Prop()
   key: string;
 
-  @Column({ type: 'json' })
+  @Prop({ type: 'json' })
   data: any;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Prop({ type: 'timestamp', nullable: true })
   expiresAt: Date;
 }
+
+
+export const AIAgentMemorySchema = SchemaFactory.createForClass(AIAgentMemory);

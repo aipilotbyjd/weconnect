@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -11,9 +11,9 @@ import { AuthController } from './presentation/controllers/auth.controller';
 import { AuthService } from './application/services/auth.service';
 
 // Domain Layer
-import { User } from './domain/entities/user.entity';
-import { ApiKey } from './domain/entities/api-key.entity';
-import { ExecutionLimit } from './domain/entities/execution-limit.entity';
+import { User, UserSchema } from './domain/entities/user.entity';
+import { ApiKey, ApiKeySchema } from './domain/entities/api-key.entity';
+import { ExecutionLimit, ExecutionLimitSchema } from './domain/entities/execution-limit.entity';
 
 // Infrastructure Layer
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
@@ -25,7 +25,11 @@ import jwtConfig from '../../config/jwt.config';
 @Module({
   imports: [
     ConfigModule.forFeature(jwtConfig),
-    TypeOrmModule.forFeature([User, ApiKey, ExecutionLimit]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: ApiKey.name, schema: ApiKeySchema },
+      { name: ExecutionLimit.name, schema: ExecutionLimitSchema },
+    ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

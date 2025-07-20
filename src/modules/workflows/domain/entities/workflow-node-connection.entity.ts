@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../../../../core/abstracts/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
 import { WorkflowNode } from './workflow-node.entity';
 
 export enum ConnectionType {
@@ -10,10 +9,10 @@ export enum ConnectionType {
   FALSE = 'false',
 }
 
-@Entity('workflow_node_connections')
-export class WorkflowNodeConnection extends BaseEntity {
+@Schema({ collection: 'workflow_node_connections' })
+export class WorkflowNodeConnection extends BaseSchema {
   @ApiProperty({ description: 'Connection type', enum: ConnectionType })
-  @Column({
+  @Prop({
     type: 'enum',
     enum: ConnectionType,
     default: ConnectionType.MAIN,
@@ -21,15 +20,15 @@ export class WorkflowNodeConnection extends BaseEntity {
   type: ConnectionType;
 
   @ApiProperty({ description: 'Source output index' })
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   sourceOutputIndex: number;
 
   @ApiProperty({ description: 'Target input index' })
-  @Column({ default: 0 })
+  @Prop({ default: 0 })
   targetInputIndex: number;
 
   @ApiProperty({ description: 'Connection condition' })
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: 'json', nullable: true })
   condition?: Record<string, any>;
 
   // Relations
@@ -39,7 +38,7 @@ export class WorkflowNodeConnection extends BaseEntity {
   @JoinColumn({ name: 'sourceNodeId' })
   sourceNode: WorkflowNode;
 
-  @Column()
+  @Prop()
   sourceNodeId: string;
 
   @ManyToOne(() => WorkflowNode, (node) => node.incomingConnections, {
@@ -48,6 +47,9 @@ export class WorkflowNodeConnection extends BaseEntity {
   @JoinColumn({ name: 'targetNodeId' })
   targetNode: WorkflowNode;
 
-  @Column()
+  @Prop()
   targetNodeId: string;
 }
+
+
+export const WorkflowNodeConnectionSchema = SchemaFactory.createForClass(WorkflowNodeConnection);
