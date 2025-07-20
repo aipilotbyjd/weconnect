@@ -1,80 +1,44 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
-import { Workflow } from './workflow.entity';
-import { User } from '../../../auth/domain/entities/user.entity';
-import { Organization } from '../../../organizations/domain/entities/organization.entity';
+import { Types } from 'mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum SharePermission {
   VIEW = 'view',
-  EXECUTE = 'execute',
   EDIT = 'edit',
+  EXECUTE = 'execute',
   ADMIN = 'admin',
-}
-
-export enum ShareType {
-  USER = 'user',
-  ORGANIZATION = 'organization',
-  PUBLIC_LINK = 'public_link',
 }
 
 @Schema({ collection: 'workflow_shares' })
 export class WorkflowShare extends BaseSchema {
-  @ApiProperty({ description: 'Share type', enum: ShareType })
-  @Prop({
-    type: 'enum',
-    enum: ShareType,
-  })
-  shareType: ShareType;
+  @ApiProperty({ description: 'Workflow ID being shared' })
+  @Prop({ type: Types.ObjectId, ref: 'Workflow', required: true })
+  workflowId: Types.ObjectId;
 
-  @ApiProperty({ description: 'Permission level', enum: SharePermission })
-  @Prop({
-    type: 'enum',
-    enum: SharePermission,
-    default: SharePermission.VIEW,
-  })
+  @ApiProperty({ description: 'User ID the workflow is shared with' })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  sharedWithUserId: Types.ObjectId;
+
+  @ApiProperty({ description: 'User ID who shared the workflow' })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  sharedByUserId: Types.ObjectId;
+
+  @ApiProperty({ description: 'Share permission level', enum: SharePermission })
+  @Prop({ type: String, enum: SharePermission, default: SharePermission.VIEW })
   permission: SharePermission;
 
   @ApiProperty({ description: 'Share expiration date' })
-  @Prop({ type: 'timestamp', nullable: true })
+  @Prop()
   expiresAt?: Date;
 
-  @ApiProperty({ description: 'Public share token' })
-  @Prop({ nullable: true, unique: true })
-  shareToken?: string;
+  @ApiProperty({ description: 'Whether the share is active' })
+  @Prop({ default: true })
+  isActive: boolean;
 
   @ApiProperty({ description: 'Share message/note' })
-  @Prop({ type: 'text', nullable: true })
+  @Prop()
   message?: string;
-
-  @ApiProperty({ description: 'Number of times accessed' })
-  @Prop({ default: 0 })
-  accessCount: number;
-
-  @ApiProperty({ description: 'Last accessed timestamp' })
-  @Prop({ type: 'timestamp', nullable: true })
-  lastAccessedAt?: Date;
-
-  // Relations
-  @ManyToOne(() => Workflow, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'workflowId' })
-  workflow: Workflow;
-
-  @Prop()
-  workflowId: string;
-
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'sharedById' })
-  sharedBy: User;
-
-  @Prop()
-  sharedById: string;
-
-  @Prop({ nullable: true })
-  sharedWithId?: string; // User ID or Organization ID
-
-  @CreateDateColumn()
-  sharedAt: Date;
 }
-
 
 export const WorkflowShareSchema = SchemaFactory.createForClass(WorkflowShare);

@@ -1,10 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
-import { WorkflowNode } from './workflow-node.entity';
-import { WorkflowExecution } from './workflow-execution.entity';
-import { WorkflowVersion } from './workflow-version.entity';
-import { User } from '../../../auth/domain/entities/user.entity';
-import { Organization } from '../../../organizations/domain/entities/organization.entity';
+import { Types } from 'mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum WorkflowStatus {
   DRAFT = 'draft',
@@ -15,27 +12,24 @@ export enum WorkflowStatus {
 
 @Schema({ collection: 'workflows' })
 export class Workflow extends BaseSchema {
-  @ApiProperty({
-    description: 'Workflow name',
-    example: 'Email Marketing Campaign',
-  })
-  @Prop()
+  @ApiProperty({ description: 'Workflow name', example: 'Email Marketing Campaign' })
+  @Prop({ required: true })
   name: string;
 
   @ApiProperty({ description: 'Workflow description' })
-  @Prop({ type: 'text', nullable: true })
+  @Prop()
   description?: string;
 
   @ApiProperty({ description: 'Workflow status', enum: WorkflowStatus })
-  @Prop({
-    type: 'enum',
-    enum: WorkflowStatus,
-    default: WorkflowStatus.DRAFT,
+  @Prop({ 
+    type: String, 
+    enum: WorkflowStatus, 
+    default: WorkflowStatus.DRAFT 
   })
   status: WorkflowStatus;
 
   @ApiProperty({ description: 'Workflow configuration JSON' })
-  @Prop({ type: 'jsonb', default: {} })
+  @Prop({ type: Object, default: {} })
   configuration: Record<string, any>;
 
   @ApiProperty({ description: 'Whether workflow is active' })
@@ -47,58 +41,30 @@ export class Workflow extends BaseSchema {
   executionCount: number;
 
   @ApiProperty({ description: 'Last execution timestamp' })
-  @Prop({ type: 'timestamp with time zone', nullable: true })
+  @Prop()
   lastExecutedAt?: Date;
 
-  // Relations
-  @ApiProperty({ type: () => User, description: 'Workflow owner' })
-  @ManyToOne(() => User, { eager: true })
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  @ApiProperty({ description: 'Workflow owner ID' })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
 
-  @Prop()
-  userId: string;
+  @ApiProperty({ description: 'Organization ID this workflow belongs to' })
+  @Prop({ type: Types.ObjectId, ref: 'Organization', required: true })
+  organizationId: Types.ObjectId;
 
-  // Organization relationship
-  @ApiProperty({
-    type: () => Organization,
-    description: 'Organization this workflow belongs to',
+  @ApiProperty({ description: 'Workflow sharing settings' })
+  @Prop({ 
+    type: Object,
+    default: { isPublic: false, sharedWith: [] }
   })
-  @ManyToOne(() => Organization, (org) => org.workflows)
-  @JoinColumn({ name: 'organizationId' })
-  organization: Organization;
-
-  @Prop()
-  organizationId: string;
-
-  @ApiProperty({ type: () => [WorkflowNode], description: 'Workflow nodes' })
-  @OneToMany(() => WorkflowNode, (node) => node.workflow, { cascade: true })
-  nodes: WorkflowNode[];
-
-  @ApiProperty({
-    type: () => [WorkflowExecution],
-    description: 'Workflow executions',
-  })
-  @OneToMany(() => WorkflowExecution, (execution) => execution.workflow)
-  executions: WorkflowExecution[];
-
-  @ApiProperty({
-    type: () => [WorkflowVersion],
-    description: 'Workflow versions',
-  })
-  @OneToMany(() => WorkflowVersion, (version) => version.workflow)
-  versions: WorkflowVersion[];
-
-  // Workflow sharing settings
-  @Prop({ type: 'json', nullable: true })
   sharing?: {
     isPublic: boolean;
-    sharedWith: string[]; // user IDs
+    sharedWith: Types.ObjectId[];
   };
 
-  @Prop({ type: 'json', nullable: true })
+  @ApiProperty({ description: 'Workflow tags' })
+  @Prop({ type: [String], default: [] })
   tags?: string[];
 }
-
 
 export const WorkflowSchema = SchemaFactory.createForClass(Workflow);

@@ -1,55 +1,41 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
-import { WorkflowNode } from './workflow-node.entity';
-
-export enum ConnectionType {
-  MAIN = 'main',
-  ERROR = 'error',
-  TRUE = 'true',
-  FALSE = 'false',
-}
+import { Types } from 'mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ collection: 'workflow_node_connections' })
 export class WorkflowNodeConnection extends BaseSchema {
-  @ApiProperty({ description: 'Connection type', enum: ConnectionType })
-  @Prop({
-    type: 'enum',
-    enum: ConnectionType,
-    default: ConnectionType.MAIN,
-  })
-  type: ConnectionType;
+  @ApiProperty({ description: 'Source node ID' })
+  @Prop({ type: Types.ObjectId, ref: 'WorkflowNode', required: true })
+  sourceNodeId: Types.ObjectId;
 
-  @ApiProperty({ description: 'Source output index' })
-  @Prop({ default: 0 })
-  sourceOutputIndex: number;
+  @ApiProperty({ description: 'Target node ID' })
+  @Prop({ type: Types.ObjectId, ref: 'WorkflowNode', required: true })
+  targetNodeId: Types.ObjectId;
 
-  @ApiProperty({ description: 'Target input index' })
-  @Prop({ default: 0 })
-  targetInputIndex: number;
+  @ApiProperty({ description: 'Source output port' })
+  @Prop({ default: 'main' })
+  sourceOutput: string;
 
-  @ApiProperty({ description: 'Connection condition' })
-  @Prop({ type: 'json', nullable: true })
-  condition?: Record<string, any>;
+  @ApiProperty({ description: 'Target input port' })
+  @Prop({ default: 'main' })
+  targetInput: string;
 
-  // Relations
-  @ManyToOne(() => WorkflowNode, (node) => node.outgoingConnections, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'sourceNodeId' })
-  sourceNode: WorkflowNode;
+  @ApiProperty({ description: 'Workflow ID this connection belongs to' })
+  @Prop({ type: Types.ObjectId, ref: 'Workflow', required: true })
+  workflowId: Types.ObjectId;
 
-  @Prop()
-  sourceNodeId: string;
+  @ApiProperty({ description: 'Connection condition/rule' })
+  @Prop({ type: Object })
+  condition?: {
+    type: 'always' | 'expression' | 'value';
+    expression?: string;
+    value?: any;
+  };
 
-  @ManyToOne(() => WorkflowNode, (node) => node.incomingConnections, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'targetNodeId' })
-  targetNode: WorkflowNode;
-
-  @Prop()
-  targetNodeId: string;
+  @ApiProperty({ description: 'Whether connection is disabled' })
+  @Prop({ default: false })
+  disabled: boolean;
 }
-
 
 export const WorkflowNodeConnectionSchema = SchemaFactory.createForClass(WorkflowNodeConnection);

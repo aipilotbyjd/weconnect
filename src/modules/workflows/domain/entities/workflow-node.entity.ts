@@ -1,89 +1,80 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
-import { Workflow } from './workflow.entity';
-import { WorkflowNodeConnection } from './workflow-node-connection.entity';
+import { Types } from 'mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum NodeType {
   TRIGGER = 'trigger',
   ACTION = 'action',
   CONDITION = 'condition',
   WEBHOOK = 'webhook',
-  HTTP_REQUEST = 'http-request',
   EMAIL = 'email',
+  HTTP_REQUEST = 'http_request',
   DELAY = 'delay',
-  GMAIL = 'gmail',
   SLACK = 'slack',
   DISCORD = 'discord',
+  GMAIL = 'gmail',
   TELEGRAM = 'telegram',
   GITHUB = 'github',
-  GOOGLE_SHEETS = 'google-sheets',
+  GOOGLE_SHEETS = 'google_sheets',
   TRELLO = 'trello',
-  AI_AGENT = 'ai-agent',
+  MONGODB = 'mongodb',
+  MYSQL = 'mysql',
+  REDIS = 'redis',
 }
 
 @Schema({ collection: 'workflow_nodes' })
 export class WorkflowNode extends BaseSchema {
-  @ApiProperty({ description: 'Node name', example: 'Send Welcome Email' })
-  @Prop()
+  @ApiProperty({ description: 'Node name' })
+  @Prop({ required: true })
   name: string;
 
   @ApiProperty({ description: 'Node type', enum: NodeType })
-  @Prop({
-    type: 'enum',
-    enum: NodeType,
-  })
+  @Prop({ type: String, enum: NodeType, required: true })
   type: NodeType;
 
-  @ApiProperty({ description: 'Node configuration JSON' })
-  @Prop({ type: 'jsonb', default: {} })
+  @ApiProperty({ description: 'Node position in workflow' })
+  @Prop({ type: Object, required: true })
+  position: {
+    x: number;
+    y: number;
+  };
+
+  @ApiProperty({ description: 'Node configuration' })
+  @Prop({ type: Object, default: {} })
   configuration: Record<string, any>;
 
-  @ApiProperty({ description: 'Node position in workflow canvas' })
-  @Prop({ type: 'jsonb', default: { x: 0, y: 0 } })
-  position: { x: number; y: number };
+  @ApiProperty({ description: 'Node parameters' })
+  @Prop({ type: Object, default: {} })
+  parameters: Record<string, any>;
 
-  @ApiProperty({ description: 'Whether node is enabled' })
-  @Prop({ default: true })
-  isEnabled: boolean;
+  @ApiProperty({ description: 'Whether node is disabled' })
+  @Prop({ default: false })
+  disabled: boolean;
 
-  @ApiProperty({ description: 'Node execution order' })
+  @ApiProperty({ description: 'Node execution timeout in seconds' })
+  @Prop({ default: 300 })
+  timeout: number;
+
+  @ApiProperty({ description: 'Number of retry attempts' })
   @Prop({ default: 0 })
-  executionOrder: number;
+  retryAttempts: number;
 
-  // Relations
-  @ApiProperty({
-    type: () => Workflow,
-    description: 'Workflow this node belongs to',
-  })
-  @ManyToOne(() => Workflow, (workflow) => workflow.nodes, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'workflowId' })
-  workflow: Workflow;
+  @ApiProperty({ description: 'Workflow ID this node belongs to' })
+  @Prop({ type: Types.ObjectId, ref: 'Workflow', required: true })
+  workflowId: Types.ObjectId;
 
+  @ApiProperty({ description: 'Node credentials reference' })
+  @Prop({ type: Types.ObjectId, ref: 'Credential' })
+  credentialId?: Types.ObjectId;
+
+  @ApiProperty({ description: 'Node notes/description' })
   @Prop()
-  workflowId: string;
+  notes?: string;
 
-  @ApiProperty({
-    type: () => [WorkflowNodeConnection],
-    description: 'Outgoing connections',
-  })
-  @OneToMany(
-    () => WorkflowNodeConnection,
-    (connection) => connection.sourceNode,
-  )
-  outgoingConnections: WorkflowNodeConnection[];
-
-  @ApiProperty({
-    type: () => [WorkflowNodeConnection],
-    description: 'Incoming connections',
-  })
-  @OneToMany(
-    () => WorkflowNodeConnection,
-    (connection) => connection.targetNode,
-  )
-  incomingConnections: WorkflowNodeConnection[];
+  @ApiProperty({ description: 'Node color for UI' })
+  @Prop({ default: '#1f77b4' })
+  color: string;
 }
-
 
 export const WorkflowNodeSchema = SchemaFactory.createForClass(WorkflowNode);

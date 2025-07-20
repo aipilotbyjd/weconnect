@@ -1,59 +1,52 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
-import { Workflow } from './workflow.entity';
+import { Types } from 'mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ collection: 'workflow_versions' })
 export class WorkflowVersion extends BaseSchema {
   @ApiProperty({ description: 'Version number' })
-  @Prop()
-  declare version: number;
+  @Prop({ required: true })
+  version: number;
 
   @ApiProperty({ description: 'Version name/tag' })
-  @Prop({ nullable: true })
+  @Prop()
   name?: string;
 
   @ApiProperty({ description: 'Version description' })
-  @Prop({ type: 'text', nullable: true })
+  @Prop()
   description?: string;
 
-  @ApiProperty({ description: 'Workflow definition at this version' })
-  @Prop({ type: 'jsonb' })
-  definition: Record<string, any>;
+  @ApiProperty({ description: 'Workflow ID this version belongs to' })
+  @Prop({ type: Types.ObjectId, ref: 'Workflow', required: true })
+  workflowId: Types.ObjectId;
 
-  @ApiProperty({ description: 'Workflow configuration at this version' })
-  @Prop({ type: 'jsonb', nullable: true })
-  configuration?: Record<string, any>;
+  @ApiProperty({ description: 'Workflow data snapshot' })
+  @Prop({ type: Object, required: true })
+  workflowData: {
+    name: string;
+    description?: string;
+    configuration: Record<string, any>;
+    nodes: any[];
+    connections: any[];
+    variables: any[];
+  };
 
-  @ApiProperty({ description: 'Is this the active version' })
+  @ApiProperty({ description: 'User who created this version' })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  createdBy: Types.ObjectId;
+
+  @ApiProperty({ description: 'Whether this is the active version' })
   @Prop({ default: false })
   isActive: boolean;
 
-  @ApiProperty({ description: 'Is this version published' })
-  @Prop({ default: false })
-  isPublished: boolean;
-
-  @ApiProperty({ description: 'Changelog/commit message' })
-  @Prop({ type: 'text', nullable: true })
+  @ApiProperty({ description: 'Version changelog' })
+  @Prop()
   changelog?: string;
 
-  @ApiProperty({ description: 'User who created this version' })
-  @Prop()
-  createdBy: string;
-
-  @ApiProperty({ description: 'Previous version ID' })
-  @Prop({ nullable: true })
-  previousVersionId?: string;
-
-  // Relations
-  @ManyToOne(() => Workflow, (workflow) => workflow.versions, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'workflowId' })
-  workflow: Workflow;
-
-  @Prop()
-  workflowId: string;
+  @ApiProperty({ description: 'Version tags' })
+  @Prop({ type: [String], default: [] })
+  tags: string[];
 }
-
 
 export const WorkflowVersionSchema = SchemaFactory.createForClass(WorkflowVersion);

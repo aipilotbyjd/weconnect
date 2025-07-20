@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../../../auth/domain/entities/user.entity';
-import { Organization } from './organization.entity';
+import { Types } from 'mongoose';
+import { ApiProperty } from '@nestjs/swagger';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
 
 export enum OrganizationRole {
   OWNER = 'owner',
@@ -38,67 +38,50 @@ export interface RolePermissions {
 }
 
 @Schema({ collection: 'organization_members' })
-@Unique(['organization', 'user'])
-export class OrganizationMember {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class OrganizationMember extends BaseSchema {
+  @ApiProperty({ description: 'Organization ID this member belongs to' })
+  @Prop({ type: Types.ObjectId, ref: 'Organization', required: true })
+  organizationId: Types.ObjectId;
 
-  @ApiProperty({
-    type: () => Organization,
-    description: 'Organization this member belongs to',
-  })
-  @ManyToOne(() => Organization, (org) => org.members, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  organization: Organization;
+  @ApiProperty({ description: 'User ID who is a member' })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
 
-  @Prop()
-  organizationId: string;
-
-  @ApiProperty({ type: () => User, description: 'User who is a member' })
-  @ManyToOne(() => User, (user) => user.organizationMemberships, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  user: User;
-
-  @Prop()
-  userId: string;
-
+  @ApiProperty({ description: 'Member role', enum: OrganizationRole })
   @Prop({
-    type: 'enum',
+    type: String,
     enum: OrganizationRole,
     default: OrganizationRole.MEMBER,
   })
   role: OrganizationRole;
 
-  @Prop({ nullable: true })
-  invitedBy?: string;
+  @ApiProperty({ description: 'User ID who invited this member' })
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  invitedBy?: Types.ObjectId;
 
-  @Prop({ nullable: true })
+  @ApiProperty({ description: 'Invitation token' })
+  @Prop()
   inviteToken?: string;
 
-  @Prop({ nullable: true, type: 'timestamp' })
+  @ApiProperty({ description: 'Invitation expiration date' })
+  @Prop()
   inviteExpiresAt?: Date;
 
+  @ApiProperty({ description: 'Whether invitation was accepted' })
   @Prop({ default: false })
   inviteAccepted: boolean;
 
-  @Prop({ nullable: true, type: 'timestamp' })
+  @ApiProperty({ description: 'Date invitation was accepted' })
+  @Prop()
   acceptedAt?: Date;
 
+  @ApiProperty({ description: 'Whether member is active' })
   @Prop({ default: true })
   isActive: boolean;
 
-  @Prop({ nullable: true, type: 'timestamp' })
+  @ApiProperty({ description: 'Last activity timestamp' })
+  @Prop()
   lastActiveAt?: Date;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   // Get permissions based on role
   getPermissions(): RolePermissions {
@@ -190,5 +173,7 @@ export class OrganizationMember {
   }
 }
 
-
 export const OrganizationMemberSchema = SchemaFactory.createForClass(OrganizationMember);
+
+// Create compound index for unique organization-user combination
+OrganizationMemberSchema.index({ organizationId: 1, userId: 1 }, { unique: true });

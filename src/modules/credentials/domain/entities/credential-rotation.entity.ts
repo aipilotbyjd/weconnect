@@ -1,217 +1,89 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { Credential } from './credential.entity';
-import {
-  RotationStatus,
-  RotationType,
-} from '../enums/credential-rotation.enum';
+import { Types } from 'mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
-export interface RotationPolicy {
-  enabled: boolean;
-  rotationType: RotationType;
-  rotationIntervalDays: number;
-  warningDays: number;
-  maxAge: number;
-  retainVersions: number;
-  autoRotate: boolean;
+export enum RotationStatus {
+  PENDING = 'pending',
+  IN_PROGRESS = 'in_progress',
+  SUCCESS = 'success',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled',
+}
+
+export enum RotationFrequency {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  YEARLY = 'yearly',
+  CUSTOM = 'custom',
 }
 
 @Schema({ collection: 'credential_rotations' })
-export class CredentialRotation {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class CredentialRotation extends BaseSchema {
+  @ApiProperty({ description: 'Credential ID to rotate' })
+  @Prop({ type: Types.ObjectId, ref: 'Credential', required: true })
+  credentialId: Types.ObjectId;
 
-  @Prop('uuid')
-  credentialId: string;
+  @ApiProperty({ description: 'Rotation frequency', enum: RotationFrequency })
+  @Prop({ type: String, enum: RotationFrequency, required: true })
+  frequency: RotationFrequency;
 
-  @Prop({
-    type: 'enum',
-    enum: RotationType,
-    default: RotationType.MANUAL,
-  })
-  rotationType: RotationType;
+  @ApiProperty({ description: 'Custom rotation interval in days' })
+  @Prop()
+  customIntervalDays?: number;
 
-  @Prop({
-    type: 'enum',
-    enum: RotationStatus,
-    default: RotationStatus.SCHEDULED,
-  })
-  status: RotationStatus;
-
-  @Prop({ type: 'jsonb', nullable: true })
-  policy: RotationPolicy;
-
-  @Prop({ type: 'timestamp with time zone', nullable: true })
-  scheduledAt: Date;
-
-  @Prop({ type: 'timestamp with time zone', nullable: true })
+  @ApiProperty({ description: 'Next scheduled rotation date' })
+  @Prop({ required: true })
   nextRotationAt: Date;
 
-  @Prop({ type: 'timestamp with time zone', nullable: true })
-  startedAt: Date;
+  @ApiProperty({ description: 'Last rotation date' })
+  @Prop()
+  lastRotationAt?: Date;
 
-  @Prop({ type: 'timestamp with time zone', nullable: true })
-  completedAt: Date;
+  @ApiProperty({ description: 'Current rotation status', enum: RotationStatus })
+  @Prop({ type: String, enum: RotationStatus, default: RotationStatus.PENDING })
+  status: RotationStatus;
 
-  @Prop('uuid', { nullable: true })
-  newCredentialId: string;
+  @ApiProperty({ description: 'Whether automatic rotation is enabled' })
+  @Prop({ default: true })
+  isEnabled: boolean;
 
-  @Prop('uuid')
-  createdByUserId: string;
-
-  @Prop({ type: 'text', nullable: true })
-  error: string;
-
-  @Prop({ type: 'integer', nullable: true })
-  executionTimeMs: number;
-
-  @Prop({ type: 'jsonb', nullable: true })
-  metadata: Record<string, any>;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  // Relations
-  @ManyToOne(() => Credential, (credential) => credential.rotations, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'credentialId' })
-  credential: Credential;
-
-  @ManyToOne(() => Credential, { nullable: true })
-  @JoinColumn({ name: 'newCredentialId' })
-  newCredential?: Credential;
-
-  // Virtual properties for user information
-  createdByUser?: {
-    id: string;
-    name: string;
-    email: string;
+  @ApiProperty({ description: 'Rotation configuration' })
+  @Prop({ type: Object, default: {} })
+  config: {
+    notifyBeforeDays?: number;
+    backupOldCredential?: boolean;
+    testAfterRotation?: boolean;
+    rollbackOnFailure?: boolean;
   };
 
-  // Helper methods
-  isCompleted(): boolean {
-    return this.status === RotationStatus.COMPLETED;
-  }
+  @ApiProperty({ description: 'Last rotation attempt details' })
+  @Prop({ type: Object })
+  lastAttempt?: {
+    startedAt: Date;
+    completedAt?: Date;
+    error?: string;
+    oldCredentialBackup?: any;
+    newCredentialData?: any;
+  };
 
-  isFailed(): boolean {
-    return this.status === RotationStatus.FAILED;
-  }
+  @ApiProperty({ description: 'Number of consecutive failures' })
+  @Prop({ default: 0 })
+  failureCount: number;
 
-  isInProgress(): boolean {
-    return this.status === RotationStatus.IN_PROGRESS;
-  }
+  @ApiProperty({ description: 'Maximum allowed failures before disabling' })
+  @Prop({ default: 3 })
+  maxFailures: number;
 
-  isScheduled(): boolean {
-    return this.status === RotationStatus.SCHEDULED;
-  }
+  @ApiProperty({ description: 'User IDs to notify on rotation events' })
+  @Prop({ type: [Types.ObjectId], default: [] })
+  notifyUserIds: Types.ObjectId[];
 
-  isDue(): boolean {
-    if (!this.nextRotationAt) {
-      return false;
-    }
-    return this.nextRotationAt <= new Date();
-  }
-
-  getExecutionTimeSeconds(): number | null {
-    return this.executionTimeMs
-      ? Math.round(this.executionTimeMs / 1000)
-      : null;
-  }
-
-  getDaysUntilRotation(): number | null {
-    if (!this.nextRotationAt) {
-      return null;
-    }
-
-    const now = new Date();
-    const diffTime = this.nextRotationAt.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    return diffDays;
-  }
-
-  getStatusDisplayName(): string {
-    switch (this.status) {
-      case RotationStatus.SCHEDULED:
-        return 'Scheduled';
-      case RotationStatus.IN_PROGRESS:
-        return 'In Progress';
-      case RotationStatus.COMPLETED:
-        return 'Completed';
-      case RotationStatus.FAILED:
-        return 'Failed';
-      case RotationStatus.CANCELLED:
-        return 'Cancelled';
-      case RotationStatus.ACTIVE:
-        return 'Active';
-      case RotationStatus.EXPIRED:
-        return 'Expired';
-      default:
-        return this.status;
-    }
-  }
-
-  getRotationTypeDisplayName(): string {
-    switch (this.rotationType) {
-      case RotationType.MANUAL:
-        return 'Manual';
-      case RotationType.API_KEY:
-        return 'API Key';
-      case RotationType.OAUTH2:
-        return 'OAuth2 Token';
-      case RotationType.PASSWORD:
-        return 'Password';
-      case RotationType.CERTIFICATE:
-        return 'Certificate';
-      default:
-        return this.rotationType;
-    }
-  }
-
-  calculateNextRotation(): Date | null {
-    if (!this.policy?.autoRotate || !this.policy.rotationIntervalDays) {
-      return null;
-    }
-
-    const baseDate = this.completedAt || new Date();
-    const nextRotation = new Date(baseDate);
-    nextRotation.setDate(
-      nextRotation.getDate() + this.policy.rotationIntervalDays,
-    );
-
-    return nextRotation;
-  }
-
-  shouldWarnUser(): boolean {
-    if (!this.nextRotationAt || !this.policy?.warningDays) {
-      return false;
-    }
-
-    const warningDate = new Date(this.nextRotationAt);
-    warningDate.setDate(warningDate.getDate() - this.policy.warningDays);
-
-    return new Date() >= warningDate;
-  }
-
-  isOverdue(): boolean {
-    if (!this.nextRotationAt) {
-      return false;
-    }
-
-    return new Date() > this.nextRotationAt;
-  }
-
-  getDuration(): number | null {
-    if (!this.startedAt || !this.completedAt) {
-      return null;
-    }
-
-    return this.completedAt.getTime() - this.startedAt.getTime();
-  }
+  @ApiProperty({ description: 'Webhook URLs to call on rotation events' })
+  @Prop({ type: [String], default: [] })
+  webhookUrls: string[];
 }
-
 
 export const CredentialRotationSchema = SchemaFactory.createForClass(CredentialRotation);

@@ -1,123 +1,91 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../../../auth/domain/entities/user.entity';
-import { Organization } from '../../../organizations/domain/entities/organization.entity';
-import { CredentialShare } from './credential-share.entity';
-import { CredentialRotation } from './credential-rotation.entity';
+import { Types } from 'mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum CredentialType {
   API_KEY = 'api_key',
   OAUTH2 = 'oauth2',
   BASIC_AUTH = 'basic_auth',
-  BEARER_TOKEN = 'bearer_token',
+  JWT = 'jwt',
+  CUSTOM = 'custom',
   DATABASE = 'database',
   EMAIL = 'email',
-  WEBHOOK = 'webhook',
-  CUSTOM = 'custom',
+  FTP = 'ftp',
+  SSH = 'ssh',
 }
 
 @Schema({ collection: 'credentials' })
 export class Credential extends BaseSchema {
-  @ApiProperty({ description: 'Credential name', example: 'Gmail API' })
-  @Prop()
+  @ApiProperty({ description: 'Credential name' })
+  @Prop({ required: true })
   name: string;
 
   @ApiProperty({ description: 'Credential type', enum: CredentialType })
-  @Prop({
-    type: 'enum',
-    enum: CredentialType,
-  })
+  @Prop({ type: String, enum: CredentialType, required: true })
   type: CredentialType;
 
-  @ApiProperty({ description: 'Service name', example: 'gmail' })
-  @Prop()
+  @ApiProperty({ description: 'Service/platform this credential is for' })
+  @Prop({ required: true })
   service: string;
 
   @ApiProperty({ description: 'Encrypted credential data' })
-  @Prop({ type: 'text' })
-  encryptedData: string;
+  @Prop({ type: Object, required: true })
+  data: Record<string, any>;
 
-  @ApiProperty({ description: 'Credential configuration' })
-  @Prop({ type: 'jsonb', default: {} })
-  configuration: Record<string, any>;
+  @ApiProperty({ description: 'User ID who owns this credential' })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
+
+  @ApiProperty({ description: 'Organization ID this credential belongs to' })
+  @Prop({ type: Types.ObjectId, ref: 'Organization', required: true })
+  organizationId: Types.ObjectId;
 
   @ApiProperty({ description: 'Whether credential is active' })
   @Prop({ default: true })
   isActive: boolean;
 
-  @ApiProperty({ description: 'Last used timestamp' })
-  @Prop({ type: 'timestamp with time zone', nullable: true })
+  @ApiProperty({ description: 'Credential description' })
+  @Prop()
+  description?: string;
+
+  @ApiProperty({ description: 'Last time credential was used' })
+  @Prop()
   lastUsedAt?: Date;
 
-  @ApiProperty({ description: 'Expiration date for tokens' })
-  @Prop({ type: 'timestamp with time zone', nullable: true })
+  @ApiProperty({ description: 'Credential expiration date' })
+  @Prop()
   expiresAt?: Date;
 
-  // Relations
-  @ApiProperty({ type: () => User, description: 'Credential owner' })
-  @ManyToOne(() => User, { eager: true })
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  @ApiProperty({ description: 'Credential tags' })
+  @Prop({ type: [String], default: [] })
+  tags: string[];
 
-  @Prop()
-  userId: string;
-
-  // Organization relationship
-  @ApiProperty({
-    type: () => Organization,
-    description: 'Organization this credential belongs to',
-  })
-  @ManyToOne(() => Organization, (org) => org.credentials)
-  @JoinColumn({ name: 'organizationId' })
-  organization: Organization;
-
-  @Prop()
-  organizationId: string;
-
-  // Rotation fields
-  @ApiProperty({ description: 'When credential was rotated' })
-  @Prop({ type: 'timestamp with time zone', nullable: true })
-  rotatedAt?: Date;
-
-  @ApiProperty({ description: 'ID of the credential this was rotated to' })
-  @Prop('uuid', { nullable: true })
-  rotatedToCredentialId?: string;
-
-  // Relations for sharing and rotation
-  @ApiProperty({
-    type: () => [CredentialShare],
-    description: 'Credential shares',
-  })
-  @OneToMany(() => CredentialShare, (share) => share.credential)
-  shares: CredentialShare[];
-
-  @ApiProperty({
-    type: () => [CredentialRotation],
-    description: 'Credential rotations',
-  })
-  @OneToMany(() => CredentialRotation, (rotation) => rotation.credential)
-  rotations: CredentialRotation[];
-
-  // Credential sharing settings (legacy - kept for backward compatibility)
-  @Prop({ type: 'json', nullable: true })
-  sharing?: {
-    isShared: boolean;
-    sharedWith: string[]; // user IDs who can use this credential
+  @ApiProperty({ description: 'OAuth2 specific data' })
+  @Prop({ type: Object })
+  oauth2Data?: {
+    accessToken?: string;
+    refreshToken?: string;
+    tokenType?: string;
+    expiresIn?: number;
+    scope?: string;
+    clientId?: string;
+    clientSecret?: string;
+    authUrl?: string;
+    tokenUrl?: string;
   };
 
-  get isExpired(): boolean {
-    return this.expiresAt ? new Date() > this.expiresAt : false;
-  }
+  @ApiProperty({ description: 'Whether credential needs refresh' })
+  @Prop({ default: false })
+  needsRefresh: boolean;
 
-  get isRotated(): boolean {
-    return !!this.rotatedAt;
-  }
+  @ApiProperty({ description: 'Last refresh attempt' })
+  @Prop()
+  lastRefreshAt?: Date;
 
-  get needsRotation(): boolean {
-    // This would be determined by rotation policies
-    return false;
-  }
+  @ApiProperty({ description: 'Number of refresh failures' })
+  @Prop({ default: 0 })
+  refreshFailures: number;
 }
-
 
 export const CredentialSchema = SchemaFactory.createForClass(Credential);

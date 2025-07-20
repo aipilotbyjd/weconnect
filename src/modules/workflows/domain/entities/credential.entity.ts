@@ -1,77 +1,61 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { User } from '../../../auth/domain/entities/user.entity';
+import { Types } from 'mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum CredentialType {
   API_KEY = 'api_key',
   OAUTH2 = 'oauth2',
   BASIC_AUTH = 'basic_auth',
-  BEARER_TOKEN = 'bearer_token',
-}
-
-export enum ServiceType {
-  SLACK = 'slack',
-  DISCORD = 'discord',
-  GMAIL = 'gmail',
-  GITHUB = 'github',
-  GOOGLE_SHEETS = 'google_sheets',
-  TELEGRAM = 'telegram',
-  TRELLO = 'trello',
-  SMTP = 'smtp',
-  WEBHOOK = 'webhook',
-  HTTP = 'http',
+  JWT = 'jwt',
+  CUSTOM = 'custom',
 }
 
 @Schema({ collection: 'credentials' })
-export class Credential {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Prop({ type: 'varchar', length: 255 })
+export class Credential extends BaseSchema {
+  @ApiProperty({ description: 'Credential name' })
+  @Prop({ required: true })
   name: string;
 
-  @Prop({ type: 'enum', enum: CredentialType })
+  @ApiProperty({ description: 'Credential type', enum: CredentialType })
+  @Prop({ type: String, enum: CredentialType, required: true })
   type: CredentialType;
 
-  @Prop({ type: 'enum', enum: ServiceType })
-  service: ServiceType;
+  @ApiProperty({ description: 'Service/platform this credential is for' })
+  @Prop({ required: true })
+  service: string;
 
-  @Prop({ type: 'text', nullable: true })
-  description?: string;
+  @ApiProperty({ description: 'Encrypted credential data' })
+  @Prop({ type: Object, required: true })
+  data: Record<string, any>;
 
-  // Encrypted credential data (API keys, tokens, etc.)
-  @Prop({ type: 'text' })
-  encryptedData: string;
+  @ApiProperty({ description: 'User ID who owns this credential' })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
 
-  // OAuth2 specific fields
-  @Prop({ type: 'text', nullable: true })
-  refreshToken?: string;
+  @ApiProperty({ description: 'Organization ID this credential belongs to' })
+  @Prop({ type: Types.ObjectId, ref: 'Organization', required: true })
+  organizationId: Types.ObjectId;
 
-  @Prop({ type: 'timestamp', nullable: true })
-  expiresAt?: Date;
-
-  @Prop({ type: 'json', nullable: true })
-  scopes?: string[];
-
-  // Additional metadata
-  @Prop({ type: 'json', nullable: true })
-  metadata?: Record<string, any>;
-
-  @Prop({ type: 'boolean', default: true })
+  @ApiProperty({ description: 'Whether credential is active' })
+  @Prop({ default: true })
   isActive: boolean;
 
-  @Prop({ type: 'uuid' })
-  userId: string;
+  @ApiProperty({ description: 'Credential description' })
+  @Prop()
+  description?: string;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  @ApiProperty({ description: 'Last time credential was used' })
+  @Prop()
+  lastUsedAt?: Date;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @ApiProperty({ description: 'Credential expiration date' })
+  @Prop()
+  expiresAt?: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @ApiProperty({ description: 'Credential tags' })
+  @Prop({ type: [String], default: [] })
+  tags: string[];
 }
-
 
 export const CredentialSchema = SchemaFactory.createForClass(Credential);

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';import { BaseSchema } from '../../../../core/abstracts/base.schema';import { ApiProperty } from '@nestjs/swagger';
-import { Workflow } from './workflow.entity';
-import { WorkflowExecutionLog } from './workflow-execution-log.entity';
+import { Types } from 'mongoose';
+import { BaseSchema } from '../../../../core/abstracts/base.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum ExecutionStatus {
   PENDING = 'pending',
@@ -9,76 +9,83 @@ export enum ExecutionStatus {
   SUCCESS = 'success',
   FAILED = 'failed',
   CANCELLED = 'cancelled',
-  PAUSED = 'paused',
-  WAITING = 'waiting',
+  TIMEOUT = 'timeout',
 }
 
 export enum ExecutionMode {
   MANUAL = 'manual',
-  TRIGGER = 'trigger',
-  SCHEDULED = 'scheduled',
   WEBHOOK = 'webhook',
-  TEST = 'test',
+  SCHEDULED = 'scheduled',
+  API = 'api',
 }
 
 @Schema({ collection: 'workflow_executions' })
 export class WorkflowExecution extends BaseSchema {
   @ApiProperty({ description: 'Execution status', enum: ExecutionStatus })
-  @Prop({
-    type: 'enum',
-    enum: ExecutionStatus,
-    default: ExecutionStatus.PENDING,
-  })
+  @Prop({ type: String, enum: ExecutionStatus, default: ExecutionStatus.PENDING })
   status: ExecutionStatus;
 
   @ApiProperty({ description: 'Execution mode', enum: ExecutionMode })
-  @Prop({
-    type: 'enum',
-    enum: ExecutionMode,
-  })
+  @Prop({ type: String, enum: ExecutionMode, required: true })
   mode: ExecutionMode;
 
-  @ApiProperty({ description: 'Start time' })
-  @Prop({ type: 'timestamp with time zone', nullable: true })
+  @ApiProperty({ description: 'Execution start time' })
+  @Prop()
   startedAt?: Date;
 
-  @ApiProperty({ description: 'End time' })
-  @Prop({ type: 'timestamp with time zone', nullable: true })
+  @ApiProperty({ description: 'Execution end time' })
+  @Prop()
   finishedAt?: Date;
 
-  @ApiProperty({ description: 'Execution data' })
-  @Prop({ type: 'json', nullable: true })
-  data: Record<string, any>;
+  @ApiProperty({ description: 'Execution duration in milliseconds' })
+  @Prop()
+  duration?: number;
 
-  @ApiProperty({ description: 'Execution error' })
-  @Prop({ type: 'json', nullable: true })
-  error?: Record<string, any>;
+  @ApiProperty({ description: 'Workflow ID being executed' })
+  @Prop({ type: Types.ObjectId, ref: 'Workflow', required: true })
+  workflowId: Types.ObjectId;
+
+  @ApiProperty({ description: 'User who triggered the execution' })
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  userId?: Types.ObjectId;
+
+  @ApiProperty({ description: 'Input data for the execution' })
+  @Prop({ type: Object, default: {} })
+  inputData: Record<string, any>;
+
+  @ApiProperty({ description: 'Output data from the execution' })
+  @Prop({ type: Object, default: {} })
+  outputData: Record<string, any>;
+
+  @ApiProperty({ description: 'Error message if execution failed' })
+  @Prop()
+  error?: string;
+
+  @ApiProperty({ description: 'Error stack trace' })
+  @Prop()
+  errorStack?: string;
 
   @ApiProperty({ description: 'Execution metadata' })
-  @Prop({ type: 'json', nullable: true })
-  metadata: Record<string, any>;
+  @Prop({ type: Object, default: {} })
+  metadata: {
+    trigger?: string;
+    webhookId?: string;
+    scheduledJobId?: string;
+    retryCount?: number;
+    parentExecutionId?: string;
+  };
 
-  @ApiProperty({ description: 'Retry count' })
+  @ApiProperty({ description: 'Number of nodes executed' })
   @Prop({ default: 0 })
-  retryCount: number;
+  nodesExecuted: number;
 
-  @ApiProperty({ description: 'Current node ID' })
-  @Prop({ nullable: true })
-  currentNodeId?: string;
+  @ApiProperty({ description: 'Number of nodes that failed' })
+  @Prop({ default: 0 })
+  nodesFailed: number;
 
-  // Relations
-  @ManyToOne(() => Workflow, (workflow) => workflow.executions)
-  @JoinColumn({ name: 'workflowId' })
-  workflow: Workflow;
-
-  @Prop()
-  workflowId: string;
-
-  @OneToMany(() => WorkflowExecutionLog, (log) => log.execution, {
-    cascade: true,
-  })
-  logs: WorkflowExecutionLog[];
+  @ApiProperty({ description: 'Execution progress percentage' })
+  @Prop({ default: 0 })
+  progress: number;
 }
-
 
 export const WorkflowExecutionSchema = SchemaFactory.createForClass(WorkflowExecution);

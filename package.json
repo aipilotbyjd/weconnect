@@ -35,7 +35,10 @@
     "clean:all": "npm run clean && rimraf node_modules",
     "typecheck": "tsc --noEmit",
     "prepare": "husky install || true",
-    "db:seed": "ts-node -r tsconfig-paths/register scripts/seed-database.ts"
+    "db:seed": "ts-node -r tsconfig-paths/register scripts/seed-database.ts",
+    "db:migrate": "echo 'MongoDB does not require migrations, but you can run seed scripts'",
+    "db:migrate:revert": "echo 'MongoDB does not support migration rollbacks'",
+    "db:reset": "ts-node -r tsconfig-paths/register scripts/reset-database.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.842.0",

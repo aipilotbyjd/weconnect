@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from '@nestjs/mongoose';
 import { HttpModule } from '@nestjs/axios';
 import { CredentialsModule } from '../credentials/credentials.module';
 
@@ -34,29 +34,29 @@ import {
 } from './application/node-executors/executors';
 
 // Domain Layer
-import { Workflow } from './domain/entities/workflow.entity';
-import { WorkflowNode } from './domain/entities/workflow-node.entity';
-import { WorkflowNodeConnection } from './domain/entities/workflow-node-connection.entity';
-import { WorkflowExecution } from './domain/entities/workflow-execution.entity';
-import { WorkflowExecutionLog } from './domain/entities/workflow-execution-log.entity';
-import { WorkflowVariable } from './domain/entities/workflow-variable.entity';
-import { WorkflowVersion } from './domain/entities/workflow-version.entity';
-import { WorkflowShare } from './domain/entities/workflow-share.entity';
+import { Workflow, WorkflowSchema } from './domain/entities/workflow.entity';
+import { WorkflowNode, WorkflowNodeSchema } from './domain/entities/workflow-node.entity';
+import { WorkflowNodeConnection, WorkflowNodeConnectionSchema } from './domain/entities/workflow-node-connection.entity';
+import { WorkflowExecution, WorkflowExecutionSchema } from './domain/entities/workflow-execution.entity';
+import { WorkflowExecutionLog, WorkflowExecutionLogSchema } from './domain/entities/workflow-execution-log.entity';
+import { WorkflowVariable, WorkflowVariableSchema } from './domain/entities/workflow-variable.entity';
+import { WorkflowVersion, WorkflowVersionSchema } from './domain/entities/workflow-version.entity';
+import { WorkflowShare, WorkflowShareSchema } from './domain/entities/workflow-share.entity';
 
 // Infrastructure Layer
 import { WorkflowQueueModule } from './infrastructure/queues/workflow-queue.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Workflow,
-      WorkflowNode,
-      WorkflowNodeConnection,
-      WorkflowExecution,
-      WorkflowExecutionLog,
-      WorkflowVariable,
-      WorkflowVersion,
-      WorkflowShare,
+    MongooseModule.forFeature([
+      { name: Workflow.name, schema: WorkflowSchema },
+      { name: WorkflowNode.name, schema: WorkflowNodeSchema },
+      { name: WorkflowNodeConnection.name, schema: WorkflowNodeConnectionSchema },
+      { name: WorkflowExecution.name, schema: WorkflowExecutionSchema },
+      { name: WorkflowExecutionLog.name, schema: WorkflowExecutionLogSchema },
+      { name: WorkflowVariable.name, schema: WorkflowVariableSchema },
+      { name: WorkflowVersion.name, schema: WorkflowVersionSchema },
+      { name: WorkflowShare.name, schema: WorkflowShareSchema },
     ]),
     WorkflowQueueModule,
     HttpModule,
@@ -93,4 +93,4 @@ import { WorkflowQueueModule } from './infrastructure/queues/workflow-queue.modu
     ExecutionCleanupService,
   ],
 })
-export class WorkflowsModule {}
+export class WorkflowsModule { }

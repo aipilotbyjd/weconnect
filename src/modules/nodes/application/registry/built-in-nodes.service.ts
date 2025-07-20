@@ -108,7 +108,10 @@ import {
   MySQLNodeDefinition,
   MySQLNodeExecutor,
 } from '../../infrastructure/built-in/database/mysql.node';
-// import { MongoDBNodeDefinition, MongoDBNodeExecutor } from '../../infrastructure/built-in/database/mongodb.node';
+import { MongoDBNodeDefinition, MongoDBNodeExecutor } from '../../infrastructure/built-in/database/mongodb.node';
+import { AdvancedHttpNodeDefinition, AdvancedHttpNodeExecutor } from '../../infrastructure/built-in/http/advanced-http.node';
+import { DataTransformerNodeDefinition, DataTransformerNodeExecutor } from '../../infrastructure/built-in/data/data-transformer.node';
+import { WebhookTriggerNodeDefinition, WebhookTriggerNodeExecutor } from '../../infrastructure/built-in/triggers/webhook-trigger.node';
 // import { RedisNodeDefinition, RedisNodeExecutor } from '../../infrastructure/built-in/database/redis.node';
 
 // Data processing nodes
@@ -284,7 +287,16 @@ export class BuiltInNodesService implements OnModuleInit {
       MySQLNodeDefinition,
       new MySQLNodeExecutor(),
     );
-    // this.nodeRegistry.registerNode(MongoDBNodeDefinition, new MongoDBNodeExecutor());
+    this.nodeRegistry.registerNode(MongoDBNodeDefinition, new MongoDBNodeExecutor());
+    
+    // Advanced HTTP Request
+    this.nodeRegistry.registerNode(AdvancedHttpNodeDefinition, new AdvancedHttpNodeExecutor());
+    
+    // Data Transformation
+    this.nodeRegistry.registerNode(DataTransformerNodeDefinition, new DataTransformerNodeExecutor());
+    
+    // Webhook Trigger
+    this.nodeRegistry.registerNode(WebhookTriggerNodeDefinition, new WebhookTriggerNodeExecutor());
     // this.nodeRegistry.registerNode(RedisNodeDefinition, new RedisNodeExecutor());
 
     // Data processing nodes

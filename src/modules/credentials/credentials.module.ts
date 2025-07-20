@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from '@nestjs/mongoose';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import { Credential } from './domain/entities/credential.entity';
-import { CredentialShare } from './domain/entities/credential-share.entity';
-import { CredentialRotation } from './domain/entities/credential-rotation.entity';
+import { Credential, CredentialSchema } from './domain/entities/credential.entity';
+import { CredentialShare, CredentialShareSchema } from './domain/entities/credential-share.entity';
+import { CredentialRotation, CredentialRotationSchema } from './domain/entities/credential-rotation.entity';
 import { CredentialsService } from './application/services/credentials.service';
 import { CredentialSharingService } from './application/services/credential-sharing.service';
 import { CredentialRotationService } from './application/services/credential-rotation.service';
@@ -21,7 +21,11 @@ import { OAuth2Controller } from './presentation/controllers/oauth2.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Credential, CredentialShare, CredentialRotation]),
+    MongooseModule.forFeature([
+      { name: Credential.name, schema: CredentialSchema },
+      { name: CredentialShare.name, schema: CredentialShareSchema },
+      { name: CredentialRotation.name, schema: CredentialRotationSchema },
+    ]),
     HttpModule,
     ConfigModule,
     ScheduleModule.forRoot(),
